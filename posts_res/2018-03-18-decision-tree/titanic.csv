@@ -1,0 +1,25 @@
+age,sex,sibsp,survival state
+young,male,no,survived
+young,male,yes,died
+young,male,no,survived
+young,male,yes,died
+young,female,no,survived
+young,female,no,survived
+young,female,no,survived
+young,female,no,survived
+mid,male,yes,died
+mid,male,no,died
+mid,male,yes,died
+mid,male,no,died
+mid,female,yes,survived
+mid,female,yes,survived
+mid,female,no,survived
+mid,female,yes,survived
+old,male,yes,died
+old,male,no,died
+old,male,no,died
+old,male,yes,died
+old,female,no,survived
+old,female,no,survived
+old,female,yes,survived
+old,female,yes,survived

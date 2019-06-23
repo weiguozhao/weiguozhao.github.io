@@ -1,0 +1,1556 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/github-logo.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/github-logo.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false,"dimmer":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="GBDT &amp;amp; XGBoost目录  符号定义 GBDT = GBRT = MART XGBoost 正则化 GBDT与XGBoost的比较   1. 符号定义决策树\[f(x; \lbrace R_j, b_j\rbrace ^{J}_1) = \sum_{j=1}^J b_j I(x\in R_j)\] \( \lbrace R_j \rbrace ^{J}_1 \)和\( \lbrac">
+<meta name="keywords" content="技术,算法,集成学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GBDT &amp; XGBoost">
+<meta property="og:url" content="https://weiguozhao.github.io/2018-04-12-gbdtxgboost.html">
+<meta property="og:site_name" content="Weiguo&#39;s Station">
+<meta property="og:description" content="GBDT &amp;amp; XGBoost目录  符号定义 GBDT = GBRT = MART XGBoost 正则化 GBDT与XGBoost的比较   1. 符号定义决策树\[f(x; \lbrace R_j, b_j\rbrace ^{J}_1) = \sum_{j=1}^J b_j I(x\in R_j)\] \( \lbrace R_j \rbrace ^{J}_1 \)和\( \lbrac">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-04-12-gbdtxgboost/1-1.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-04-12-gbdtxgboost/1-2.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-04-12-gbdtxgboost/3-treesplit.png">
+<meta property="og:updated_time" content="2019-06-23T14:18:55.393Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="GBDT &amp; XGBoost">
+<meta name="twitter:description" content="GBDT &amp;amp; XGBoost目录  符号定义 GBDT = GBRT = MART XGBoost 正则化 GBDT与XGBoost的比较   1. 符号定义决策树\[f(x; \lbrace R_j, b_j\rbrace ^{J}_1) = \sum_{j=1}^J b_j I(x\in R_j)\] \( \lbrace R_j \rbrace ^{J}_1 \)和\( \lbrac">
+<meta name="twitter:image" content="https://weiguozhao.github.io/posts_res/2018-04-12-gbdtxgboost/1-1.png">
+
+
+
+
+
+
+  <link rel="canonical" href="https://weiguozhao.github.io/2018-04-12-gbdtxgboost.html">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>GBDT & XGBoost | Weiguo's Station</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Weiguo's Station</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+  
+  
+  
+  
+
+  
+
+  <a href="https://github.com/weiguozhao" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewbox="0 0 250 250" style="fill: #222; color: #fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></a>
+
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weiguozhao.github.io/2018-04-12-gbdtxgboost.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="WeiguoZHAO">
+      <meta itemprop="description" content="Welcome to my blog~">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Weiguo's Station">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">GBDT & XGBoost
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-04-12 12:10:00" itemprop="dateCreated datePublished" datetime="2018-04-12T12:10:00+08:00">2018-04-12</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-06-23 22:18:55" itemprop="dateModified" datetime="2019-06-23T22:18:55+08:00">2019-06-23</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="GBDT-amp-XGBoost"><a href="#GBDT-amp-XGBoost" class="headerlink" title="GBDT &amp; XGBoost"></a><center>GBDT &amp; XGBoost</center></h2><p>目录</p>
+<ul>
+<li>符号定义</li>
+<li>GBDT = GBRT = MART</li>
+<li>XGBoost</li>
+<li>正则化</li>
+<li>GBDT与XGBoost的比较</li>
+</ul>
+<hr>
+<h3 id="1-符号定义"><a href="#1-符号定义" class="headerlink" title="1. 符号定义"></a>1. 符号定义</h3><p>决策树<br>\[<br>f(x; \lbrace R_j, b_j\rbrace ^{J}_1) = \sum_{j=1}^J b_j I(x\in R_j)<br>\]
+\( \lbrace R_j \rbrace ^{J}_1 \)和\( \lbrace b_j \rbrace ^{J}_1 \)表示决策树的参数，前者为分段空间(disjoint空间)，后者为这些空间上的输出值[其他地方称为打分值]，\(J\)是叶子结点的数量，下文中用\(f(x)\)省略表示\( f(x; \lbrace R_j, b_j\rbrace ^{J}_1) \)</p>
+<p>决策树的Ensemble<br>\[<br>F = \sum_{i=0}^K f_i
+\]
+其中\(f_0\)是模型初始值，通常为统计样本计算出的常数[论文中为median]，同时定义\( F_k = \sum_{i=0}^k f_i \)。</p>
+<p>\(D = \lbrace (x_i, y_i) \rbrace ^N_1\)，训练样本。</p>
+<p>\[<br>\mathfrak{L} = \mathfrak{L}( \lbrace y_i, F(x_i) \rbrace ^N_1 ) = \underbrace{\sum_{i=1}^N L(y_i, F(x_i))}_{\text{训练误差项}} + \underbrace{\sum_{k=1}^K \Omega(f_k)}_{\text{正则化项}}<br>\]
+目标函数(损失函数)，第一项\(L\)是针对训练数据的\(Loss\)，可以选择：绝对值误差、平方误差、logistic loss等；第二项\( \Omega \)是正则化函数，惩罚\(f_k\)的复杂度。</p>
+<hr>
+<h3 id="2-GBDT"><a href="#2-GBDT" class="headerlink" title="2. GBDT"></a>2. GBDT</h3><h4 id="2-1-算法1-GBDT算法-论文中：Algorithm1-Gradient-Boost"><a href="#2-1-算法1-GBDT算法-论文中：Algorithm1-Gradient-Boost" class="headerlink" title="2.1 算法1 - GBDT算法[论文中：Algorithm1:Gradient Boost]"></a>2.1 算法1 - GBDT算法[论文中：Algorithm1:Gradient Boost]</h4><p>输入：\( \lbrace (x_i, y_i) \rbrace^N_1 , K, L, …\)</p>
+<p>输出：\(F_k\)</p>
+<p>（1）初始化\(f_0\)</p>
+<p>（2）对k=1,2,…,K, 计算</p>
+<p>（2.1）\( \tilde{y}_i = - \frac{\partial L(y_i, F_{k-1}(x_i))}{\partial F_{k-1}}, i=1,2,…,N \)</p>
+<p>计算响应[response]\(\tilde{y}_i\)，它是一个和残差[residual, \(y_i-F_{k-1}(x_i)\)]正相关的变量。</p>
+<p>（2.2）\( \lbrace R_j, b_j \rbrace^{J^{\ast}}_1 = \mathop{\arg\min}_{\lbrace R_j, b_j \rbrace^J_1} \sum_{i=1}^N [\tilde{y}_i - f_k(x_i;\lbrace R_j,b_j \rbrace^J_1)]^2 \)</p>
+<p>使用平方误差训练一颗决策树\(f_k\)，拟合数据\( \lbrace (x_i, \tilde{y}_i) \rbrace^N_1 \)</p>
+<p>（2.3）\( \rho^{\ast} = \mathop{\arg\min}_{\rho} \mathfrak{L}(\lbrace y_i, F_{k-1}(x_i)+\rho f_k(x_i) \rbrace ^N_1)= \mathop{\arg\min}_{\rho} \sum_{i=1}^N L(y_i, F_{k-1}(x_i) + \rho f _k(x_i)) + \Omega(f_k) \)</p>
+<p>求一个步长\(\rho^{\ast}\)，最小化损失。</p>
+<p>（2.4）令\( f_k = \rho^{\ast}f_k, \quad  F_k = F_{k-1}+f_k \)</p>
+<p>将训练出来的\(f_k\)叠加到\(F\)。</p>
+<p><em>总体来说，GBDT就是一个不断拟合响应(残差)并叠加到F上的过程，在这个过程中，响应不断变小，Loss不断接近最小值。</em></p>
+<h4 id="2-2-GBDT例子"><a href="#2-2-GBDT例子" class="headerlink" title="2.2 GBDT例子"></a>2.2 GBDT例子</h4><p>GBDT的核心就在于，每一棵树学的是之前所有树结论和的残差，这个残差就是一个加预测值后能得真实值的累加量。比如A的真实年龄是18岁，但第一棵树的预测年龄是12岁，差了6岁，即残差为6岁。那么在第二棵树里我们把A的年龄设为6岁去学习，如果第二棵树真的能把A分到6岁的叶子节点，那累加两棵树的结论就是A的真实年龄；如果第二棵树的结论是5岁，则A仍然存在1岁的残差，第三棵树里A的年龄就变成1岁，继续学。这就是Gradient Boosting在GBDT中的意义。</p>
+<p>假设我们现在有一个训练集，训练集只有4个人A,B,C,D，他们的年龄分别是14,16,24,26。其中A、B分别是高一和高三学生；C,D分别是应届毕业生和工作两年的员工。如果是用一棵传统的回归决策树来训练，会得到如下图所示结果：</p>
+<p><img src="/posts_res/2018-04-12-gbdtxgboost/1-1.png" alt="fulltree"></p>
+<p>现在我们使用GBDT来做这件事，由于数据太少，我们限定叶子节点做多有两个，即每棵树都只有一个分枝，并且限定只学两棵树。我们会得到如下图所示结果：</p>
+<p><img src="/posts_res/2018-04-12-gbdtxgboost/1-2.png" alt="gbdt"></p>
+<p>在第一棵树分枝和第一张图片中一样，由于A,B年龄较为相近，C,D年龄较为相近，他们被分为两拨，每拨用平均年龄作为预测值。此时计算残差（残差的意思就是： A的预测值 + A的残差 = A的实际值），所以A的残差就是16-15=1（注意，A的预测值是指前面所有树累加的和，这里前面只有一棵树所以直接是15，如果还有树则需要都累加起来作为A的预测值）。进而得到A,B,C,D的残差分别为-1,1,-1,1。然后我们拿残差替代A,B,C,D的原值，到第二棵树去学习，如果我们的预测值和它们的残差相等，则只需把第二棵树的结论累加到第一棵树上就能得到真实年龄了。这里的数据显然是可以做的，第二棵树只有两个值1和-1，直接分成两个节点。此时所有人的残差都是0，即每个人都得到了真实的预测值。</p>
+<p>最后GBDT的预测结果为：</p>
+<ul>
+<li>A: 14岁高一学生，购物较少，经常问学长问题；预测年龄A = 15 – 1 = 14；</li>
+<li>B: 16岁高三学生；购物较少，经常被学弟问问题；预测年龄B = 15 + 1 = 16；</li>
+<li>C: 24岁应届毕业生；购物较多，经常问师兄问题；预测年龄C = 25 – 1 = 24；</li>
+<li>D: 26岁工作两年员工；购物较多，经常被师弟问问题；预测年龄D = 25 + 1 = 26。</li>
+</ul>
+<p>那么哪里体现了Gradient呢？其实回到第一棵树结束时想一想，无论此时的cost function是什么，是均方差还是均差，只要它以误差作为衡量标准，残差向量(-1, 1, -1, 1)都是它的全局最优方向，这就是Gradient。</p>
+<p>注：两张图片中的最终效果相同，为何还需要GBDT呢？答案是过拟合。</p>
+<p><em>其他例子请见李航博士《统计学习方法》page.149</em></p>
+<p>GBRT 的优点:</p>
+<ul>
+<li>对混合型数据的自然处理（异构特征）</li>
+<li>强大的预测能力</li>
+<li>在输出空间中对异常点的鲁棒性(通过具有鲁棒性的损失函数实现)</li>
+</ul>
+<p>GBDT 的缺点:</p>
+<ul>
+<li>可扩展性差（校对者注：此处的可扩展性特指在更大规模的数据集/复杂度更高的模型上使用的能力，而非我们通常说的功能的扩展性；GBDT 支持自定义的损失函数，从这个角度看它的扩展性还是很强的！）。由于提升算法的有序性(也就是说下一步的结果依赖于上一步)，因此很难做并行.</li>
+</ul>
+<p><a href="https://statweb.stanford.edu/~jhf/ftp/trebst.pdf" target="_blank" rel="noopener">附GBDT论文Friedman J. - Greedy Function Approximation_A Gradient Boosting Machine</a></p>
+<p><a href="https://www.cnblogs.com/pinard/p/6140514.html" target="_blank" rel="noopener">梯度提升树(GBDT)原理小结 - 刘建平Pinard</a></p>
+<hr>
+<h3 id="3-XGBoost"><a href="#3-XGBoost" class="headerlink" title="3. XGBoost"></a>3. XGBoost</h3><p>xgboost中使用的正则化函数为：<br>\[<br>\Omega(f_k) = \frac{\gamma}{2} J + \frac{\lambda}{2} \sum_{j=1}^J b^2_j
+\]
+我们的目标是求\(f_k\)，它最小化目标函数[式\(3\)]<br>\[<br>\begin{equation}<br>\begin{aligned}<br>\mathfrak{L}_k 
+&amp; = \sum_{i=1}^N L(y_i, F_{k-1}(x_i)+ \rho f_k(x_i)) + \Omega(f_k) \<br>&amp; = \sum_{i=1}^N L(y_i, F_{k-1}+\rho f_k) + \Omega(f_k) \quad \quad \quad [泰勒二阶展开可得下步] \<br>&amp; \approx \sum_{i=1}^N \lgroup L(y_i, F_{k-1}) + \underbrace{\frac{\partial L(y_i, F_{k-1})}{\partial F_{k-1}}}_{\text{= \(g_i\)}} f_k + \frac{1}{2}\underbrace{\frac{\partial^2 L(y_i, F_{k-1})}{\partial F^2_{k-1}}}_{\text{=\(h_i\)}} f^2_k \rgroup + \Omega(f_k) \<br>&amp; = \sum_{i=1}^N \lgroup L(y_i, F_{k-1}) + g_i f_k + \frac{1}{2}h_i f_k^2 \rgroup + \Omega(f_k) \<br>&amp; = \sum_{i=1}^N \lgroup L(y_i, F_{k-1}) + g_i \sum_{j=1}^J b_j + \frac{1}{2} h_i \sum_{j=1}^J b_j^2  \rgroup + \frac{\gamma}{2} J + \frac{\lambda}{2} \sum_{j=1}^J b_j^2 \<br>\end{aligned}<br>\end{equation}<br>\]
+整理出和\(\lbrace R_j \rbrace^J_1, \lbrace b_j \rbrace^J_1\)有关的项：<br>\[<br>\begin{equation}<br>\begin{aligned}<br>\mathfrak{L}(\lbrace R_j \rbrace^J_1, \lbrace b_j \rbrace^J_1)<br>&amp; = \sum_{i=1}^N \lgroup g_i \sum_{j=1}^J b_j + \frac{1}{2}h_i \sum_{j=1}^J b_j^2 \rgroup + \frac{\gamma}{2} J + \frac{\lambda}{2} \sum_{j=1}^J b_j^2 \<br>&amp; = \sum_{x_i \in R_j} \lgroup g_i \sum_{j=1}^J b_j + \frac{1}{2}h_i \sum_{j=1}^J b_j^2 \rgroup + \frac{\gamma}{2} J + \frac{\lambda}{2} \sum_{j=1}^J b_j^2 \<br>&amp; = \sum_{j=1}^J \lgroup \sum_{x_i \in R_j} g_i b_j + \sum_{x_i \in R_j} \frac{1}{2} h_i b_j^2 \rgroup + \frac{\gamma}{2} J + \frac{\lambda}{2} \sum_{j=1}^J b_j^2 \<br>&amp; = \sum_{j=1}^J \lgroup \underbrace{\sum_{x_i \in R_j}g_i}_{\text{\(=G_j\)}}b_j + \frac{1}{2} \lgroup \underbrace{\sum_{x_i \in R_j}h_i}_{\text{\(=H_j \)}} + \lambda \rgroup b_j^2 \rgroup + \frac{\gamma}{2} J \<br>&amp; = \sum_{j=1}^J \lgroup G_jb_j + \frac{1}{2}(H_j + \lambda)b_j^2 \rgroup + \frac{\gamma}{2} J<br>\end{aligned}<br>\end{equation}<br>\]
+\(式(6)\)对\(b_j\)求导，并令其等于零，得：<br>\[<br>b_j^{\ast} = - \frac{G_j}{H_j + \lambda}, \quad j=1,2,…,J<br>\]
+\(式(7)代入式(6)\)中，化简得最小的\(\mathfrak{L}\)：<br>\[<br>\mathfrak{L}^{\ast}_k = - \frac{1}{2} \sum_{j=1}^J \frac{G_j^2}{H_j+\lambda} + \frac{\gamma}{2}J<br>\]</p>
+<p>求\(\lbrace R_j\rbrace^J_1\)与求\( \lbrace b_j \rbrace^J_1 \)的方法不同，前者它是对输入\(x\)所属空间的一种划分方法不连续，无法求导。<br>精确得到划分\(\lbrace R_j \rbrace^J_1\)是一个NP难问 题，取而代之使用贪心法，即分裂某节点时，只考虑对当前节点分裂后哪个分裂方案能得到最小的\(\mathfrak{L}_k\)。<br>像传统决策树一样，CART中的办法也是遍历\(x\)的每个维度的每个分裂点，选择具有最小\(\mathfrak{L}_k)的维度和分裂点进行。<br>那么定义：当前节点 \( R_j \) 分裂成\( R_L \)和\( R_R \)使得分裂后整棵树的\( \mathfrak{L}_k \)最小。</p>
+<p>从\(式(8)\)可知，整棵树的最小\(\mathfrak{L}_k\)等于每个叶子结点上(最小)Loss的和，由于整个分裂过程中只涉及到3个结点，其他任何结点的Loss在分裂过程中不变，这个问题等价于：<br>\[<br>\mathop{\max}_{R_L, R_R} \frac{G_L^2}{H_L+\lambda} + \frac{G_R^2}{H_R+\lambda} - \frac{(G_L+G_R)^2}{H_L+H_R+\lambda} - \frac{\gamma}{2}<br>\]
+\(式(9)\)的含义是：前两项分别加上新生成的叶子结点的最小Loss，第三项是指减去被分裂的叶子结点的最小Loss，第四项是分裂后增加叶结点带来的模型复杂度。它是将结点\(R_j\)分裂成\(R_L和R_R\)后，<strong>整棵树最小\(\mathfrak{L}_k\)的降低量，这个量越大越好</strong>。</p>
+<h4 id="3-1-xgboost树的分裂算法"><a href="#3-1-xgboost树的分裂算法" class="headerlink" title="3.1 xgboost树的分裂算法"></a>3.1 xgboost树的分裂算法</h4><p><img src="/posts_res/2018-04-12-gbdtxgboost/3-treesplit.png" alt="treesplitalgorithm"></p>
+<h4 id="3-2-xgboost调参"><a href="#3-2-xgboost调参" class="headerlink" title="3.2 xgboost调参"></a>3.2 xgboost调参</h4><p><a href="https://www.analyticsvidhya.com/blog/2016/03/complete-guide-parameter-tuning-xgboost-with-codes-python/" target="_blank" rel="noopener">1-Complete Guide to Parameter Tuning in XGBoost</a></p>
+<p><a href="https://blog.csdn.net/a819825294/article/details/51775418" target="_blank" rel="noopener">2-Hyperopt</a></p>
+<p><a href="https://www.kaggle.com/tanitter/grid-search-xgboost-with-scikit-learn" target="_blank" rel="noopener">3-GridSearchCV</a></p>
+<hr>
+<h3 id="4-正则化"><a href="#4-正则化" class="headerlink" title="4. 正则化"></a>4. 正则化</h3><p>GBDT有非常快降低Loss的能力，这也会造成一个问题：Loss迅速下降，模型低bias，高variance，造成过拟合。</p>
+<p>下面一一介绍GBDT中抵抗过拟合的技巧：</p>
+<ol>
+<li>限制树的复杂度。\(\Omega\)函数对树的节点数，和节点上预测值\( \lbrace b_j \rbrace^J_1 \)的平方和均有惩罚，除此之外，我们通常在终止条件上还会增加一条为树的深度。</li>
+<li>采样。即训练每个树的时候只使用一部分的样本。</li>
+<li>列采样。即训练每个树的时候只使用一部分的特征，<strong>这是Xgboost的创新，它将随机森林中的思想引入了GBDT</strong>。</li>
+<li>Shrinkage。进一步惩罚\(\lbrace b_j \rbrace^J_1\)，给它们乘一个小于1的系数，也可以理解为设置了一个较低的学习率。</li>
+<li>Early stop。因为GBDT的可叠加性我们使用的模型不一定是最终的ensemble，而根据测试集的测试情况，选择使用前若干棵树。</li>
+</ol>
+<hr>
+<h3 id="5-GBDT与XGBoost的比较"><a href="#5-GBDT与XGBoost的比较" class="headerlink" title="5. GBDT与XGBoost的比较"></a>5. GBDT与XGBoost的比较</h3><p>以下来自知乎，作者：wepon </p>
+<ol>
+<li>传统GBDT以CART作为基分类器，xgboost还支持线性分类器，这个时候xgboost相当于带L1和L2正则化项的逻辑斯蒂回归（分类问题）或者线性回归（回归问题）。</li>
+<li>传统GBDT在优化时只用到一阶导数信息，xgboost则对代价函数进行了二阶泰勒展开，同时用到了一阶和二阶导数。顺便提一下，xgboost工具支持自定义代价函数，只要函数可一阶和二阶求导。</li>
+<li>xgboost在代价函数里加入了正则项，用于控制模型的复杂度。正则项里包含了树的叶子节点个数、每个叶子节点上输出的score的L2模的平方和。从Bias-variance tradeoff角度来讲，正则项降低了模型的variance，使学习出来的模型更加简单，防止过拟合，这也是xgboost优于传统GBDT的一个特性。</li>
+<li>Shrinkage（缩减），相当于学习速率（xgboost中的eta）。xgboost在进行完一次迭代后，会将叶子节点的权重乘上该系数，主要是为了削弱每棵树的影响，让后面有更大的学习空间。实际应用中，一般把eta设置得小一点，然后迭代次数设置得大一点。（补充：传统GBDT的实现也有学习速率）</li>
+<li>列抽样（column subsampling）。xgboost借鉴了随机森林的做法，支持列抽样，不仅能降低过拟合，还能减少计算，这也是xgboost异于传统gbdt的一个特性。</li>
+<li>对缺失值的处理。对于特征的值有缺失的样本，xgboost可以自动学习出它的分裂方向。</li>
+<li>xgboost工具支持并行。boosting不是一种串行的结构吗?怎么并行的？注意xgboost的并行不是tree粒度的并行，xgboost也是一次迭代完才能进行下一次迭代的（第t次迭代的代价函数里包含了前面t-1次迭代的预测值）。xgboost的并行是在特征粒度上的。我们知道，决策树的学习最耗时的一个步骤就是对特征的值进行排序（因为要确定最佳分割点），xgboost在训练之前，预先对数据进行了排序，然后保存为block结构，后面的迭代中重复地使用这个结构，大大减小计算量。这个block结构也使得并行成为了可能，在进行节点的分裂时，需要计算每个特征的增益，最终选增益最大的那个特征去做分裂，那么各个特征的增益计算就可以开多线程进行。</li>
+<li>可并行的近似直方图算法。树节点在进行分裂时，我们需要计算每个特征的每个分割点对应的增益，即用贪心法枚举所有可能的分割点。当数据无法一次载入内存或者在分布式情况下，贪心算法效率就会变得很低，所以xgboost还提出了一种可并行的近似直方图算法，用于高效地生成候选的分割点。</li>
+<li>为了限制树的生长，加入阈值gamma，当增益大于阈值时才让节点分裂，它是正则项里叶子节点数J的系数，所以xgboost在优化目标函数的同时相当于做了预剪枝。另外，上式中还有一个系数lambda，是正则项里leaf score的L2模平方的系数，对leaf score做了平滑，也起到了防止过拟合的作用，这个是传统GBDT里不具备的特性</li>
+</ol>
+<hr>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><blockquote>
+<p><a href="http://www.flickering.cn/machine_learning/2016/08/gbdt%E8%AF%A6%E8%A7%A3%E4%B8%8A-%E7%90%86%E8%AE%BA/" target="_blank" rel="noopener">kimmyzhang - GBDT详解上 + 下 + 后补</a></p>
+</blockquote>
+<blockquote>
+<p><a href="https://statweb.stanford.edu/~jhf/ftp/trebst.pdf" target="_blank" rel="noopener">Friedman - Greedy Function Approximation:A Gradient Boosting Machine</a></p>
+</blockquote>
+<blockquote>
+<p><a href="https://blog.csdn.net/w28971023/article/details/8240756" target="_blank" rel="noopener">GBDT(MART)迭代决策树入门教程简介</a></p>
+</blockquote>
+<blockquote>
+<p><a href="https://blog.csdn.net/a819825294/article/details/51206410" target="_blank" rel="noopener">雪伦 - xgboost原理</a></p>
+</blockquote>
+<blockquote>
+<p><a href="https://www.zhihu.com/question/41354392" target="_blank" rel="noopener">机器学习算法中 GBDT 和 XGBOOST 的区别有哪些？</a></p>
+</blockquote>
+<blockquote>
+<p><a href="https://arxiv.org/pdf/1603.02754.pdf" target="_blank" rel="noopener">Tianqi Chen - XGBoost_A Scalable Tree Boosting System</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/技术/" rel="tag"># 技术</a>
+          
+            <a href="/tags/算法/" rel="tag"># 算法</a>
+          
+            <a href="/tags/集成学习/" rel="tag"># 集成学习</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018-04-10-adaboost.html" rel="next" title="Adaboost & 前向分布算法">
+                <i class="fa fa-chevron-left"></i> Adaboost & 前向分布算法
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018-04-21-randomforest.html" rel="prev" title="随机森林 Random Forest">
+                随机森林 Random Forest <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="lv-container" data-id="city" data-uid="MTAyMC80MTI1Mi8xNzgwMA"></div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="WeiguoZHAO">
+            
+              <p class="site-author-name" itemprop="name">WeiguoZHAO</p>
+              <p class="site-description motion-element" itemprop="description">Welcome to my blog~</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">56</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">22</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/weiguozhao" title="GitHub &rarr; https://github.com/weiguozhao" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://weibo.com/ViGorZHAO" title="Weibo &rarr; https://weibo.com/ViGorZHAO" rel="noopener" target="_blank"><i class="fa fa-fw fa-weibo"></i>Weibo</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#GBDT-amp-XGBoost"><span class="nav-number">1.</span> <span class="nav-text">GBDT &amp; XGBoost</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-符号定义"><span class="nav-number">1.1.</span> <span class="nav-text">1. 符号定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-GBDT"><span class="nav-number">1.2.</span> <span class="nav-text">2. GBDT</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-算法1-GBDT算法-论文中：Algorithm1-Gradient-Boost"><span class="nav-number">1.2.1.</span> <span class="nav-text">2.1 算法1 - GBDT算法[论文中：Algorithm1:Gradient Boost]</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-GBDT例子"><span class="nav-number">1.2.2.</span> <span class="nav-text">2.2 GBDT例子</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-XGBoost"><span class="nav-number">1.3.</span> <span class="nav-text">3. XGBoost</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-xgboost树的分裂算法"><span class="nav-number">1.3.1.</span> <span class="nav-text">3.1 xgboost树的分裂算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-xgboost调参"><span class="nav-number">1.3.2.</span> <span class="nav-text">3.2 xgboost调参</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-正则化"><span class="nav-number">1.4.</span> <span class="nav-text">4. 正则化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-GBDT与XGBoost的比较"><span class="nav-number">1.5.</span> <span class="nav-text">5. GBDT与XGBoost的比较</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-number">1.6.</span> <span class="nav-text">参考</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">WeiguoZHAO</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=7.0.1"></script>
+
+
+  
+  
+
+
+  
+    <script>
+  window.livereOptions = {
+    refer: '2018-04-12-gbdtxgboost.html'
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
+
+  
+
+
+  
+  <script>
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url).replace(/\/{2,}/g, '/');
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x"></i></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x"></i></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+  
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') { next = next.nextSibling }
+        if (next && next.nodeName.toLowerCase() === 'br') { next.parentNode.removeChild(next) }
+      }
+    });
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+      for (i = 0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<style>
+.MathJax_Display {
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+</style>
+
+    
+  
+
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      
+        background-color: #eee;
+        background-image: linear-gradient(#fcfcfc, #eee);
+        border: 1px solid #d5d5d5;
+        border-radius: 3px;
+      
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      
+        right: 4px;
+        top: 8px;
+      
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1;
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function(i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+        var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; // Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.readOnly = true;
+        ta.value = code;
+        document.body.appendChild(ta);
+        ta.select();
+        ta.setSelectionRange(0, code.length);
+        ta.readOnly = false;
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); // For iOS
+        $(this).blur();
+      })).on('mouseleave', function(e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function() {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+</body>
+</html>

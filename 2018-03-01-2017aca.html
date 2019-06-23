@@ -1,0 +1,1575 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/github-logo.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/github-logo.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false,"dimmer":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="队伍名：ICRC@HITSZ，获决赛第三名(3/412)，大赛主页  本文是对比赛的思路等的整理，包含后期参考其他队的思路 目录  Task 1 学者画像信息抽取 Task 2 学者兴趣标签预测 Task 3 学者未来影响力预测 评测方案   Task 1 学者画像信息抽取Task 1 赛题学者画像信息具体包括学者的主页地址、性别、职位等。随着互联网越来越普及，与学者相关的网页的数量和内容的丰富度">
+<meta name="keywords" content="技术,算法,比赛">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2017开放学术精准画像大赛">
+<meta property="og:url" content="https://weiguozhao.github.io/2018-03-01-2017aca.html">
+<meta property="og:site_name" content="Weiguo&#39;s Station">
+<meta property="og:description" content="队伍名：ICRC@HITSZ，获决赛第三名(3/412)，大赛主页  本文是对比赛的思路等的整理，包含后期参考其他队的思路 目录  Task 1 学者画像信息抽取 Task 2 学者兴趣标签预测 Task 3 学者未来影响力预测 评测方案   Task 1 学者画像信息抽取Task 1 赛题学者画像信息具体包括学者的主页地址、性别、职位等。随着互联网越来越普及，与学者相关的网页的数量和内容的丰富度">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-03-01-2017aca/results.png">
+<meta property="og:updated_time" content="2019-06-23T14:18:55.391Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="2017开放学术精准画像大赛">
+<meta name="twitter:description" content="队伍名：ICRC@HITSZ，获决赛第三名(3/412)，大赛主页  本文是对比赛的思路等的整理，包含后期参考其他队的思路 目录  Task 1 学者画像信息抽取 Task 2 学者兴趣标签预测 Task 3 学者未来影响力预测 评测方案   Task 1 学者画像信息抽取Task 1 赛题学者画像信息具体包括学者的主页地址、性别、职位等。随着互联网越来越普及，与学者相关的网页的数量和内容的丰富度">
+<meta name="twitter:image" content="https://weiguozhao.github.io/posts_res/2018-03-01-2017aca/results.png">
+
+
+
+
+
+
+  <link rel="canonical" href="https://weiguozhao.github.io/2018-03-01-2017aca.html">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>2017开放学术精准画像大赛 | Weiguo's Station</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Weiguo's Station</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+  
+  
+  
+  
+
+  
+
+  <a href="https://github.com/weiguozhao" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewbox="0 0 250 250" style="fill: #222; color: #fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></a>
+
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weiguozhao.github.io/2018-03-01-2017aca.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="WeiguoZHAO">
+      <meta itemprop="description" content="Welcome to my blog~">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Weiguo's Station">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">2017开放学术精准画像大赛
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-03-01 12:10:00" itemprop="dateCreated datePublished" datetime="2018-03-01T12:10:00+08:00">2018-03-01</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-06-23 22:18:55" itemprop="dateModified" datetime="2019-06-23T22:18:55+08:00">2019-06-23</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/数据竞赛/" itemprop="url" rel="index"><span itemprop="name">数据竞赛</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><strong>队伍名：ICRC@HITSZ，获决赛第三名(3/412)</strong>，<a href="https://biendata.com/competition/scholar/" target="_blank" rel="noopener">大赛主页</a></p>
+<p><img src="/posts_res/2018-03-01-2017aca/results.png" alt="results"></p>
+<p><strong>本文是对比赛的思路等的整理，包含后期参考其他队的思路</strong></p>
+<p>目录</p>
+<ul>
+<li>Task 1 学者画像信息抽取</li>
+<li>Task 2 学者兴趣标签预测</li>
+<li>Task 3 学者未来影响力预测</li>
+<li>评测方案</li>
+</ul>
+<hr>
+<h3 id="Task-1-学者画像信息抽取"><a href="#Task-1-学者画像信息抽取" class="headerlink" title="Task 1 学者画像信息抽取"></a>Task 1 学者画像信息抽取</h3><h4 id="Task-1-赛题"><a href="#Task-1-赛题" class="headerlink" title="Task 1 赛题"></a>Task 1 赛题</h4><p>学者画像信息具体包括学者的主页地址、性别、职位等。随着互联网越来越普及，与学者相关的网页的数量和内容的丰富度和复杂度都大大增加，其中包含了学者的大量冗余信息，通过整合互联网上多种来源的学者数据，采用合适的机器学习模型，获得学者的精准信息是一项潜在有效的学者画像技术。</p>
+<p>给定学者姓名、学者所属机构，以及谷歌搜索关键字“学者姓名＋机构”返回的第一页搜索结果的缓存页面的URL（静态页面，一般包含10条搜索结果），同时允许参赛者访问其中每条搜索结果的网页链接以及该网页内的链接，要求抽取学者的个人主页URL、学者头像URL、邮箱地址、性别、职称/职位列表，以及学者当前所属机构所在国家。</p>
+<p>示例:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">输入：</span><br><span class="line">scholar name: Jiawei Han</span><br><span class="line">organization name: UIUC</span><br><span class="line">search results page: http://xxx.xxx/xxx.html</span><br><span class="line"></span><br><span class="line">输出：</span><br><span class="line">homepage: http://hanj.cs.illinois.edu/ (注释: 从搜索结果中找)</span><br><span class="line">pic: http://hanj.cs.illinois.edu/images/hanj_tour.jpg (注释: 从个人主页中找)</span><br><span class="line">email: hanj[at]cs.uiuc.edu (注释: email的格式跟学者个人主页中保持一致)</span><br><span class="line">gender: m (注释: m 代表 male, f 代表 female)</span><br><span class="line">position: Abel Bliss Professor (注释: 需要跟个人主页中的格式保持一致)</span><br><span class="line">location: USA (注释: 需要跟个人主页中的格式保持一致)</span><br></pre></td></tr></table></figure>
+
+<br>
+
+<h4 id="Task-1-思路"><a href="#Task-1-思路" class="headerlink" title="Task 1 思路"></a>Task 1 思路</h4><p><strong>个人主页URL</strong></p>
+<p>对于个人主页搜索结果的每条记录提取特征后进行是否是主页的分类，其中概率最高的被判断为个人主页。</p>
+<p>特征如下：</p>
+<ol>
+<li>网站在搜索结果中的排名；-&gt; 1</li>
+<li>学者所在机构是否为大学/学校；-&gt; 1</li>
+<li>搜索结果标题/摘要以及学者所在机构的文本长度 -&gt; 3</li>
+<li>url中是否包含给定关键词(社交类linkedin……、论文类spring……、正向词homepage……)，对每个部分做平均值为特征； -&gt; 35</li>
+<li>搜索结果摘要中是否包含mail，address； -&gt; 2</li>
+<li>搜索结果的标题/摘要中的学者姓名得分。这里将学者姓名分词为n份，如果其中m份在文本中出现，那么姓名的得分就是 m/n，同时增加完整名字在标题摘要中出现的得分； -&gt; 1</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">一级负向词</span><br><span class="line">&apos;facebook&apos;, &apos;linkedin&apos;, &apos;twitter&apos;, &apos;youtube&apos;, &apos;instagram&apos;, &apos;quora&apos;, &apos;blots&apos;, </span><br><span class="line">&apos;dl.acm&apos;, &apos;arxiv&apos;, &apos;ieeexplore&apos;, &apos;springer&apos;, &apos;webofknowledge&apos;, &apos;library&apos;, </span><br><span class="line">&apos;researchgate&apos;, &apos;books.google&apos;, &apos;netprofile&apos;, &apos;cnki&apos;, &apos;ted.com&apos;, &apos;antpedia&apos;, </span><br><span class="line">&apos;academictree&apos;, &apos;phdtree&apos;, &apos;shguang.net&apos;, &apos;airbnb&apos;, &apos;bloomberg&apos;, &apos;pinterest&apos;, </span><br><span class="line">&apos;weibo&apos;, &apos;hmetmer&apos;, &apos;peekyou&apos;, &apos;mitbbs&apos;, &apos;schneier.com&apos;, &apos;directory.ubc.ca&apos;, </span><br><span class="line">&apos;citation&apos;, &apos;videolectures&apos;, &apos;slideshare&apos;, &apos;brokercheck.finra.org&apos;,</span><br><span class="line"></span><br><span class="line">二级负向词</span><br><span class="line">&apos;pdf&apos;, &apos;news&apos;, &apos;report&apos;, &apos;scholarmate&apos;, &apos;journals&apos;, &apos;ratemyprofessors&apos;,</span><br><span class="line">&apos;doc&apos;, &apos;conference&apos;, &apos;wiki&apos;, &apos;scholar&apos;, &apos;book&apos;, &apos;publication&apos;, &apos;github&apos;, &apos;crunchbase&apos;,</span><br><span class="line">&apos;group&apos;, &apos;scholarmate&apos;, &apos;google&apos;, &apos;stories&apos;, &apos;story&apos;, &apos;relationshipscience&apos;,</span><br><span class="line"></span><br><span class="line">正向词</span><br><span class="line">&apos;~&apos;, &apos;edu&apos;, &apos;home&apos;, &apos;faculty&apos;</span><br></pre></td></tr></table></figure>
+
+<p>由于正负样本不均衡(1:9)，所以首先尝试通过<strong>过采样</strong>的方式进行处理。具体如下：</p>
+<ol>
+<li>重复增加正样本的数量，尝试通过XGBoost模型及SVM模型进行分类，最终在训练集中的效果有提升，但在测试集上变化不大；</li>
+<li>(未实现)尝试通过<a href="/2018/06/smote">SMOTE算法</a>进行过采样。</li>
+</ol>
+<p>鉴于第一种方式的效果并不明显，分析由于样本特征比较少(43维)，导致出现了过拟合的现象出现。</p>
+<p>接下来尝试通过<strong>负采样</strong>的方式进行解决，具体如下：</p>
+<ol>
+<li>因为负样本数量多，进行随机选择，构造新的训练数据集；</li>
+<li>通过XGBoost模型及SVM模型进行分类，效果明显得到提升。</li>
+</ol>
+<p>其中XGBoost效果比SVM效果稍微好一点。</p>
+<ol>
+<li>XGBoost可以自适应非线性：随着决策树的生长，能够产生高度非线性的模型，而SVM等线性模型的非线性化需要基于核函数，要求学习之前就要定好核函数，然而确定核函数并不是一件容易的事；</li>
+<li>多分类器隐含正则项：XGBoost自带正则化项（包含叶结点数量等），SVM通常需要增加L2正则</li>
+<li>真实世界的数据具有特征多样性的特点，SVM本质是一个几何模型，需要人为去定义样例之间的核函数或者相似性；</li>
+<li>多种可调的参数，效率、灵活、易用方面，XGBoost都有比较好的交互使用。</li>
+</ol>
+<p>最终我们在个人主页上的测试集取得了0.74的准确率，考虑到数据噪声以及搜索结果中多个正确主页的存在，真实的准确率应该接近0.85。</p>
+<p><strong>性别</strong></p>
+<p>主要通过学者的名字进行判断。通过网上的开源姓名性别数据，训练了一个朴素贝叶斯分类器，其中用到的特征是名字的后2位到后7位字母(每一位为一维特征)，以及名字长度，名字分词长度。如果学者名字长度不足的，用空格填充。</p>
+<p>结果上能取得0.9的准确率。</p>
+<p><strong>邮箱</strong></p>
+<p>主要通过正则表达式进行识别。根据<a href="https://tools.ietf.org/html/rfc2822" target="_blank" rel="noopener">RFC2822</a>中的邮箱标准，并结合训练集中邮箱的格式，我们写了一个很复杂的正则表达式，另外针对仍然无法获取到邮箱的，我们捕获网页中的mailto的链接来确定该学者的邮箱。</p>
+<p>这样仍然有一部分的图片邮件或者通过加密技术加密的邮箱无法获得，针对图片邮箱，我们通过捕获图片的名称，判断是否和邮件相关，相关即取该图片的url。<br>对于加密邮箱，暂未想到比较合适的方法，而且这种邮箱数量比较少，所以对最终结果应该不大。</p>
+<p><strong>照片</strong></p>
+<p>首先利用正则表达式+xpath等手段，获取到网页中的所有图片url及图片的名称，对于图片名称是学者名字或名字一部分的图片，直接判断该图片为学者的照片；<br>若没有获得结果，使用开源工具<a href="https://github.com/ageitgey/face_recognition" target="_blank" rel="noopener">face_recognition</a>对网页的图片进行人脸识别，当该网页中的人脸数量少于阈值4的时候，选择第一个人脸照片为该学者的照片，对人脸数量大于阈值且没有获得邮箱的，认为对学者的个人主页选择错误，并将该学者的信息留空。</p>
+<p><strong>职称</strong></p>
+<p>通过统计训练集中的职称，并做了一些加工之后，使用正则表达式对网页的内容进行匹配。</p>
+<p><strong>国家</strong></p>
+<p>主要根据获取的邮箱、以及网页中出现的地址、电话、传真等地点指向性词进行判断；另外学者的名字有时也具有一定的指向性。</p>
+<p>当无法获得有效信息时，将该信息留空。</p>
+<h4 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h4><p>因为该任务需要联网获取数据，且学者的网站服务器良莠不齐，所以实现了一个多进程并行的爬虫。主要用到的Python库如下：</p>
+<ol>
+<li>requests</li>
+<li>selenium</li>
+<li>urllib.request</li>
+<li>lxml</li>
+<li>multiprocessing</li>
+<li>bs4</li>
+</ol>
+<hr>
+<h3 id="Task-2-学者兴趣标签预测"><a href="#Task-2-学者兴趣标签预测" class="headerlink" title="Task 2 学者兴趣标签预测"></a>Task 2 学者兴趣标签预测</h3><h4 id="Task-2-赛题"><a href="#Task-2-赛题" class="headerlink" title="Task 2 赛题"></a>Task 2 赛题</h4><p>研究兴趣是学者画像的重要组成部分，其不仅是学者本身的研究心得或研究拓展方向的集中体现，也能从中窥视不同背景的学者对研究领域热点或学科研究趋势的关注度、敏感度的集体反映。与学者画像信息抽取类似，通过整合互联网上的大规模多源信息，可以对学者的研究兴趣进行判断。</p>
+<p>给定学者已发表的论文信息和合著关系网络，参赛者需为每位学者标注5个最合适的兴趣标签。</p>
+<p>示例:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">输入：</span><br><span class="line">name: Jiawei Han</span><br><span class="line"></span><br><span class="line">输出：</span><br><span class="line">research interests: data mining, database, information networks, knowledge discovery,  machine learning</span><br></pre></td></tr></table></figure>
+
+<br>
+
+<h4 id="Task-2-思路"><a href="#Task-2-思路" class="headerlink" title="Task 2 思路"></a>Task 2 思路</h4><p>本任务主要用到论文信息中的title以及期刊，首先将论文title分别以作者和标签为单位收集在一起并打上标签</p>
+<p>主要是基于词袋模型，以训练集作者为单位收集的标题文本，分词去停用次后使用<a href="/2018/03/chisquaredtest">卡方检验</a>进一步筛选特征，按卡方值筛选了前10%的特征词作为特征，<br>以标签为单位收集所有相关作者的标题文本，筛选了50%的特征词作为特征。</p>
+<p>确定文档特征词后，采用词的tf-idf作为文档向量相应位置的权重。</p>
+<p>考虑到文本分类大多都是线性可分的最终采用sklean中的SGDClassifier，分别对上述构建的两个数据集（以作者为单位收集的文档和以标签为单位收集的文档）训练了两个模型；尝试过Stacking，sklearn中的BaggingClassifier， GridSearchCV 5 folds来寻找最优参数；</p>
+<p>因为本任务是多标签预测，所以我们根据训练的模型为每个作者输出概率最大的n个标签以及概率(以作者为单位的模型输出24个标签做候选标签集合，以标签为单位的模型输出23个标签做候选标签集合)<br>训练两个模型(以作者为单位和以标签为单位)从不同的角度提取的特征，是一个相互补充，相互修正的作用；将两个模型的候选标签集合取并集，遍历候选标签集合，评价的量为每个标签两个模型预测的概率的乘积，<br>期间统计作者发过的论文，记录title中出现该标签的频数(限定该作者在合著名单里为2作或者3作以内)，最后在每个标签评价量上加频数 * 评价量。最终排序取top5个标签为当前作者的标签。</p>
+<hr>
+<h3 id="Task-3-学者未来影响力预测"><a href="#Task-3-学者未来影响力预测" class="headerlink" title="Task 3 学者未来影响力预测"></a>Task 3 学者未来影响力预测</h3><h4 id="Task-3-赛题"><a href="#Task-3-赛题" class="headerlink" title="Task 3 赛题"></a>Task 3 赛题</h4><p>学术影响力用来衡量学者在专业理论及技术方面的影响，常用的评价指标有论文被引量，期刊影响因子、作者H指数等，其中论文被引量是一个重要而直观的指标。本任务的目的是基于学者当前的相关学术数据预测其未来某段时间内的总论文被引量。</p>
+<p>给定学者截止到2013年底的全部论文数据（包括论文详细引用关系，详见数据描述部分），参赛者需预测学者截止至2017年6月的总被引用数.</p>
+<p>示例:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">输入：</span><br><span class="line">name: Jiawei Han</span><br><span class="line"></span><br><span class="line">输出：</span><br><span class="line">citation number: 126147</span><br></pre></td></tr></table></figure>
+
+<br>
+
+<h4 id="Task-3-思路"><a href="#Task-3-思路" class="headerlink" title="Task 3 思路"></a>Task 3 思路</h4><p><strong>预处理</strong></p>
+<p>papers.txt包含了学者截止2016年所有论文的数据，其中需要预测的学者隐去了2013年后所发表的论文。所以任务三只用到2013(包含2013)年前的论文数据，<br>对paper.txt中的学者进行统计引用数, 去除实际引用数小于统计引用数训练集中的学者。</p>
+<p>统计发现，学者论文引用数为0的，约占整个训练集的24%，故尝试首先通过二分类，判断学者是否具有论文引用量，之后对具有论文引用量的学者进行回归预测(两次使用同样的特征)。</p>
+<p><strong>特征</strong></p>
+<ol>
+<li>学者距今0,1,2,3,4,5,6,7,8,9年的文章数被引用数(cited)；</li>
+<li>学者文章被引用数的平均值，最小值，最大值；</li>
+<li>学者距今0,1,2,3,4,5,6,7,8,9,10,20,30,40,50年的引用数(reference)；</li>
+<li>学者学术年龄、学者发表的会议期刊的数量；</li>
+<li>学者的hindex以及近两年的变化值；</li>
+<li>学者的共同作者每四年中hindex的最小值,最大值,平均值,和；</li>
+<li>会议期刊文章总数，hindex，引用他人文章的最小值，最大值，平均值以及近两年的变化值；</li>
+<li>会议期刊被引用数的中最小值，最大值，平均值，和；</li>
+<li>会议期刊按被引用数排序的特征；</li>
+<li>以共同作者关系建边图的pagerank值，以及使用共同作者次数加权的weighted_pagerank(作者合作的越多，引用数越接近)；</li>
+<li>使用每篇论文title建模<a href="/2018/07/ldatopic">LDA模型</a>求出每篇论文困惑度(perplexity)和主题(topic)权值，和每个topic的被引用数，得到每个作者论文按主题计算的引用数和排序结果；</li>
+<li>通过有label的训练集中作者的真实被引用数估计每篇论文的权重，然后使用每篇文章的权重来预测未知作者的权重weight1(作者的权重由其论文权重决定)；</li>
+<li>根据训练集的label和论文被引用数关系迭代训练得出每篇论文的权值，从而每个作者得到权重weight2(比起weight1使用了paper.txt统计的论文被引用数)；</li>
+</ol>
+<p><strong>模型</strong></p>
+<ul>
+<li>分类模型：XGBClassifier(训练集上统计分类准确率为92.3%)</li>
+<li>回归模型：XGBoost中XGBRegressor, sklearn中的RandomForestRegressor, ExtraTreesRegressor, SVR, LinearRegressor，并对结果进行Stacking集成</li>
+</ul>
+<p><strong>其他trick</strong></p>
+<p>学者的论文被引用数的跨度很大，有0，有10W+，所以在预测的时候对标签使用了log进行平滑；</p>
+<hr>
+<h3 id="评测方案"><a href="#评测方案" class="headerlink" title="评测方案"></a>评测方案</h3><h4 id="Task-1"><a href="#Task-1" class="headerlink" title="Task 1"></a>Task 1</h4><p>任务1中，每个学者共有 k (在该项任务中 k = 6)项个人画像数据需要预测。这 k 个中除了职称/职位外都通过完全匹配的方式进行评测，完全匹配上得1分，否则得0分；而职称/职位由于是一个集合，所以通过Jaccard index (即两个集合交集的元素个数除以两个集合并集的元素个数) 来进行计算提取出来的集合跟标注答案给出的集合的相似度 (介于0 ~ 1之间)。一个学者的画像数据的预测值的最终得分为这 k 个的平均分。一个参赛选手在该任务上的最终得分为对各个学者的画像数据的预测得分的平均分。即：</p>
+<p>$$<br>score1 = \frac{1}{kN} \sum_{i=1}^N \sum_{j=1}^k s_i<br>$$</p>
+<p>其中$ s_i $表示 k 项画像数据中第 i 项的得分，取值0 ~ 1。</p>
+<br>
+
+<h4 id="Task-2"><a href="#Task-2" class="headerlink" title="Task 2"></a>Task 2</h4><p>任务2的得分score2为参赛队伍计算生成的学者兴趣与给定的学者兴趣完全相同的比例，即：</p>
+<p>$$<br>score2 = \frac{1}{N} \sum_{i=1}^N \frac{| T_i \bigcap T_i^{\ast} |}{| T_i^{\ast} |}
+$$</p>
+<p>其中，N为任务2的评测集样本个数，$T_i$为计算生成的用户i 的兴趣集合,$T_i^{\ast}$为给定的用户i 的兴趣集合。</p>
+<br>
+
+<h4 id="Task-3"><a href="#Task-3" class="headerlink" title="Task 3"></a>Task 3</h4><p>任务3的得分score3用参赛队伍预测的学者被引数与给定的学者真实被引数之间的相对误差来计算来计算</p>
+<p>$$<br>score3 = 1 - \frac{1}{N} \sum_{i=1}^N<br>\begin{cases}<br>0, \qquad \qquad \quad v_i=0, v_i^{\ast}=0 \<br>| v_i - v_i^{\ast} | / max(v_i, v_i^{\ast}), \quad otherwise<br>\end{cases}<br>$$</p>
+<p>其中，N 为任务3的评测集样本个数，$v_i$为用户i 的预测被引数，$v_i^{\ast}$为用户i 的真实被引数。</p>
+<br>
+
+<h4 id="最终得分"><a href="#最终得分" class="headerlink" title="最终得分"></a>最终得分</h4><p>$$<br>score = score1 + score2 + score3<br>$$</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/技术/" rel="tag"># 技术</a>
+          
+            <a href="/tags/算法/" rel="tag"># 算法</a>
+          
+            <a href="/tags/比赛/" rel="tag"># 比赛</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017-12-23-binarysearch.html" rel="next" title="二分查找 - BinarySearch">
+                <i class="fa fa-chevron-left"></i> 二分查找 - BinarySearch
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018-03-08-naive-bayes.html" rel="prev" title="朴素贝叶斯 Naive Bayes">
+                朴素贝叶斯 Naive Bayes <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="lv-container" data-id="city" data-uid="MTAyMC80MTI1Mi8xNzgwMA"></div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="WeiguoZHAO">
+            
+              <p class="site-author-name" itemprop="name">WeiguoZHAO</p>
+              <p class="site-description motion-element" itemprop="description">Welcome to my blog~</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">56</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">22</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/weiguozhao" title="GitHub &rarr; https://github.com/weiguozhao" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://weibo.com/ViGorZHAO" title="Weibo &rarr; https://weibo.com/ViGorZHAO" rel="noopener" target="_blank"><i class="fa fa-fw fa-weibo"></i>Weibo</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Task-1-学者画像信息抽取"><span class="nav-number">1.</span> <span class="nav-text">Task 1 学者画像信息抽取</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Task-1-赛题"><span class="nav-number">1.1.</span> <span class="nav-text">Task 1 赛题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Task-1-思路"><span class="nav-number">1.2.</span> <span class="nav-text">Task 1 思路</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#其他"><span class="nav-number">1.3.</span> <span class="nav-text">其他</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Task-2-学者兴趣标签预测"><span class="nav-number">2.</span> <span class="nav-text">Task 2 学者兴趣标签预测</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Task-2-赛题"><span class="nav-number">2.1.</span> <span class="nav-text">Task 2 赛题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Task-2-思路"><span class="nav-number">2.2.</span> <span class="nav-text">Task 2 思路</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Task-3-学者未来影响力预测"><span class="nav-number">3.</span> <span class="nav-text">Task 3 学者未来影响力预测</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Task-3-赛题"><span class="nav-number">3.1.</span> <span class="nav-text">Task 3 赛题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Task-3-思路"><span class="nav-number">3.2.</span> <span class="nav-text">Task 3 思路</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#评测方案"><span class="nav-number">4.</span> <span class="nav-text">评测方案</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Task-1"><span class="nav-number">4.1.</span> <span class="nav-text">Task 1</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Task-2"><span class="nav-number">4.2.</span> <span class="nav-text">Task 2</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Task-3"><span class="nav-number">4.3.</span> <span class="nav-text">Task 3</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#最终得分"><span class="nav-number">4.4.</span> <span class="nav-text">最终得分</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">WeiguoZHAO</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=7.0.1"></script>
+
+
+  
+  
+
+
+  
+    <script>
+  window.livereOptions = {
+    refer: '2018-03-01-2017aca.html'
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
+
+  
+
+
+  
+  <script>
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url).replace(/\/{2,}/g, '/');
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x"></i></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x"></i></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+  
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') { next = next.nextSibling }
+        if (next && next.nodeName.toLowerCase() === 'br') { next.parentNode.removeChild(next) }
+      }
+    });
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+      for (i = 0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<style>
+.MathJax_Display {
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+</style>
+
+    
+  
+
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      
+        background-color: #eee;
+        background-image: linear-gradient(#fcfcfc, #eee);
+        border: 1px solid #d5d5d5;
+        border-radius: 3px;
+      
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      
+        right: 4px;
+        top: 8px;
+      
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1;
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function(i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+        var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; // Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.readOnly = true;
+        ta.value = code;
+        document.body.appendChild(ta);
+        ta.select();
+        ta.setSelectionRange(0, code.length);
+        ta.readOnly = false;
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); // For iOS
+        $(this).blur();
+      })).on('mouseleave', function(e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function() {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+</body>
+</html>

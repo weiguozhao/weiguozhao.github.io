@@ -1,0 +1,16 @@
+age,job,house,credit,label
+young,no,no,normal,no
+young,no,no,good,no
+young,yes,no,good,yes
+young,yes,yes,normal,yes
+young,no,no,normal,no
+mid,no,no,normal,no
+mid,no,no,good,no
+mid,yes,yes,good,yes
+mid,no,yes,best,yes
+mid,no,yes,best,yes
+old,no,yes,best,yes
+old,no,yes,good,yes
+old,yes,no,good,yes
+old,yes,no,best,yes
+old,no,no,normal,no

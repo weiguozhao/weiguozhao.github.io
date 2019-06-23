@@ -1,0 +1,1598 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/github-logo.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/github-logo.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false,"dimmer":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="决策树 - Decision Tree目录 ID3 C45 决策树的剪枝 CART 特点 代码实现   决策树学习的3个步骤：  特征选择 决策树生成 决策树修剪  决策树的损失函数通常为正则化的极大似然函数。  1. ID3ID3算法使用信息增益作为特征选择的标准，信息增益越大越好。 1.1 信息增益算法输入： 训练数据集 \( D \) 和特征 \( A \); 输出： 特征\(A\)对训">
+<meta name="keywords" content="技术,算法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="决策树 Decision Tree">
+<meta property="og:url" content="https://weiguozhao.github.io/2018-03-18-decision-tree.html">
+<meta property="og:site_name" content="Weiguo&#39;s Station">
+<meta property="og:description" content="决策树 - Decision Tree目录 ID3 C45 决策树的剪枝 CART 特点 代码实现   决策树学习的3个步骤：  特征选择 决策树生成 决策树修剪  决策树的损失函数通常为正则化的极大似然函数。  1. ID3ID3算法使用信息增益作为特征选择的标准，信息增益越大越好。 1.1 信息增益算法输入： 训练数据集 \( D \) 和特征 \( A \); 输出： 特征\(A\)对训">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-03-18-decision-tree/cart_cut.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-03-18-decision-tree/dt.png">
+<meta property="og:updated_time" content="2019-06-23T14:18:55.391Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="决策树 Decision Tree">
+<meta name="twitter:description" content="决策树 - Decision Tree目录 ID3 C45 决策树的剪枝 CART 特点 代码实现   决策树学习的3个步骤：  特征选择 决策树生成 决策树修剪  决策树的损失函数通常为正则化的极大似然函数。  1. ID3ID3算法使用信息增益作为特征选择的标准，信息增益越大越好。 1.1 信息增益算法输入： 训练数据集 \( D \) 和特征 \( A \); 输出： 特征\(A\)对训">
+<meta name="twitter:image" content="https://weiguozhao.github.io/posts_res/2018-03-18-decision-tree/cart_cut.png">
+
+
+
+
+
+
+  <link rel="canonical" href="https://weiguozhao.github.io/2018-03-18-decision-tree.html">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>决策树 Decision Tree | Weiguo's Station</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Weiguo's Station</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+  
+  
+  
+  
+
+  
+
+  <a href="https://github.com/weiguozhao" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewbox="0 0 250 250" style="fill: #222; color: #fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></a>
+
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weiguozhao.github.io/2018-03-18-decision-tree.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="WeiguoZHAO">
+      <meta itemprop="description" content="Welcome to my blog~">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Weiguo's Station">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">决策树 Decision Tree
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-03-18 20:10:00" itemprop="dateCreated datePublished" datetime="2018-03-18T20:10:00+08:00">2018-03-18</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-06-23 22:18:55" itemprop="dateModified" datetime="2019-06-23T22:18:55+08:00">2019-06-23</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <!-- 如果该blog有其他图片代码文件，需在/posts_res/2018-01-01-template/存放 -->
+
+<h2 id="决策树-Decision-Tree"><a href="#决策树-Decision-Tree" class="headerlink" title="决策树 - Decision Tree"></a><center>决策树 - Decision Tree</center></h2><h4 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h4><ul>
+<li>ID3</li>
+<li>C45</li>
+<li>决策树的剪枝</li>
+<li>CART</li>
+<li>特点</li>
+<li>代码实现</li>
+</ul>
+<hr>
+<p>决策树学习的3个步骤：</p>
+<ul>
+<li>特征选择</li>
+<li>决策树生成</li>
+<li>决策树修剪</li>
+</ul>
+<p>决策树的损失函数通常为正则化的极大似然函数。</p>
+<hr>
+<h3 id="1-ID3"><a href="#1-ID3" class="headerlink" title="1. ID3"></a>1. ID3</h3><p>ID3算法使用信息增益作为特征选择的标准，信息增益<strong>越大越好</strong>。</p>
+<h4 id="1-1-信息增益算法"><a href="#1-1-信息增益算法" class="headerlink" title="1.1 信息增益算法"></a>1.1 信息增益算法</h4><p>输入：</p>
+<p>训练数据集 \( D \) 和特征 \( A \);</p>
+<p>输出：</p>
+<p>特征\(A\)对训练数据集\(D\)的信息增益 \( g(D,A) \)</p>
+<p>（1）计算数据集 \( D \) 的经验熵 \( H(D) \)
+\[<br>H(D) = - \sum_{k=1}^K \frac{ | C_k |}{| D |}log_2 \frac{| C_k |}{| D |}<br>\]</p>
+<p>（2）计算特征\(A\)对数据集\(D\)的经验条件熵\( H(D | A) \)
+\[<br>H(D | A) = \sum_{i=1}^n \frac{| D_i |}{| D |} H(D_i) = - \sum_{i=1}^n \frac{ | D_i | }{ | D | } \sum_{k=1}^K \frac{| D_{ik} |}{ | D_i |} log_2 \frac{ | D_{ik} |}{| D_i |}<br>\]</p>
+<p>（3）计算信息增益<br>\[<br>g(D,A) = H(D) - H(D | A)<br>\]</p>
+<p>其中\(K\)为类别的数量\( \lbrace C_1, C_2, …, C_k \rbrace \)，\(n\)为特征\(A\)的取值数量\( \lbrace a_1, a_2, …, a_n \rbrace \)。</p>
+<hr>
+<h3 id="2-C45"><a href="#2-C45" class="headerlink" title="2. C45"></a>2. C45</h3><p>信息增益作为标准时，存在偏向于取值数量较多的特征的问题，因此C45算法选择信息增益比作为划分的标准，信息增益比<strong>越大越好</strong>。</p>
+<h4 id="2-1-信息增益比-基于信息增益"><a href="#2-1-信息增益比-基于信息增益" class="headerlink" title="2.1 信息增益比(基于信息增益)"></a>2.1 信息增益比(基于信息增益)</h4><p>定义为信息增益\(g(D,A)\)与关于特征\(A\)的值的熵\(H_A(D)\)之比，即：<br>\[<br>g_R(D,A) = \frac{g(D,A)}{H_A(D)}<br>\]
+\[<br>H_A(D) = - \sum_{i=1}^n \frac{ | D_i | } { | D | } log_2 \frac{ | D_i | }{ | D |}<br>\]
+其中\(n\)为特征\(A\)取值的个数。</p>
+<hr>
+<h3 id="3-决策树的剪枝"><a href="#3-决策树的剪枝" class="headerlink" title="3. 决策树的剪枝"></a>3. 决策树的剪枝</h3><p>设树\( T \)的叶结点个数为\( | T | \)，\(t\)是树\(T\)的叶结点，该叶结点有\(N_t\)个样本点，其中\(k\)类的样本点有\(N_{tk}\)个，\(k=1,2,…,K\)，\(H_t(T)\)为叶结点上的经验熵，则决策树的损失函数可以定义为：<br>\[<br>\begin{equation}<br>\begin{aligned}<br>C_{\alpha}(T)<br>&amp; = \sum_{t=1}^{ | T | } N_t H_t(T) + \alpha | T | \<br>&amp; = - \sum_{t=1}^{ | T | } \sum_{k=1}^K N_{tk} log \frac{N_{tk}}{N_t} + \alpha | T | \<br>&amp; = C(T) + \alpha | T |<br>\end{aligned}<br>\end{equation}<br>\]</p>
+<p>通过 \( \alpha \geq 0 \)控制模型与训练数据拟合度和模型复杂度。</p>
+<h4 id="3-1-ID3-amp-C45树的剪枝算法"><a href="#3-1-ID3-amp-C45树的剪枝算法" class="headerlink" title="3.1 ID3&amp;C45树的剪枝算法"></a>3.1 ID3&amp;C45树的剪枝算法</h4><p>输入：生成算法产生的整个树 \( T \)，参数 \( \alpha \)；</p>
+<p>输出：修剪后的子树\( T_{\alpha} \)。</p>
+<p>（1）计算每个结点的经验熵, 经验熵计算公式；<br>\[<br>H_t(T) = - \sum_k \frac{N_{tk}}{N_t} log \frac{N_{tk}}{N_t}<br>\]</p>
+<p>（2）递归地从树的叶结点向上回缩；</p>
+<p>设一组叶结点回缩到其父结点之前与之后的整体树分别为\(T_B\)与\(T_A\)，其对应的损失函数值分别为\(C_{\alpha}(T_B)\)与\(C_{\alpha}(T_A)\)，如果<br>\[<br>C_{\alpha}(T_B) \leq C_{\alpha}(T_A)<br>\]
+则进行剪枝，即将父结点变为新的叶结点。</p>
+<p>（3）返回（2），直至不能继续为止，得到损失函数最小的子树\(T_{\alpha}\)。</p>
+<hr>
+<h3 id="4-CART"><a href="#4-CART" class="headerlink" title="4. CART"></a>4. CART</h3><p>CART假设决策树是二叉树，内部结点特征取值为“是”和“否”，递归二分每个特征。</p>
+<ul>
+<li>回归数使用平方误差最小化准则，<strong>越小越好</strong>。</li>
+<li>分类数使用基尼指数最小化准则，<strong>越小越好</strong>。</li>
+</ul>
+<h4 id="4-1-回归树"><a href="#4-1-回归树" class="headerlink" title="4.1 回归树"></a>4.1 回归树</h4><p>输入：训练数据集\( D=\lbrace (x_1, y_1), (x_2, y_2), …, (x_N, y_N) \rbrace \), 并且\(Y\)是连续型变量；</p>
+<p>输出：回归树 \( f(x) \)</p>
+<p>在训练数据集所在的输入空间中，递归地将每个区域划分为两个子区域并决定每个子区域上的输出值，构建二叉决策树。</p>
+<p>（1）选择最优切分变量\(j\)与切分点\(s\)，求解<br>\[<br>\mathop{\min}_{j,s} [\mathop{\min}_{c_1} \sum_{x_i \in R_1(j,s)} (y_i - c_1)^2 + \mathop{\min}_{c_2} \sum_{x_i \in R_2(j,s)} (y_i - c_2)^2]<br>\]
+遍历\(j\)，对固定的切分变量\(j\)扫描切分点\(s\)，选择使得上式达到最小值的对\((j,s)\)。</p>
+<p>（2）用选定的对\((j,s)\)划分区域并决定相应的输出值(均值)：<br>\[<br>R_1(j,s) = \lbrace x | x^{(j)} \leq s \rbrace, \quad R_2(j,s)=\lbrace x | x^{(j)} &gt; s \rbrace \<br>\hat{c}_m = \frac{1}{N_m} \sum_{x_i \in R_m(j,s)} y_i, \quad x \in R_m, \quad m=1,2<br>\]</p>
+<p>（3）继续对两个子区域调用步骤(1),(2)，直至满足停止条件；</p>
+<p>（4）将输入空间划分为\(M\)个区域\( R_1, R_2, …, R_M \)，生成决策树：<br>\[<br>f(x) = \sum_{m=1}^M \hat{c}_m I(x \in R_m)<br>\]</p>
+<h4 id="4-2-分类树"><a href="#4-2-分类树" class="headerlink" title="4.2 分类树"></a>4.2 分类树</h4><p>在特征\( A \)的条件下，集合\( D \)的基尼指数定义为<br>\[<br>\begin{equation}<br>\begin{aligned}<br>Gini(D, A)<br>&amp; = \frac{ | D_1 | }{ | D | } Gini(D_1) + \frac{ | D_2 | }{ | D | } Gini(D_2) \<br>&amp; = \frac{ | D_1 | }{ | D | } [1 - \sum_{k=1}^K(\frac{ | C_k | }{ | D_1 | })^2 ] + \frac{ | D_2 | }{ | D | } [1 - \sum_{k=1}^K(\frac{ | C_k | }{ | D_2 | })^2 ]<br>\end{aligned}<br>\end{equation}<br>\]
+其中\( C_k \)是\( D_i \)中属于第\(k\)类的样本子集，\(K\)是类的个数。</p>
+<p>输入：训练集\(D\),停止计算的条件</p>
+<p>输出：CART决策树</p>
+<p>根据训练集，从跟结点开始递归地对每个结点进行一下操作，构建二叉决策树。</p>
+<p>（1）根据每一个特征以及每个特征的取值，计算相应二叉划分时的基尼指数；</p>
+<p>（2）在所有可能的特征及可能的特征值中，选择基尼指数<strong>最小</strong>的特征及相应特征值作为划分切分特征及切分点，并将训练集划分到两个子结点中；</p>
+<p>（3）对两个子节点递归调用(1),(2)，直至满足停止条件；</p>
+<p>（4）生成CART决策树。</p>
+<h4 id="4-3-CART的剪枝算法"><a href="#4-3-CART的剪枝算法" class="headerlink" title="4.3 CART的剪枝算法"></a>4.3 CART的剪枝算法</h4><ul>
+<li><ol>
+<li>剪枝，形成一个子树序列</li>
+</ol>
+</li>
+</ul>
+<p>在剪枝过程中，计算子树的损失函数：<br>\[<br>C_{\alpha}(T) = C(T) + \alpha | T |<br>\]
+其中，\(T\)为任意子树，\(C(T)\)表示训练数据的预测误差，\(| T |\)为子树的叶结点数目，\( \alpha \geq 0 \)为参数。</p>
+<p>具体地，从整体树\(T_0\)开始剪枝，对\(T_0\)的任意内部结点\(t\)，以\(t\)为单结点树的损失函数是<br>\[<br>C_{\alpha}(t) = C(t) + \alpha<br>\]
+以\(t\)为根节点的子树\(T_t\)的损失函数是<br>\[<br>C_{\alpha}(T_t) = C(T_t) + \alpha | T_t |<br>\]</p>
+<center>
+<img src="/posts_res/2018-03-18-decision-tree/cart_cut.png">
+</center>
+
+<p>当\( \alpha=0 \)及\(\alpha\)充分小时，有不等式<br>\[<br>C_{\alpha}(T_t) &lt; C_{\alpha}(t)<br>\]
+当\( \alpha \)增大时，在某一\( \alpha \)有<br>\[<br>C_{\alpha}(T_t) = C_{\alpha} (t)<br>\]
+当\(\alpha\)增大时，不等式反向。只要\( \alpha=\frac{C(t)-C(T_t)}{| T_t | - 1} \)，\(T_t\)与\(t\)具有相同的损失，但是\(t\)的结点数量更少，因此\(t\)更可取，所以剪枝。</p>
+<p>对\(T_0\)中每一个内部结点\(t\)，计算<br>\[<br>g(t) = \frac{C(t)-C(T_t)}{| T_t | - 1}<br>\]
+它表示间之后整体损失函数减少的程度，在\(T_0\)中减去\(g(t)\)最小的\(T_t\)，将得到的子树作为\(T_1\)，同时将最小的\(g(t)\)设为\(\alpha\)， \(T_1\)为区间[\(\alpha_1,\alpha_2\)]的最优子树。</p>
+<p><strong>这个地方理解为：最小的g(t)是一个阈值，选择\(\alpha=\mathop{\min}\lbrace g(t) \rbrace \Longleftrightarrow\) [其他g(t)的情况是-剪枝比不剪枝的损失大，即式（16）不等号反向的情况]，所以在最小g(t)处剪枝</strong></p>
+<p>如此剪枝下去，直至得到根节点，在这个过程中，不断增加\(\alpha\)的值，产生新的区间。</p>
+<ul>
+<li><ol start="2">
+<li>在剪枝得到的子树序列中通过交叉验证选取最优子树</li>
+</ol>
+</li>
+</ul>
+<p>利用独立的验证数据集，测试子树序列\( T_0,T_1,…,T_n \)中各棵子树的平方误差或基尼指数，平方误差或基尼指数最小的决策树被认为是最优决策树，在子树序列中，每棵子树\( T_1,T_2,…,T_n \)都对应着一个参数\( \alpha_1, \alpha_2, …, \alpha_n \)，所以当最优子树\(T_k\)确定时，对应的\(\alpha_k\)也确定了，即得到最优决策树\(T_\alpha\)。</p>
+<hr>
+<p>输入：CART算法生成的决策树\(T_0\)；</p>
+<p>输出：最优决策树\(T_\alpha\)。</p>
+<p>（1）设\(k=0, \quad T=T_0\)</p>
+<p>（2）设\(\alpha=0\)</p>
+<p>（3）自下而上地对各内部结点\(t\)计算\(C(T_t)\)，\(| T_t | \)以及<br>\[<br>g(t)=\frac{C(t)-C(T_t)}{| T_t | - 1}<br>\]
+\[<br>\alpha = \mathop{\min}(\alpha, g(t))<br>\]
+这里，\(T_t\)表示以\(t\)为根节点的子树，\(C(T_t)\)是对训练数据的预测误差，\( | T_t | \)是\(T_t\)的叶结点个数。</p>
+<p>（4）对\(g(t)=\alpha\)的内部结点\(t\)进行剪枝，并对叶结点\(t\)以多数表决法决定其类，得到树\(T\)。</p>
+<p>（5）设\( k=k+1, \quad \alpha_k=\alpha, \quad T_k=T \)。</p>
+<p>（6）如果\(T_k\)不是由根结点及两个叶结点构成的树，则回到步骤（3）；否则令\(T_k=T_n\)。</p>
+<p>（7）采用交叉验证法在子树序列\(T_0,T_1,…,T_n\)中选择最优子树\(T_\alpha\)。</p>
+<hr>
+<h3 id="5-特点"><a href="#5-特点" class="headerlink" title="5. 特点"></a>5. 特点</h3><ul>
+<li>优点：可解释性；可处理多种数值类型；没有复杂的参数设置；运算快</li>
+<li>缺点：易过拟合；不适合高维数据；异常值敏感；泛化能力差</li>
+</ul>
+<p><strong>控制过拟合的方式</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">（1）树的深度</span><br><span class="line">（2）一个结点被拆分出子结点所需要的包含最少的样本个数</span><br><span class="line">（3）最底层结点所需要好汉的最小样本个数</span><br><span class="line">（4）集成学习的方法(随机森林，Xgboost等)</span><br></pre></td></tr></table></figure>
+
+<p><strong>连续值如何划分？</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">C45：基于阈值的信息增益(比)</span><br><span class="line">CART：最优切分变量和最优切分点</span><br></pre></td></tr></table></figure>
+
+<p><strong>缺失值如何处理？</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">概率权重(Probability Weights)：C45、ID3</span><br><span class="line">替代法(Alternate/Surrogate Splits)：CART</span><br></pre></td></tr></table></figure>
+
+<p><strong>不完整数据如何处理？</strong> <a href="https://www.zhihu.com/question/34867991?sort=created" target="_blank" rel="noopener">决策树是如何处理不完整数据的？-知乎</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">（1）抛弃缺失值</span><br><span class="line">抛弃极少量的缺失值的样本对决策树的创建影响不是太大。但是如果属性缺失值较多或是关键属性值缺失,创建的决策树将是不完全的,同时可能给用户造成知识上的大量错误信息,所以抛弃缺失值一般不采用。</span><br><span class="line"></span><br><span class="line">（2）补充缺失值</span><br><span class="line">缺失值较少时按照我们上面的补充规则是可行的。但如果数据库的数据较大,缺失值较多,这样根据填充后的数据库创建的决策树可能和根据正确值创建的决策树有很大变化。</span><br><span class="line"></span><br><span class="line">（3）概率化缺失值</span><br><span class="line">对缺失值的样本赋予该属性所有属性值的概率分布,即将缺失值按照其所在属性已知值的相对概率分布来创建决策树。用系数F进行合理的修正计算的信息量,“F=数据库中缺失值所在的属性值样本数量去掉缺失值样本数量/数据库中样本数量的总和”,即F表示所给属性具有已知值样本的概率。</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="6-代码实现"><a href="#6-代码实现" class="headerlink" title="6. 代码实现"></a>6. 代码实现</h3><p>代码中的公式均指李航老师的《统计学习方法》中的公式。</p>
+<p><a href="/posts_res/2018-03-18-decision-tree/decision_tree.py">Decision_Tree.py</a></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># coding:utf-8</span></span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DecisionTree</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, feature_names, threshold, principle=<span class="string">"information gain"</span>)</span>:</span></span><br><span class="line">        self.feature_names = feature_names</span><br><span class="line">        self.threshold = threshold</span><br><span class="line">        self.principle = principle</span><br><span class="line">    <span class="comment"># formula 5.7</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__calculate_entropy__</span><span class="params">(self, y)</span>:</span></span><br><span class="line">        datalen = len(y)</span><br><span class="line">        labelprob = &#123;l: <span class="number">0</span> <span class="keyword">for</span> l <span class="keyword">in</span> set(y)&#125;</span><br><span class="line">        entropy = <span class="number">0.0</span></span><br><span class="line">        <span class="keyword">for</span> l <span class="keyword">in</span> y:</span><br><span class="line">            labelprob[l] += <span class="number">1</span></span><br><span class="line">        <span class="keyword">for</span> l <span class="keyword">in</span> labelprob.keys():</span><br><span class="line">            thisfrac = labelprob[l] / datalen</span><br><span class="line">            entropy -= thisfrac * np.log2(thisfrac)</span><br><span class="line">        <span class="keyword">return</span> entropy</span><br><span class="line">    <span class="comment"># formula 5.8</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__calculate_conditional_entropy__</span><span class="params">(self, X, y, axis)</span>:</span></span><br><span class="line">        datalen = len(y)</span><br><span class="line">        featureset = set([x[axis] <span class="keyword">for</span> x <span class="keyword">in</span> X])</span><br><span class="line">        sub_y = &#123;f:list() <span class="keyword">for</span> f <span class="keyword">in</span> featureset&#125;</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(datalen):</span><br><span class="line">            sub_y[X[i][axis]].append(y[i])</span><br><span class="line">        conditional_entropy = <span class="number">0.0</span></span><br><span class="line">        <span class="keyword">for</span> key <span class="keyword">in</span> sub_y.keys():</span><br><span class="line">            prob = len(sub_y[key]) / datalen</span><br><span class="line">            entropy = self.__calculate_entropy__(sub_y[key])</span><br><span class="line">            conditional_entropy += prob * entropy</span><br><span class="line">        <span class="keyword">return</span> conditional_entropy</span><br><span class="line">    <span class="comment"># formula 5.9</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">calculate_information_gain</span><span class="params">(self, X, y, axis)</span>:</span></span><br><span class="line">        hd = self.__calculate_entropy__(y)</span><br><span class="line">        hda = self.__calculate_conditional_entropy__(X, y, axis)</span><br><span class="line">        gda = hd - hda</span><br><span class="line">        <span class="keyword">return</span> gda</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__most_class__</span><span class="params">(self, y)</span>:</span></span><br><span class="line">        labelset = set(y)</span><br><span class="line">        labelcnt = &#123;l:<span class="number">0</span> <span class="keyword">for</span> l <span class="keyword">in</span> labelset&#125;</span><br><span class="line">        <span class="keyword">for</span> y_i <span class="keyword">in</span> y:</span><br><span class="line">            labelcnt[y_i] += <span class="number">1</span></span><br><span class="line">        st = sorted(labelcnt.items(), key=<span class="keyword">lambda</span> x: x[<span class="number">1</span>], reverse=<span class="literal">True</span>)</span><br><span class="line">        <span class="keyword">return</span> st[<span class="number">0</span>][<span class="number">0</span>]</span><br><span class="line">    <span class="comment"># formula 5.10</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">calculate_information_gain_ratio</span><span class="params">(self, X, y, axis)</span>:</span></span><br><span class="line">        gda = self.calculate_information_gain(X, y, axis)</span><br><span class="line">        had = self.__calculate_entropy__(X[:, axis])</span><br><span class="line">        grda = gda / had</span><br><span class="line">        <span class="keyword">return</span> grda</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__split_dataset__</span><span class="params">(self, X, y, axis, value)</span>:</span></span><br><span class="line">        rstX = list()</span><br><span class="line">        rsty = list()</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(len(X)):</span><br><span class="line">            <span class="keyword">if</span> X[i][axis] == value:</span><br><span class="line">                tmpfeature = list(X[i][:axis])</span><br><span class="line">                tmpfeature.extend(list(X[i][axis+<span class="number">1</span>:]))</span><br><span class="line">                rstX.append(tmpfeature)</span><br><span class="line">                rsty.append(y[i])</span><br><span class="line">        <span class="keyword">return</span> np.asarray(rstX), np.asarray(rsty)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__best_split_feature__</span><span class="params">(self, X, y, feature_names)</span>:</span></span><br><span class="line">        best_feature = <span class="number">-1</span></span><br><span class="line">        max_principle = <span class="number">-1.0</span></span><br><span class="line">        <span class="keyword">for</span> feature_n <span class="keyword">in</span> feature_names:</span><br><span class="line">            axis = feature_names.index(feature_n)</span><br><span class="line">            <span class="keyword">if</span> self.principle == <span class="string">"information gain"</span>:</span><br><span class="line">                this_principle = self.calculate_information_gain(X, y, axis)</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                this_principle = self.calculate_information_gain_ratio(X, y, axis)</span><br><span class="line">            print(<span class="string">"%s\t%f\t%s"</span> % (feature_n, this_principle, self.principle))</span><br><span class="line">            <span class="keyword">if</span> this_principle &gt; max_principle:</span><br><span class="line">                best_feature = axis</span><br><span class="line">                max_principle = this_principle</span><br><span class="line">        print(<span class="string">"-----"</span>)</span><br><span class="line">        <span class="keyword">return</span> best_feature, max_principle</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">_fit</span><span class="params">(self, X, y, feature_names)</span>:</span></span><br><span class="line">        <span class="comment"># 所有实例属于同一类</span></span><br><span class="line">        labelset = set(y)</span><br><span class="line">        <span class="keyword">if</span> len(labelset) == <span class="number">1</span>:</span><br><span class="line">            <span class="keyword">return</span> labelset.pop()</span><br><span class="line">        <span class="comment"># 如果特征集为空集，置T为单结点树，实例最多的类作为该结点的类，并返回T</span></span><br><span class="line">        <span class="keyword">if</span> len(feature_names) == <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">return</span> self.__most_class__(y)</span><br><span class="line">        <span class="comment"># 计算准则,选择特征</span></span><br><span class="line">        best_feature, max_principle = self.__best_split_feature__(X, y, feature_names)</span><br><span class="line">        <span class="comment"># 如果小于阈值，置T为单结点树，实例最多的类作为该结点的类，并返回T</span></span><br><span class="line">        <span class="keyword">if</span> max_principle &lt; self.threshold:</span><br><span class="line">            <span class="keyword">return</span> self.__most_class__(y)</span><br><span class="line"></span><br><span class="line">        best_feature_label = feature_names[best_feature]</span><br><span class="line">        <span class="keyword">del</span> feature_names[best_feature]</span><br><span class="line">        tree = &#123;best_feature_label: &#123;&#125;&#125;</span><br><span class="line"></span><br><span class="line">        bestfeature_values = set([x[best_feature] <span class="keyword">for</span> x <span class="keyword">in</span> X])</span><br><span class="line">        <span class="keyword">for</span> value <span class="keyword">in</span> bestfeature_values:</span><br><span class="line">            sub_X, sub_y = self.__split_dataset__(X, y, best_feature, value)</span><br><span class="line">            tree[best_feature_label][value] = self._fit(sub_X, sub_y, feature_names)</span><br><span class="line">        <span class="keyword">return</span> tree</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">fit</span><span class="params">(self, X, y)</span>:</span></span><br><span class="line">        feature_names = self.feature_names[:]</span><br><span class="line">        self.tree = self._fit(X, y, feature_names)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">_predict</span><span class="params">(self, tree, feature_names, x)</span>:</span></span><br><span class="line">        firstStr = list(tree.keys())[<span class="number">0</span>]</span><br><span class="line">        secondDict = tree[firstStr]</span><br><span class="line">        featIndex = feature_names.index(firstStr)</span><br><span class="line">        key = x[featIndex]</span><br><span class="line">        valueOfFeat = secondDict[key]</span><br><span class="line">        <span class="keyword">if</span> isinstance(valueOfFeat, dict):</span><br><span class="line">            classLabel = self._predict(valueOfFeat, feature_names, x)</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            classLabel = valueOfFeat</span><br><span class="line">        <span class="keyword">return</span> classLabel</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">predict</span><span class="params">(self, X)</span>:</span></span><br><span class="line">        preds = list()</span><br><span class="line">        <span class="keyword">for</span> x <span class="keyword">in</span> X:</span><br><span class="line">            preds.append(self._predict(self.tree, self.feature_names, x))</span><br><span class="line">        <span class="keyword">return</span> preds</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">output_tree</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">import</span> treePlot     <span class="comment"># cite: https://gitee.com/orayang_admin/ID3_decisiontree/tree/master</span></span><br><span class="line">        <span class="keyword">import</span> importlib</span><br><span class="line">        importlib.reload(treePlot)</span><br><span class="line">        treePlot.createPlot(self.tree)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">load_data</span><span class="params">()</span>:</span></span><br><span class="line">    dt = pd.read_csv(<span class="string">"./credit.csv"</span>)    <span class="comment"># from lihang - "statistic learning method" - page59, table 5.1</span></span><br><span class="line">    <span class="comment"># dt = pd.read_csv("./titanic.csv")</span></span><br><span class="line">    data = dt.values</span><br><span class="line">    feature_names = dt.columns[:<span class="number">-1</span>] <span class="comment"># delete label column</span></span><br><span class="line">    <span class="keyword">return</span> data, list(feature_names)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">run_ID3</span><span class="params">()</span>:</span></span><br><span class="line">    data, feature_names = load_data()</span><br><span class="line">    print(<span class="string">"ID3 Descision Tree ... "</span>)</span><br><span class="line">    ml = DecisionTree(feature_names=feature_names, threshold=<span class="number">0</span>, principle=<span class="string">"information gain"</span>)</span><br><span class="line">    ml.fit(data[:, :<span class="number">-1</span>], data[:, <span class="number">-1</span>])</span><br><span class="line">    test = [[<span class="string">"mid"</span>, <span class="string">"yes"</span>, <span class="string">"no"</span>, <span class="string">"good"</span>]]</span><br><span class="line">    preds = ml.predict(test)</span><br><span class="line">    print(<span class="string">"ID3 predict:"</span>, preds)</span><br><span class="line">    ml.output_tree()</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">run_C45</span><span class="params">()</span>:</span></span><br><span class="line">    data, feature_names = load_data()</span><br><span class="line">    print(<span class="string">"C45 Descision Tree ... "</span>)</span><br><span class="line">    ml = DecisionTree(feature_names=feature_names, threshold=<span class="number">0</span>, principle=<span class="string">"information gain ratio"</span>)</span><br><span class="line">    ml.fit(data[:, :<span class="number">-1</span>], data[:, <span class="number">-1</span>])</span><br><span class="line">    test = [[<span class="string">"mid"</span>, <span class="string">"yes"</span>, <span class="string">"no"</span>, <span class="string">"good"</span>]]</span><br><span class="line">    preds = ml.predict(test)</span><br><span class="line">    print(<span class="string">"C45 predict:"</span>, preds)</span><br><span class="line">    ml.output_tree()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    <span class="comment"># run_ID3()</span></span><br><span class="line">    run_C45()</span><br></pre></td></tr></table></figure>
+
+<p>结果：</p>
+<pre><code>ID3 Descision Tree ... 
+age    0.083007    information gain
+job    0.323650    information gain
+house    0.419973    information gain
+credit    0.362990    information gain
+-----
+age    0.251629    information gain
+job    0.918296    information gain
+credit    0.473851    information gain
+-----
+ID3 predict: [&apos;yes&apos;]</code></pre><hr>
+<pre><code>C45 Descision Tree ... 
+age    0.052372    information gain ratio
+job    0.352447    information gain ratio
+house    0.432538    information gain ratio
+credit    0.231854    information gain ratio
+-----
+age    0.164411    information gain ratio
+job    1.000000    information gain ratio
+credit    0.340374    information gain ratio
+-----
+C45 predict: [&apos;yes&apos;]</code></pre><p><img src="/posts_res/2018-03-18-decision-tree/dt.png" alt="result"></p>
+<hr>
+<h3 id="7-参考"><a href="#7-参考" class="headerlink" title="7. 参考"></a>7. 参考</h3><blockquote>
+<p>李航 - 《统计学习方法》</p>
+<p>zergzzlun - <a href="https://www.zhihu.com/question/22697086/answer/134841101" target="_blank" rel="noopener">cart树怎么进行剪枝？</a></p>
+<p>巩固,张虹 - 决策树算法中属性缺失值的研究</p>
+<p>周志华 - 《机器学习》</p>
+<p><a href="https://blog.csdn.net/u010665216/article/details/78173064" target="_blank" rel="noopener">OraYang的博客</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/技术/" rel="tag"># 技术</a>
+          
+            <a href="/tags/算法/" rel="tag"># 算法</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018-03-11-logistic-regression.html" rel="next" title="逻辑斯谛回归 Logistic Regression">
+                <i class="fa fa-chevron-left"></i> 逻辑斯谛回归 Logistic Regression
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018-03-20-taylorseries.html" rel="prev" title="泰勒级数">
+                泰勒级数 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="lv-container" data-id="city" data-uid="MTAyMC80MTI1Mi8xNzgwMA"></div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="WeiguoZHAO">
+            
+              <p class="site-author-name" itemprop="name">WeiguoZHAO</p>
+              <p class="site-description motion-element" itemprop="description">Welcome to my blog~</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">56</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">22</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/weiguozhao" title="GitHub &rarr; https://github.com/weiguozhao" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://weibo.com/ViGorZHAO" title="Weibo &rarr; https://weibo.com/ViGorZHAO" rel="noopener" target="_blank"><i class="fa fa-fw fa-weibo"></i>Weibo</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#决策树-Decision-Tree"><span class="nav-number">1.</span> <span class="nav-text">决策树 - Decision Tree</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#目录"><span class="nav-number">1.0.1.</span> <span class="nav-text">目录</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-ID3"><span class="nav-number">1.1.</span> <span class="nav-text">1. ID3</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-信息增益算法"><span class="nav-number">1.1.1.</span> <span class="nav-text">1.1 信息增益算法</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-C45"><span class="nav-number">1.2.</span> <span class="nav-text">2. C45</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-信息增益比-基于信息增益"><span class="nav-number">1.2.1.</span> <span class="nav-text">2.1 信息增益比(基于信息增益)</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-决策树的剪枝"><span class="nav-number">1.3.</span> <span class="nav-text">3. 决策树的剪枝</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-ID3-amp-C45树的剪枝算法"><span class="nav-number">1.3.1.</span> <span class="nav-text">3.1 ID3&amp;C45树的剪枝算法</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-CART"><span class="nav-number">1.4.</span> <span class="nav-text">4. CART</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-回归树"><span class="nav-number">1.4.1.</span> <span class="nav-text">4.1 回归树</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-分类树"><span class="nav-number">1.4.2.</span> <span class="nav-text">4.2 分类树</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-3-CART的剪枝算法"><span class="nav-number">1.4.3.</span> <span class="nav-text">4.3 CART的剪枝算法</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-特点"><span class="nav-number">1.5.</span> <span class="nav-text">5. 特点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-代码实现"><span class="nav-number">1.6.</span> <span class="nav-text">6. 代码实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-参考"><span class="nav-number">1.7.</span> <span class="nav-text">7. 参考</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">WeiguoZHAO</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=7.0.1"></script>
+
+
+  
+  
+
+
+  
+    <script>
+  window.livereOptions = {
+    refer: '2018-03-18-decision-tree.html'
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
+
+  
+
+
+  
+  <script>
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url).replace(/\/{2,}/g, '/');
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x"></i></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x"></i></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+  
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') { next = next.nextSibling }
+        if (next && next.nodeName.toLowerCase() === 'br') { next.parentNode.removeChild(next) }
+      }
+    });
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+      for (i = 0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<style>
+.MathJax_Display {
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+</style>
+
+    
+  
+
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      
+        background-color: #eee;
+        background-image: linear-gradient(#fcfcfc, #eee);
+        border: 1px solid #d5d5d5;
+        border-radius: 3px;
+      
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      
+        right: 4px;
+        top: 8px;
+      
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1;
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function(i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+        var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; // Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.readOnly = true;
+        ta.value = code;
+        document.body.appendChild(ta);
+        ta.select();
+        ta.setSelectionRange(0, code.length);
+        ta.readOnly = false;
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); // For iOS
+        $(this).blur();
+      })).on('mouseleave', function(e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function() {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+</body>
+</html>

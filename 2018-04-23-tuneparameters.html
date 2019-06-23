@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/github-logo.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/github-logo.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false,"dimmer":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="目录  sklearn-GridSearchCV hyperopt hyperopt-sklearn   sklearn-GridSearchCV常用参数sklearn.model_selection.GridSearchCV      参数 含义 其他       estimator 所使用的模型 假定这是scikit-learn中模型接口。该模型可以提供score方法或scoring参数">
+<meta name="keywords" content="技术,trick">
+<meta property="og:type" content="article">
+<meta property="og:title" content="sklearn-GridSearchCV &amp; hyperopt &amp; hyperopt-sklearn 调参">
+<meta property="og:url" content="https://weiguozhao.github.io/2018-04-23-tuneparameters.html">
+<meta property="og:site_name" content="Weiguo&#39;s Station">
+<meta property="og:description" content="目录  sklearn-GridSearchCV hyperopt hyperopt-sklearn   sklearn-GridSearchCV常用参数sklearn.model_selection.GridSearchCV      参数 含义 其他       estimator 所使用的模型 假定这是scikit-learn中模型接口。该模型可以提供score方法或scoring参数">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-04-23-tuneparameters/1.png">
+<meta property="og:updated_time" content="2019-06-23T14:18:55.394Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="sklearn-GridSearchCV &amp; hyperopt &amp; hyperopt-sklearn 调参">
+<meta name="twitter:description" content="目录  sklearn-GridSearchCV hyperopt hyperopt-sklearn   sklearn-GridSearchCV常用参数sklearn.model_selection.GridSearchCV      参数 含义 其他       estimator 所使用的模型 假定这是scikit-learn中模型接口。该模型可以提供score方法或scoring参数">
+<meta name="twitter:image" content="https://weiguozhao.github.io/posts_res/2018-04-23-tuneparameters/1.png">
+
+
+
+
+
+
+  <link rel="canonical" href="https://weiguozhao.github.io/2018-04-23-tuneparameters.html">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>sklearn-GridSearchCV & hyperopt & hyperopt-sklearn 调参 | Weiguo's Station</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Weiguo's Station</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+  
+  
+  
+  
+
+  
+
+  <a href="https://github.com/weiguozhao" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewbox="0 0 250 250" style="fill: #222; color: #fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></a>
+
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weiguozhao.github.io/2018-04-23-tuneparameters.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="WeiguoZHAO">
+      <meta itemprop="description" content="Welcome to my blog~">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Weiguo's Station">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">sklearn-GridSearchCV & hyperopt & hyperopt-sklearn 调参
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-04-23 21:10:00" itemprop="dateCreated datePublished" datetime="2018-04-23T21:10:00+08:00">2018-04-23</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-06-23 22:18:55" itemprop="dateModified" datetime="2019-06-23T22:18:55+08:00">2019-06-23</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/工具/" itemprop="url" rel="index"><span itemprop="name">工具</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><strong>目录</strong></p>
+<ul>
+<li>sklearn-GridSearchCV</li>
+<li>hyperopt</li>
+<li>hyperopt-sklearn</li>
+</ul>
+<hr>
+<h3 id="sklearn-GridSearchCV"><a href="#sklearn-GridSearchCV" class="headerlink" title="sklearn-GridSearchCV"></a>sklearn-GridSearchCV</h3><h4 id="常用参数"><a href="#常用参数" class="headerlink" title="常用参数"></a>常用参数</h4><p><a href="http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html" target="_blank" rel="noopener">sklearn.model_selection.GridSearchCV</a></p>
+<table>
+ <tr>
+  <th>参数</th> <th>含义</th> <th>其他</th>
+ </tr>
+ <tr>
+  <td>estimator</td> <td>所使用的模型</td> <td>假定这是scikit-learn中模型接口。该模型可以提供score方法或scoring参数</td>
+ </tr>
+ <tr>
+  <td>param_grid</td> <td>dict或list</td> <td>带有参数名称作为键的字典,例如param_grid=param_test, param_test={'n_estimators': range(1, 6)}</td>
+ </tr>
+ <tr>
+  <td>scoring</td> <td>评价标准，默认为None</td> <td>字符串，或是可调用对象，需要其函数形式如：score(estimator, X, y)；如果是None，则使用estimator的误差估计函数</td>
+ </tr>
+ <tr>
+  <td>cv</td> <td>交叉验证参数，默认为None，使用三折交叉验证</td> <td>整数指定交叉验证折数，也可以是交叉验证生成器</td>
+ </tr>
+ <tr>
+  <td>refit</td> <td>默认为True</td> <td>在搜索参数结束后，用最佳参数结果再次fit一遍全部数据集</td>
+ </tr>
+ <tr>
+  <td>iid</td> <td>默认为True</td> <td>默认为各个样本fold概率分布一致，误差估计为所有样本之和，而非各个fold的平均</td>
+ </tr>
+ <tr>
+  <td>verbose</td> <td>默认为0</td> <td>日志冗长度。0：不输出训练过程；1：偶尔输出；>1：对每个子模型都输出</td>
+ </tr>
+  <tr>
+  <td>n_jobs</td> <td>并行数，int类型</td> <td>-1：跟CPU核数一致； 1:默认值</td>
+ </tr>
+ <tr>
+  <td>pre_dispatch</td> <td>指定总共分发的并行任务数</td> <td>当n_jobs大于1时，数据将在每个运行点进行复制，这可能导致OOM，而设置pre_dispatch参数，则可以预先划分总共的job数量，使数据最多被复制pre_dispatch次</td>
+ </tr>
+</table>
+
+<p>scikit-learn内置可用评价标准如下：<a href="http://scikit-learn.org/stable/modules/model_evaluation.html" target="_blank" rel="noopener">scikit-learn model_evalution</a></p>
+<p><img src="/posts_res/2018-04-23-tuneparameters/1.png" alt="img"></p>
+<hr>
+<h4 id="常用方法"><a href="#常用方法" class="headerlink" title="常用方法"></a>常用方法</h4><table>
+ <tr>
+  <th>方法</th> <th>含义</th>
+ </tr>
+ <tr>
+  <td>grid.fit()</td> <td>运行网格搜索</td>
+ </tr>
+ <tr>
+  <td>grid.grid_scores_</td> <td>给出不同参数情况下的评价结果</td>
+ </tr>
+ <tr>
+  <td>grid.best_params_</td> <td>已取得最佳结果的参数的组合</td>
+ </tr>
+ <tr>
+  <td>grid.best_score_</td> <td>优化过程期间观察到的最好的评分</td>
+ </tr>
+</table>
+
+<hr>
+<h4 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"># coding:utf-8</span><br><span class="line"></span><br><span class="line">from sklearn import svm, datasets</span><br><span class="line">from sklearn.model_selection import GridSearchCV</span><br><span class="line"></span><br><span class="line">def grid_search(params, X, y):</span><br><span class="line">    svc = svm.SVC()</span><br><span class="line">    grid = GridSearchCV(estimator=svc,</span><br><span class="line">                        param_grid=param_test,</span><br><span class="line">                        scoring=&quot;accuracy&quot;,</span><br><span class="line">                        cv=3,</span><br><span class="line">                        refit=True,</span><br><span class="line">                        iid=True,</span><br><span class="line">                        verbose=True)</span><br><span class="line">    grid.fit(X, y)</span><br><span class="line">    return grid</span><br><span class="line"></span><br><span class="line">if __name__ == &apos;__main__&apos;:</span><br><span class="line">    iris = datasets.load_iris()</span><br><span class="line">    param_test = &#123;&apos;kernel&apos;:[&apos;linear&apos;, &apos;rbf&apos;], &apos;C&apos;:[1, 10]&#125;</span><br><span class="line">    estimator = grid_search(param_test, iris.data, iris.target)</span><br><span class="line"></span><br><span class="line">    print(&quot;grid_scores_:&quot;, estimator.grid_scores_)</span><br><span class="line">    print(&quot;best_params_&quot;, estimator.best_params_)</span><br><span class="line">    print(&quot;best_score_&quot;, estimator.best_score_)</span><br><span class="line">    # Fitting 3 folds for each of 4 candidates, totalling 12 fits</span><br><span class="line">    # [Parallel(n_jobs=1)]: Done  12 out of  12 | elapsed:    0.0s finished</span><br><span class="line">    # grid_scores_: [mean: 0.98000, std: 0.01602, params: &#123;&apos;kernel&apos;: &apos;linear&apos;, &apos;C&apos;: 1&#125;, </span><br><span class="line">                     mean: 0.97333, std: 0.00897, params: &#123;&apos;kernel&apos;: &apos;rbf&apos;, &apos;C&apos;: 1&#125;, </span><br><span class="line">                     mean: 0.97333, std: 0.03697, params: &#123;&apos;kernel&apos;: &apos;linear&apos;, &apos;C&apos;: 10&#125;, </span><br><span class="line">                     mean: 0.98000, std: 0.01601, params: &#123;&apos;kernel&apos;: &apos;rbf&apos;, &apos;C&apos;: 10&#125;]</span><br><span class="line">    # best_params_ &#123;&apos;kernel&apos;: &apos;linear&apos;, &apos;C&apos;: 1&#125;</span><br><span class="line">    # best_score_ 0.98</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="hyperopt"><a href="#hyperopt" class="headerlink" title="hyperopt"></a>hyperopt</h3><p><a href="https://github.com/hyperopt/hyperopt" target="_blank" rel="noopener">Hyperopt-Github</a></p>
+<p>Hyheropt四个重要的因素：</p>
+<ul>
+<li>指定需要最小化的函数(the objective function to minimize)；</li>
+<li>搜索的空间(the space over which to search)；</li>
+<li>采样的数据集(trails database)(可选)；</li>
+<li>搜索的算法(可选)</li>
+</ul>
+<p><strong>目标函数</strong>，指定最小化的函数，比如要最小化函数\( q(x,y) = x^2 + y^2 \)</p>
+<p><strong>搜索的算法</strong>，即hyperopt的fmin函数的algo参数的取值。<br>当前支持的算法有随机搜索(hyperopt.rand.suggest)，模拟退火(hyperopt.anneal.suggest)，TPE算法。</p>
+<p><strong>搜索(参数)空间设置</strong>，例如优化函数q，输入 fmin(q，space=hp.uniform(‘a’，0，1))。<br>hp.uniform函数的第一个参数是标签，每个超参数在参数空间内必须具有独一无二的标签。<br>hp.uniform指定了参数的分布。</p>
+<p>其他的参数分布：</p>
+<ul>
+<li>hp.choice返回一个选项，选项可以是list或者tuple.options可以是嵌套的表达式，用于组成条件参数。 </li>
+<li>hp.pchoice(label,p_options)以一定的概率返回一个p_options的一个选项。这个选项使得函数在搜索过程中对每个选项的可能性不均匀。 </li>
+<li>hp.uniform(label,low,high)参数在low和high之间均匀分布。 </li>
+<li>hp.quniform(label,low,high,q),参数的取值是round(uniform(low,high)/q)*q，适用于那些离散的取值。 </li>
+<li>hp.loguniform(label,low,high)绘制exp(uniform(low,high)),变量的取值范围是[exp(low),exp(high)] </li>
+<li>hp.randint(label,upper) 返回一个在[0,upper)前闭后开的区间内的随机整数。 </li>
+</ul>
+<p>搜索空间可以含有list和dictionary。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">from hyperopt import hp</span><br><span class="line"></span><br><span class="line">list_space = [hp.uniform(&apos;a&apos;, 0, 1), hp.loguniform(&apos;b&apos;, 0, 1)]</span><br><span class="line">tuple_space = (hp.uniform(&apos;a&apos;, 0, 1), hp.loguniform(&apos;b&apos;, 0, 1))</span><br><span class="line">dict_space = &#123;&apos;a&apos;: hp.uniform(&apos;a&apos;, 0, 1), &apos;b&apos;: hp.loguniform(&apos;b&apos;, 0, 1)&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>sample函数在参数空间内采样</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">from hyperopt import hp</span><br><span class="line">from hyperopt.pyll.stochastic import sample</span><br><span class="line">list_space = [hp.uniform(&apos;a&apos;, 0, 1), hp.loguniform(&apos;b&apos;, 0, 1), hp.randint(&apos;c&apos;, 8)]</span><br><span class="line">print(sample(list_space))</span><br><span class="line"># (0.7802721043817558, 1.6616883461586371, array(4))</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h4 id="简单的例子"><a href="#简单的例子" class="headerlink" title="简单的例子"></a>简单的例子</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">from hyperopt import fmin, hp, tpe</span><br><span class="line">def objective(args):</span><br><span class="line">    x, y = args</span><br><span class="line">    return x**2 + y**2 + 1</span><br><span class="line">space = [hp.randint(&apos;x&apos;, 5), hp.randint(&apos;y&apos;, 5)]</span><br><span class="line">best = fmin(objective, space=space, algo=tpe.suggest, max_evals=100)</span><br><span class="line">print(best)</span><br><span class="line"># &#123;&apos;y&apos;: 0, &apos;x&apos;: 0&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h4 id="Perceptron鸢尾花例子"><a href="#Perceptron鸢尾花例子" class="headerlink" title="Perceptron鸢尾花例子"></a>Perceptron鸢尾花例子</h4><p>使用感知器判别鸢尾花，使用的学习率是0.1，迭代40次得到了一个测试集上正确率为82%的结果；使用hyperopt优化参数，将正确率提升到了91%。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"># coding:utf-8</span><br><span class="line"></span><br><span class="line">from sklearn import datasets</span><br><span class="line">import numpy as np</span><br><span class="line">from sklearn.cross_validation import train_test_split</span><br><span class="line">from sklearn.metrics import accuracy_score</span><br><span class="line">from sklearn.preprocessing import StandardScaler</span><br><span class="line">from sklearn.linear_model import Perceptron</span><br><span class="line">from hyperopt import fmin, tpe, hp, partial</span><br><span class="line"></span><br><span class="line"># load data set</span><br><span class="line">iris = datasets.load_iris()</span><br><span class="line">X = iris.data</span><br><span class="line">y = iris.target</span><br><span class="line">X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)</span><br><span class="line"></span><br><span class="line"># data standard</span><br><span class="line">sc = StandardScaler()</span><br><span class="line">sc.fit(X_train)</span><br><span class="line">X_train_std = sc.transform(X_train)</span><br><span class="line">X_test_std = sc.transform(X_test)</span><br><span class="line"></span><br><span class="line"># create perceptron model</span><br><span class="line">ppn = Perceptron(n_iter=40, eta0=0.1, random_state=0)</span><br><span class="line">ppn.fit(X_train_std, y_train)</span><br><span class="line"></span><br><span class="line"># show result before tune parameters</span><br><span class="line">y_pred = ppn.predict(X_test_std)</span><br><span class="line">print(&quot;=&quot;*15, &quot;before tune&quot;, &quot;=&quot;*15)</span><br><span class="line">print(accuracy_score(y_test, y_pred))</span><br><span class="line"></span><br><span class="line"># =============================================================================================</span><br><span class="line"></span><br><span class="line"># define object which hyperopt use</span><br><span class="line">def percept(args):</span><br><span class="line">    global X_train_std, y_train, y_test</span><br><span class="line">    ppn = Perceptron(n_iter=int(args[&quot;n_iter&quot;]), eta0=args[&quot;eta&quot;] * 0.01, random_state=0)</span><br><span class="line">    ppn.fit(X_train_std, y_train)</span><br><span class="line">    y_pred = ppn.predict(X_test_std)</span><br><span class="line">    return -accuracy_score(y_test, y_pred)</span><br><span class="line"></span><br><span class="line"># define search space</span><br><span class="line">space = &#123;&quot;n_iter&quot;: hp.choice(&quot;n_iter&quot;, range(30, 50)), &quot;eta&quot;: hp.uniform(&quot;eta&quot;, 0.05, 0.5)&#125;</span><br><span class="line"># define search algorithm</span><br><span class="line">algo = partial(tpe.suggest, n_startup_jobs=10)</span><br><span class="line"></span><br><span class="line">best = fmin(percept, space, algo=algo, max_evals=100)</span><br><span class="line">print(&quot;=&quot;*15, &quot;after tune&quot;, &quot;=&quot;*15)</span><br><span class="line">print(best)</span><br><span class="line">print(percept(best))</span><br></pre></td></tr></table></figure>
+
+<p><strong>结果</strong></p>
+<p>由于使用tpe搜索算法，每次搜索的结果都不一样，不稳定。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">=============== before tune ===============</span><br><span class="line">0.822222222222</span><br><span class="line">=============== after tune ===============</span><br><span class="line">&#123;&apos;n_iter&apos;: 14, &apos;eta&apos;: 0.12949436553904228&#125;</span><br><span class="line">-0.911111111111</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h4 id="xgboost癌症例子"><a href="#xgboost癌症例子" class="headerlink" title="xgboost癌症例子"></a>xgboost癌症例子</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"># coding:utf-8</span><br><span class="line"></span><br><span class="line">import numpy as np</span><br><span class="line">from sklearn.preprocessing import MinMaxScaler</span><br><span class="line">import xgboost as xgb</span><br><span class="line">from sklearn.cross_validation import cross_val_score</span><br><span class="line">from sklearn.datasets import load_breast_cancer</span><br><span class="line">from hyperopt import fmin, tpe, hp, partial</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">def loadData():</span><br><span class="line">    d = load_breast_cancer()</span><br><span class="line">    data, target = d.data, d.target</span><br><span class="line">    minmaxscaler = MinMaxScaler()</span><br><span class="line">    data_scal = minmaxscaler.fit_transform(data)</span><br><span class="line"></span><br><span class="line">    indices = np.random.permutation(target.shape[0])</span><br><span class="line">    train_indices = indices[: int(target.shape[0] * 0.8)]</span><br><span class="line">    test_indices = indices[int(target.shape[0] * 0.8):]</span><br><span class="line">    train_x = data[train_indices]</span><br><span class="line">    test_x = data[test_indices]</span><br><span class="line">    train_y = target[train_indices]</span><br><span class="line">    test_y = target[test_indices]</span><br><span class="line"></span><br><span class="line">    return train_x, test_x, train_y, test_y</span><br><span class="line"></span><br><span class="line">train_x, test_x, train_y, test_y = loadData()</span><br><span class="line">print(&quot;train_x:&quot;, train_x.shape, &quot; test_x:&quot;, test_x.shape, &quot; train_y:&quot;, train_y.shape, &quot; test_y:&quot;, test_y.shape)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># define object function which need to minimize</span><br><span class="line">def GBM(argsDict):</span><br><span class="line">    max_depth = argsDict[&quot;max_depth&quot;] + 5</span><br><span class="line">    n_estimators = argsDict[&apos;n_estimators&apos;] * 5 + 50</span><br><span class="line">    learning_rate = argsDict[&quot;learning_rate&quot;] * 0.02 + 0.05</span><br><span class="line">    subsample = argsDict[&quot;subsample&quot;] * 0.1 + 0.7</span><br><span class="line">    min_child_weight = argsDict[&quot;min_child_weight&quot;] + 1</span><br><span class="line">    print(&quot;=&quot;*20)</span><br><span class="line">    print(&quot;max_depth:&quot; + str(max_depth))</span><br><span class="line">    print(&quot;n_estimator:&quot; + str(n_estimators))</span><br><span class="line">    print(&quot;learning_rate:&quot; + str(learning_rate))</span><br><span class="line">    print(&quot;subsample:&quot; + str(subsample))</span><br><span class="line">    print(&quot;min_child_weight:&quot; + str(min_child_weight))</span><br><span class="line">    global train_x, train_y</span><br><span class="line"></span><br><span class="line">    gbm = xgb.XGBClassifier(nthread=4,  # 进程数</span><br><span class="line">                            max_depth=max_depth,  # 最大深度</span><br><span class="line">                            n_estimators=n_estimators,  # 树的数量</span><br><span class="line">                            learning_rate=learning_rate,  # 学习率</span><br><span class="line">                            subsample=subsample,  # 采样数</span><br><span class="line">                            min_child_weight=min_child_weight,  # 孩子数</span><br><span class="line">                            max_delta_step=10,  # 10步不降则停止</span><br><span class="line">                            objective=&quot;binary:logistic&quot;)</span><br><span class="line">    metric = cross_val_score(gbm, train_x, train_y, cv=5, scoring=&quot;roc_auc&quot;).mean()</span><br><span class="line">    print(&quot;cross_val_score:&quot;, metric, &quot;\n&quot;)</span><br><span class="line">    return -metric</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># define search space</span><br><span class="line">space = &#123;&quot;max_depth&quot;: hp.randint(&quot;max_depth&quot;, 15),</span><br><span class="line">         &quot;n_estimators&quot;: hp.randint(&quot;n_estimators&quot;, 10),  # [0,1,2,3,4,5] -&gt; [50,]</span><br><span class="line">         &quot;learning_rate&quot;: hp.randint(&quot;learning_rate&quot;, 6),  # [0,1,2,3,4,5] -&gt; 0.05,0.06</span><br><span class="line">         &quot;subsample&quot;: hp.randint(&quot;subsample&quot;, 4),  # [0,1,2,3] -&gt; [0.7,0.8,0.9,1.0]</span><br><span class="line">         &quot;min_child_weight&quot;: hp.randint(&quot;min_child_weight&quot;, 5),  # [0,1,2,3,4] -&gt; [1,2,3,4,5]</span><br><span class="line">         &#125;</span><br><span class="line"># define search algorithm</span><br><span class="line">algo = partial(tpe.suggest, n_startup_jobs=1)</span><br><span class="line"># search best parameters</span><br><span class="line">best = fmin(GBM, space, algo=algo, max_evals=4)</span><br><span class="line"></span><br><span class="line">print(&quot;best param:&quot;, best) # output best parameters</span><br><span class="line">print(&quot;best result:&quot;, GBM(best)) # output model result in best parameters</span><br></pre></td></tr></table></figure>
+
+<p><strong>结果</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">train_x: (455, 30)  test_x: (114, 30)  train_y: (455,)  test_y: (114,)</span><br><span class="line">====================</span><br><span class="line">max_depth:16</span><br><span class="line">n_estimator:60</span><br><span class="line">learning_rate:0.07</span><br><span class="line">subsample:0.7999999999999999</span><br><span class="line">min_child_weight:5</span><br><span class="line">cross_val_score: 0.988504345257 </span><br><span class="line"></span><br><span class="line">====================</span><br><span class="line">max_depth:6</span><br><span class="line">n_estimator:60</span><br><span class="line">learning_rate:0.15000000000000002</span><br><span class="line">subsample:0.7</span><br><span class="line">min_child_weight:5</span><br><span class="line">cross_val_score: 0.990053680824 </span><br><span class="line"></span><br><span class="line">====================</span><br><span class="line">max_depth:8</span><br><span class="line">n_estimator:95</span><br><span class="line">learning_rate:0.13</span><br><span class="line">subsample:0.8999999999999999</span><br><span class="line">min_child_weight:5</span><br><span class="line">cross_val_score: 0.988304093567 </span><br><span class="line"></span><br><span class="line">====================</span><br><span class="line">max_depth:12</span><br><span class="line">n_estimator:60</span><br><span class="line">learning_rate:0.09</span><br><span class="line">subsample:0.7</span><br><span class="line">min_child_weight:3</span><br><span class="line">cross_val_score: 0.990361013789 </span><br><span class="line"></span><br><span class="line">best param: &#123;&apos;n_estimators&apos;: 2, &apos;max_depth&apos;: 7, &apos;subsample&apos;: 0, &apos;learning_rate&apos;: 2, &apos;min_child_weight&apos;: 2&#125;</span><br><span class="line">====================</span><br><span class="line">max_depth:12</span><br><span class="line">n_estimator:60</span><br><span class="line">learning_rate:0.09</span><br><span class="line">subsample:0.7</span><br><span class="line">min_child_weight:3</span><br><span class="line">cross_val_score: 0.990361013789 </span><br><span class="line"></span><br><span class="line">best result: -0.990361013789</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="hyperopt-sklearn"><a href="#hyperopt-sklearn" class="headerlink" title="hyperopt-sklearn"></a>hyperopt-sklearn</h3><p><a href="https://github.com/hyperopt/hyperopt-sklearn/tree/master" target="_blank" rel="noopener">hyperopt-sklearn-Github</a></p>
+<p>目前hyperopt-sklearn只支持部分Classifiers\Regressors\Preprocessing，具体请见上面hyperopt-sklearn的Github主页。</p>
+<h4 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git clone git@github.com:hyperopt/hyperopt-sklearn.git</span><br><span class="line">(cd hyperopt-sklearn &amp;&amp; pip install -e .)</span><br></pre></td></tr></table></figure>
+
+<h4 id="使用模版"><a href="#使用模版" class="headerlink" title="使用模版"></a>使用模版</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">from hpsklearn import HyperoptEstimator, svc</span><br><span class="line">from sklearn import svm</span><br><span class="line"></span><br><span class="line"># Load Data</span><br><span class="line"># ...</span><br><span class="line"></span><br><span class="line">if use_hpsklearn:</span><br><span class="line">    estim = HyperoptEstimator(classifier=svc(&apos;mySVC&apos;))</span><br><span class="line">else:</span><br><span class="line">    estim = svm.SVC()</span><br><span class="line"></span><br><span class="line">estim.fit(X_train, y_train)</span><br><span class="line"></span><br><span class="line">print(estim.score(X_test, y_test))</span><br></pre></td></tr></table></figure>
+
+<h4 id="鸢尾花例子"><a href="#鸢尾花例子" class="headerlink" title="鸢尾花例子"></a>鸢尾花例子</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"># coding:utf-8</span><br><span class="line"></span><br><span class="line">from hpsklearn import HyperoptEstimator, any_classifier, any_preprocessing</span><br><span class="line">from sklearn.datasets import load_iris</span><br><span class="line">from hyperopt import tpe</span><br><span class="line">import numpy as np</span><br><span class="line"></span><br><span class="line"># Download the data and split into training and test sets</span><br><span class="line">iris = load_iris()</span><br><span class="line">X = iris.data</span><br><span class="line">y = iris.target</span><br><span class="line">test_size = int(0.2 * len(y))</span><br><span class="line">np.random.seed(13)</span><br><span class="line">indices = np.random.permutation(len(X))</span><br><span class="line">train_x = X[indices[:-test_size]]</span><br><span class="line">train_y = y[indices[:-test_size]]</span><br><span class="line">test_x = X[indices[-test_size:]]</span><br><span class="line">test_y = y[indices[-test_size:]]</span><br><span class="line"></span><br><span class="line"># Instantiate a HyperoptEstimator with the search space and number of evaluations</span><br><span class="line">estim = HyperoptEstimator(classifier=any_classifier(&apos;my_clf&apos;),</span><br><span class="line">                          preprocessing=any_preprocessing(&apos;my_pre&apos;),</span><br><span class="line">                          algo=tpe.suggest,</span><br><span class="line">                          max_evals=100,</span><br><span class="line">                          trial_timeout=120)</span><br><span class="line"></span><br><span class="line"># Search the hyperparameter space based on the data</span><br><span class="line">estim.fit(train_x, train_x)</span><br><span class="line"></span><br><span class="line"># Show the results</span><br><span class="line">print(estim.score(test_x, test_y))</span><br><span class="line"># 1.0</span><br><span class="line">print(estim.best_model())</span><br><span class="line"># &#123;&apos;learner&apos;: ExtraTreesClassifier(bootstrap=False, class_weight=None, criterion=&apos;gini&apos;,</span><br><span class="line">#           max_depth=3, max_features=&apos;log2&apos;, max_leaf_nodes=None,</span><br><span class="line">#           min_impurity_decrease=0.0, min_impurity_split=None,</span><br><span class="line">#           min_samples_leaf=1, min_samples_split=2,</span><br><span class="line">#           min_weight_fraction_leaf=0.0, n_estimators=13, n_jobs=1,</span><br><span class="line">#           oob_score=False, random_state=1, verbose=False,</span><br><span class="line">#           warm_start=False), &apos;preprocs&apos;: (), &apos;ex_preprocs&apos;: ()&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="MNIST例子"><a href="#MNIST例子" class="headerlink" title="MNIST例子"></a>MNIST例子</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"># coding:utf-8</span><br><span class="line"></span><br><span class="line">from hpsklearn import HyperoptEstimator, extra_trees</span><br><span class="line">from sklearn.datasets import fetch_mldata</span><br><span class="line">from hyperopt import tpe</span><br><span class="line">import numpy as np</span><br><span class="line"></span><br><span class="line"># Download the data and split into training and test sets</span><br><span class="line">digits = fetch_mldata(&apos;MNIST original&apos;)</span><br><span class="line"></span><br><span class="line">X = digits.data</span><br><span class="line">y = digits.target</span><br><span class="line">test_size = int(0.2 * len(y))</span><br><span class="line">np.random.seed(13)</span><br><span class="line">indices = np.random.permutation(len(X))</span><br><span class="line">X_train = X[indices[:-test_size]]</span><br><span class="line">y_train = y[indices[:-test_size]]</span><br><span class="line">X_test = X[indices[-test_size:]]</span><br><span class="line">y_test = y[indices[-test_size:]]</span><br><span class="line"></span><br><span class="line"># Instantiate a HyperoptEstimator with the search space and number of evaluations</span><br><span class="line">estim = HyperoptEstimator(classifier=extra_trees(&apos;my_clf&apos;),</span><br><span class="line">                          preprocessing=[],</span><br><span class="line">                          algo=tpe.suggest,</span><br><span class="line">                          max_evals=10,</span><br><span class="line">                          trial_timeout=300)</span><br><span class="line"></span><br><span class="line"># Search the hyperparameter space based on the data</span><br><span class="line">estim.fit(X_train, y_train)</span><br><span class="line"></span><br><span class="line"># Show the results</span><br><span class="line">print(estim.score(X_test, y_test))</span><br><span class="line"># 0.962785714286</span><br><span class="line">print(estim.best_model())</span><br><span class="line"># &#123;&apos;learner&apos;: ExtraTreesClassifier(bootstrap=True, class_weight=None, criterion=&apos;entropy&apos;,</span><br><span class="line">#           max_depth=None, max_features=0.959202875857,</span><br><span class="line">#           max_leaf_nodes=None, min_impurity_decrease=0.0,</span><br><span class="line">#           min_impurity_split=None, min_samples_leaf=1,</span><br><span class="line">#           min_samples_split=2, min_weight_fraction_leaf=0.0,</span><br><span class="line">#           n_estimators=20, n_jobs=1, oob_score=False, random_state=3,</span><br><span class="line">#           verbose=False, warm_start=False), &apos;preprocs&apos;: (), &apos;ex_preprocs&apos;: ()&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><blockquote>
+</blockquote>
+<ol>
+<li><a href="https://blog.csdn.net/u012969412/article/details/72973055" target="_blank" rel="noopener">sklearn-GridSearchCV,CV调节超参使用方法</a></li>
+<li><a href="http://www.cnblogs.com/gczr/p/7156270.html" target="_blank" rel="noopener">python调参神器hyperopt-简略</a></li>
+<li><a href="https://blog.csdn.net/qq_34139222/article/details/60322995" target="_blank" rel="noopener">python调参神器hyperopt-详细</a></li>
+</ol>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/技术/" rel="tag"># 技术</a>
+          
+            <a href="/tags/trick/" rel="tag"># trick</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018-04-21-randomforest.html" rel="next" title="随机森林 Random Forest">
+                <i class="fa fa-chevron-left"></i> 随机森林 Random Forest
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018-04-28-emalgorithm.html" rel="prev" title="EM算法">
+                EM算法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="lv-container" data-id="city" data-uid="MTAyMC80MTI1Mi8xNzgwMA"></div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="WeiguoZHAO">
+            
+              <p class="site-author-name" itemprop="name">WeiguoZHAO</p>
+              <p class="site-description motion-element" itemprop="description">Welcome to my blog~</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">56</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">22</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/weiguozhao" title="GitHub &rarr; https://github.com/weiguozhao" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://weibo.com/ViGorZHAO" title="Weibo &rarr; https://weibo.com/ViGorZHAO" rel="noopener" target="_blank"><i class="fa fa-fw fa-weibo"></i>Weibo</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#sklearn-GridSearchCV"><span class="nav-number">1.</span> <span class="nav-text">sklearn-GridSearchCV</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#常用参数"><span class="nav-number">1.1.</span> <span class="nav-text">常用参数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#常用方法"><span class="nav-number">1.2.</span> <span class="nav-text">常用方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#代码"><span class="nav-number">1.3.</span> <span class="nav-text">代码</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#hyperopt"><span class="nav-number">2.</span> <span class="nav-text">hyperopt</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#简单的例子"><span class="nav-number">2.1.</span> <span class="nav-text">简单的例子</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Perceptron鸢尾花例子"><span class="nav-number">2.2.</span> <span class="nav-text">Perceptron鸢尾花例子</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#xgboost癌症例子"><span class="nav-number">2.3.</span> <span class="nav-text">xgboost癌症例子</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#hyperopt-sklearn"><span class="nav-number">3.</span> <span class="nav-text">hyperopt-sklearn</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#安装"><span class="nav-number">3.1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用模版"><span class="nav-number">3.2.</span> <span class="nav-text">使用模版</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#鸢尾花例子"><span class="nav-number">3.3.</span> <span class="nav-text">鸢尾花例子</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MNIST例子"><span class="nav-number">3.4.</span> <span class="nav-text">MNIST例子</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-number">4.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">WeiguoZHAO</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=7.0.1"></script>
+
+
+  
+  
+
+
+  
+    <script>
+  window.livereOptions = {
+    refer: '2018-04-23-tuneparameters.html'
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
+
+  
+
+
+  
+  <script>
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url).replace(/\/{2,}/g, '/');
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x"></i></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x"></i></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+  
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') { next = next.nextSibling }
+        if (next && next.nodeName.toLowerCase() === 'br') { next.parentNode.removeChild(next) }
+      }
+    });
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+      for (i = 0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<style>
+.MathJax_Display {
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+</style>
+
+    
+  
+
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      
+        background-color: #eee;
+        background-image: linear-gradient(#fcfcfc, #eee);
+        border: 1px solid #d5d5d5;
+        border-radius: 3px;
+      
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      
+        right: 4px;
+        top: 8px;
+      
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1;
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function(i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+        var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; // Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.readOnly = true;
+        ta.value = code;
+        document.body.appendChild(ta);
+        ta.select();
+        ta.setSelectionRange(0, code.length);
+        ta.readOnly = false;
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); // For iOS
+        $(this).blur();
+      })).on('mouseleave', function(e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function() {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+</body>
+</html>

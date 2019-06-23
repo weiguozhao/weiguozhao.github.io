@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/github-logo.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/github-logo.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false,"dimmer":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="pymongo基础这篇教程将为我们讲解如何通过pymongo操作MongoDB。 准备首先，需要安装PyMongo，安装成功之后，就可以正常导入了： 1&amp;gt;&amp;gt;&amp;gt; import pymongo  我们也假设你的开发环境已经安装好了MongoDB，并且运行在默认的主机与端口上。运行mongo的命令如下： 1$ mongod  创建MongoClient使用PyMongo的第一步就是创建">
+<meta name="keywords" content="数据库,Python">
+<meta property="og:type" content="article">
+<meta property="og:title" content="pymongo基础">
+<meta property="og:url" content="https://weiguozhao.github.io/2019-04-24-pymongo基础.html">
+<meta property="og:site_name" content="Weiguo&#39;s Station">
+<meta property="og:description" content="pymongo基础这篇教程将为我们讲解如何通过pymongo操作MongoDB。 准备首先，需要安装PyMongo，安装成功之后，就可以正常导入了： 1&amp;gt;&amp;gt;&amp;gt; import pymongo  我们也假设你的开发环境已经安装好了MongoDB，并且运行在默认的主机与端口上。运行mongo的命令如下： 1$ mongod  创建MongoClient使用PyMongo的第一步就是创建">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-06-23T14:18:55.405Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="pymongo基础">
+<meta name="twitter:description" content="pymongo基础这篇教程将为我们讲解如何通过pymongo操作MongoDB。 准备首先，需要安装PyMongo，安装成功之后，就可以正常导入了： 1&amp;gt;&amp;gt;&amp;gt; import pymongo  我们也假设你的开发环境已经安装好了MongoDB，并且运行在默认的主机与端口上。运行mongo的命令如下： 1$ mongod  创建MongoClient使用PyMongo的第一步就是创建">
+
+
+
+
+
+
+  <link rel="canonical" href="https://weiguozhao.github.io/2019-04-24-pymongo基础.html">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>pymongo基础 | Weiguo's Station</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Weiguo's Station</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+  
+  
+  
+  
+
+  
+
+  <a href="https://github.com/weiguozhao" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewbox="0 0 250 250" style="fill: #222; color: #fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></a>
+
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weiguozhao.github.io/2019-04-24-pymongo基础.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="WeiguoZHAO">
+      <meta itemprop="description" content="Welcome to my blog~">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Weiguo's Station">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">pymongo基础
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-04-24 17:08:51" itemprop="dateCreated datePublished" datetime="2019-04-24T17:08:51+08:00">2019-04-24</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-06-23 22:18:55" itemprop="dateModified" datetime="2019-06-23T22:18:55+08:00">2019-06-23</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/大数据/" itemprop="url" rel="index"><span itemprop="name">大数据</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="pymongo基础"><a href="#pymongo基础" class="headerlink" title="pymongo基础"></a>pymongo基础</h2><p>这篇教程将为我们讲解如何通过pymongo操作MongoDB。</p>
+<h3 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h3><p>首先，需要安装PyMongo，安装成功之后，就可以正常导入了：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; import pymongo</span><br></pre></td></tr></table></figure>
+
+<p>我们也假设你的开发环境已经安装好了MongoDB，并且运行在默认的主机与端口上。运行mongo的命令如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ mongod</span><br></pre></td></tr></table></figure>
+
+<h3 id="创建MongoClient"><a href="#创建MongoClient" class="headerlink" title="创建MongoClient"></a>创建MongoClient</h3><p>使用PyMongo的第一步就是创建一个MongoClient来运行mongod实例：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> pymongo <span class="keyword">import</span> MongoClient</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>client = MongoClient()</span><br></pre></td></tr></table></figure>
+
+<p>上面的代码会连接到MongoDB的默认主机与端口，当然，也可以明确指定主机与端口：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>client = MongoClient(<span class="string">'localhost'</span>, <span class="number">27017</span>)</span><br></pre></td></tr></table></figure>
+
+<p>或者使用URL格式：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>client = MongoClient(<span class="string">'mongodb://localhost:27017/'</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="获取数据库"><a href="#获取数据库" class="headerlink" title="获取数据库"></a>获取数据库</h3><p>一个MongoDB的实例可以操作多个独立的数据库，当我们使用PyMongo的时候可以通过MongoClient的属性来获取不同的数据库。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>db = client.test_database</span><br></pre></td></tr></table></figure>
+
+<p>如果数据库名比较特殊，直接使用属性不能获取到，比如”test-databse”, 则可以通过字典形式来获取：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>db = client(<span class="string">"test-database"</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="获取集合"><a href="#获取集合" class="headerlink" title="获取集合"></a>获取集合</h3><p>MongoDB中的集合用来保存一组文档，相当于关系型数据库中的数据表，获取集合的方式如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>collection = db.test_collection</span><br></pre></td></tr></table></figure>
+
+<p>或者：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>collection = db[<span class="string">"test_collection"</span>]</span><br></pre></td></tr></table></figure>
+
+<p>要注意的是，数据库以及集合都是延迟创建的，也就是说执行上面的命令实际上不会在MongoDB的服务器端进行任何操作，只有当第一个文档插进去的时候，它们才会被创建。</p>
+<h3 id="文档"><a href="#文档" class="headerlink" title="文档"></a>文档</h3><p>MongoDB中的数据采用BSON格式来表示和存储，BSON格式是一种二进制的JSON格式。在PyMongo中采用字典来表示文档，例如，下面的字典可以表示一篇博客信息：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> datetime</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>post = &#123;<span class="string">"author"</span>: <span class="string">"Mike"</span>,</span><br><span class="line"><span class="meta">... </span>        <span class="string">"text"</span>: <span class="string">"My first blog post!"</span>,</span><br><span class="line"><span class="meta">... </span>        <span class="string">"tags"</span>: [<span class="string">"mongodb"</span>, <span class="string">"python"</span>, <span class="string">"pymongo"</span>],</span><br><span class="line"><span class="meta">... </span>        <span class="string">"date"</span>: datetime.datetime.utcnow()&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意文档中可以包含一些Python原生的数据类型，比如datetime.datetime对象，它将会被转换成合适的BSON类型。</p>
+<h3 id="插入文档"><a href="#插入文档" class="headerlink" title="插入文档"></a>插入文档</h3><p>我们使用insert_one()方法来插入文档：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>posts = db.posts</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>post_id = posts.insert_one(post).inserted_id</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>post_id</span><br><span class="line">ObjectId(<span class="string">'...'</span>)</span><br></pre></td></tr></table></figure>
+
+<p>如果文档中没有<code>_id</code>这个属性，那么当它插入集合中的时候，会自动给它赋予这样一个属性，同一个集合中每个文档的<code>_id</code>属性值必须具有唯一性。<code>insert_one()</code>返回一个<code>InsertOneResutl</code>实例。</p>
+<p>插入第一个文档之后，集合posts就被创建了，我们可以查看数据库中已经创建好的集合：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>db.collection_names(include_system_collections=<span class="literal">False</span>)</span><br><span class="line">[<span class="string">u'posts'</span>]</span><br></pre></td></tr></table></figure>
+
+<h3 id="使用find-one-获取第一个匹配的文档"><a href="#使用find-one-获取第一个匹配的文档" class="headerlink" title="使用find_one()获取第一个匹配的文档"></a>使用find_one()获取第一个匹配的文档</h3><p>MongoDB中最常用的基本操作是<code>find_one()</code>, 这个方法返回查询匹配到的第一个文档，如果没有则返回None。下面我们使用find_one()来获取posts集合中的第一个文档：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>posts.find_one()</span><br><span class="line">&#123;<span class="string">u'date'</span>: datetime.datetime(...), <span class="string">u'text'</span>: <span class="string">u'My first blog post!'</span>, <span class="string">u'_id'</span>: ObjectId(<span class="string">'...'</span>), <span class="string">u'author'</span>: <span class="string">u'Mike'</span>, <span class="string">u'tags'</span>: [<span class="string">u'mongodb'</span>, <span class="string">u'python'</span>, <span class="string">u'pymongo'</span>]&#125;</span><br></pre></td></tr></table></figure>
+
+<p>查询结果是一个字典，内容正是我们之前插入的博客内容。</p>
+<p>我们也可以使用<code>find_one()</code>来查找满足匹配要求的文档。例如，下面的例子查找作者名为”Mike”的文档。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>posts.find_one(&#123;<span class="string">"author"</span>: <span class="string">"Mike"</span>&#125;)</span><br><span class="line">&#123;<span class="string">u'date'</span>: datetime.datetime(...), <span class="string">u'text'</span>: <span class="string">u'My first blog post!'</span>, <span class="string">u'_id'</span>: ObjectId(<span class="string">'...'</span>), <span class="string">u'author'</span>: <span class="string">u'Mike'</span>, <span class="string">u'tags'</span>: [<span class="string">u'mongodb'</span>, <span class="string">u'python'</span>, <span class="string">u'pymongo'</span>]&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果我们尝试配置作者名”Eliot”，返回结果为空：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>posts.find_one(&#123;<span class="string">"author"</span>: <span class="string">"Eliot"</span>&#125;)</span><br><span class="line">&gt;&gt;&gt;</span><br></pre></td></tr></table></figure>
+
+<h3 id="通过ObjectId进行查询"><a href="#通过ObjectId进行查询" class="headerlink" title="通过ObjectId进行查询"></a>通过ObjectId进行查询</h3><p>我们也可以通过ObjectId属性来进行查找，例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>post_id</span><br><span class="line">ObjectId(...)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>posts.find_one(&#123;<span class="string">"_id"</span>: post_id&#125;)</span><br><span class="line">&#123;<span class="string">u'date'</span>: datetime.datetime(...), <span class="string">u'text'</span>: <span class="string">u'My first blog post!'</span>, <span class="string">u'_id'</span>: ObjectId(<span class="string">'...'</span>), <span class="string">u'author'</span>: <span class="string">u'Mike'</span>, <span class="string">u'tags'</span>: [<span class="string">u'mongodb'</span>, <span class="string">u'python'</span>, <span class="string">u'pymongo'</span>]&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意ObjectId与它的字符串表示形式是不一样的：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>post_id_as_str = str(post_id)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>posts.find_one(&#123;<span class="string">"_id"</span>: post_id_as_str&#125;) <span class="comment"># No result</span></span><br><span class="line">&gt;&gt;&gt;</span><br></pre></td></tr></table></figure>
+
+<p>在Web应用开发过程中，经常面临的一个任务就是从URL请求中获取ObjectId，然后根据这个ID查找匹配的文档。所以有必要在把ID传递给<code>find_one()</code>之前，对于字符串形式的id做一个转换，将其转换成ObjectID对象。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> bson.objectid <span class="keyword">import</span> ObjectId</span><br><span class="line"></span><br><span class="line"><span class="comment"># The web framework gets post_id from the URL and passes it as a string</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get</span><span class="params">(post_id)</span>:</span></span><br><span class="line">    <span class="comment"># Convert from string to ObjectId:</span></span><br><span class="line">    document = client.db.collection.find_one(&#123;<span class="string">'_id'</span>: ObjectId(post_id)&#125;)</span><br></pre></td></tr></table></figure>
+
+<h3 id="关于Unicode字符串"><a href="#关于Unicode字符串" class="headerlink" title="关于Unicode字符串"></a>关于Unicode字符串</h3><p>你可能注意到我们从服务器端获取的数据与我们之前定义的数据格式并不一样， 例如存到数据库之前为”Mike”,从服务器获取之后，结果为”u’Mike”,这是为什么？</p>
+<p>这是因为，MongoDB采用BSON格式来存储数据，BSON是采用utf-8进行编码的，所以PyMongo必须确保要存储的字符串是合法的utf-8字符串，正常的字符串一般都可存储，但是Unicode字符串不行，所以Unicode字符串在存储之前都必须先转码成utf-8格式，PyMongo在获取数据之后，会将utf-8格式的数据转码成unicode字符串。这也就是为什么会出现编码不一样的问题，</p>
+<h3 id="批量插入"><a href="#批量插入" class="headerlink" title="批量插入"></a>批量插入</h3><p>除了插入单个文档，我们还可以批量插入多个文档，通过给<code>insert_many()</code>方法传递一个列表，它会插入列表中的每个文档。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>new_posts = [&#123;<span class="string">"author"</span>: <span class="string">"Mike"</span>,</span><br><span class="line"><span class="meta">... </span>              <span class="string">"text"</span>: <span class="string">"Another post!"</span>,</span><br><span class="line"><span class="meta">... </span>              <span class="string">"tags"</span>: [<span class="string">"bulk"</span>, <span class="string">"insert"</span>],</span><br><span class="line"><span class="meta">... </span>              <span class="string">"date"</span>: datetime.datetime(<span class="number">2009</span>, <span class="number">11</span>, <span class="number">12</span>, <span class="number">11</span>, <span class="number">14</span>)&#125;,</span><br><span class="line"><span class="meta">... </span>             &#123;<span class="string">"author"</span>: <span class="string">"Eliot"</span>,</span><br><span class="line"><span class="meta">... </span>              <span class="string">"title"</span>: <span class="string">"MongoDB is fun"</span>,</span><br><span class="line"><span class="meta">... </span>              <span class="string">"text"</span>: <span class="string">"and pretty easy too!"</span>,</span><br><span class="line"><span class="meta">... </span>              <span class="string">"date"</span>: datetime.datetime(<span class="number">2009</span>, <span class="number">11</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">45</span>)&#125;]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>result = posts.insert_many(new_posts)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>result.inserted_ids</span><br><span class="line">[ObjectId(<span class="string">'...'</span>), ObjectId(<span class="string">'...'</span>)]</span><br></pre></td></tr></table></figure>
+
+<h3 id="查询多个文档"><a href="#查询多个文档" class="headerlink" title="查询多个文档"></a>查询多个文档</h3><p>为了查询多个文档，我们可以使用<code>find()</code>方法，<code>find()</code>方法返回一个<code>Cursor</code>对象，使用这个对象可以遍历所有匹配的文档。例如下面的例子：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">for</span> post <span class="keyword">in</span> posts.find():</span><br><span class="line"><span class="meta">... </span>  post</span><br><span class="line">...</span><br><span class="line">&#123;<span class="string">u'date'</span>: datetime.datetime(...), <span class="string">u'text'</span>: <span class="string">u'My first blog post!'</span>, <span class="string">u'_id'</span>: ObjectId(<span class="string">'...'</span>), <span class="string">u'author'</span>: <span class="string">u'Mike'</span>, <span class="string">u'tags'</span>: [<span class="string">u'mongodb'</span>, <span class="string">u'python'</span>, <span class="string">u'pymongo'</span>]&#125;</span><br><span class="line">&#123;<span class="string">u'date'</span>: datetime.datetime(<span class="number">2009</span>, <span class="number">11</span>, <span class="number">12</span>, <span class="number">11</span>, <span class="number">14</span>), <span class="string">u'text'</span>: <span class="string">u'Another post!'</span>, <span class="string">u'_id'</span>: ObjectId(<span class="string">'...'</span>), <span class="string">u'author'</span>: <span class="string">u'Mike'</span>, <span class="string">u'tags'</span>: [<span class="string">u'bulk'</span>, <span class="string">u'insert'</span>]&#125;</span><br><span class="line">&#123;<span class="string">u'date'</span>: datetime.datetime(<span class="number">2009</span>, <span class="number">11</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">45</span>), <span class="string">u'text'</span>: <span class="string">u'and pretty easy too!'</span>, <span class="string">u'_id'</span>: ObjectId(<span class="string">'...'</span>), <span class="string">u'author'</span>: <span class="string">u'Eliot'</span>, <span class="string">u'title'</span>: <span class="string">u'MongoDB is fun'</span>&#125;</span><br></pre></td></tr></table></figure>
+
+<p>跟<code>find_one()</code>一样，我们也可以给<code>find()</code>方法设置匹配条件，例如，查询作者名为”Mike”的文档：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">for</span> post <span class="keyword">in</span> posts.find(&#123;<span class="string">"author"</span>: <span class="string">"Mike"</span>&#125;):</span><br><span class="line"><span class="meta">... </span>  post</span><br><span class="line">...</span><br><span class="line">&#123;<span class="string">u'date'</span>: datetime.datetime(...), <span class="string">u'text'</span>: <span class="string">u'My first blog post!'</span>, <span class="string">u'_id'</span>: ObjectId(<span class="string">'...'</span>), <span class="string">u'author'</span>: <span class="string">u'Mike'</span>, <span class="string">u'tags'</span>: [<span class="string">u'mongodb'</span>, <span class="string">u'python'</span>, <span class="string">u'pymongo'</span>]&#125;</span><br><span class="line">&#123;<span class="string">u'date'</span>: datetime.datetime(<span class="number">2009</span>, <span class="number">11</span>, <span class="number">12</span>, <span class="number">11</span>, <span class="number">14</span>), <span class="string">u'text'</span>: <span class="string">u'Another post!'</span>, <span class="string">u'_id'</span>: ObjectId(<span class="string">'...'</span>), <span class="string">u'author'</span>: <span class="string">u'Mike'</span>, <span class="string">u'tags'</span>: [<span class="string">u'bulk'</span>, <span class="string">u'insert'</span>]&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="统计"><a href="#统计" class="headerlink" title="统计"></a>统计</h3><p>如果我们想获取匹配到文档个数，那么可以使用<code>count()</code>方法，使用这个方法还可以获取集合中文档的个数：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>posts.count()</span><br><span class="line"><span class="number">3</span></span><br></pre></td></tr></table></figure>
+
+<p>获取获取匹配到的文档个数：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>posts.find(&#123;<span class="string">"author"</span>: <span class="string">"Mike"</span>&#125;).count()</span><br><span class="line"><span class="number">2</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="范围查询"><a href="#范围查询" class="headerlink" title="范围查询"></a>范围查询</h3><p>MongoDB支持多种高级查询，比如范围查询，请看下面这个例子：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>d = datetime.datetime(<span class="number">2009</span>, <span class="number">11</span>, <span class="number">12</span>, <span class="number">12</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">for</span> post <span class="keyword">in</span> posts.find(&#123;<span class="string">"date"</span>: &#123;<span class="string">"$lt"</span>: d&#125;&#125;).sort(<span class="string">"author"</span>):</span><br><span class="line"><span class="meta">... </span>  <span class="keyword">print</span> post</span><br><span class="line">...</span><br><span class="line">&#123;<span class="string">u'date'</span>: datetime.datetime(<span class="number">2009</span>, <span class="number">11</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">45</span>), <span class="string">u'text'</span>: <span class="string">u'and pretty easy too!'</span>, <span class="string">u'_id'</span>: ObjectId(<span class="string">'...'</span>), <span class="string">u'author'</span>: <span class="string">u'Eliot'</span>, <span class="string">u'title'</span>: <span class="string">u'MongoDB is fun'</span>&#125;</span><br><span class="line">&#123;<span class="string">u'date'</span>: datetime.datetime(<span class="number">2009</span>, <span class="number">11</span>, <span class="number">12</span>, <span class="number">11</span>, <span class="number">14</span>), <span class="string">u'text'</span>: <span class="string">u'Another post!'</span>, <span class="string">u'_id'</span>: ObjectId(<span class="string">'...'</span>), <span class="string">u'author'</span>: <span class="string">u'Mike'</span>, <span class="string">u'tags'</span>: [<span class="string">u'bulk'</span>, <span class="string">u'insert'</span>]&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个我们使用了<code>$lt</code>操作符实现范围查询，还使用<code>sort()</code>方法对查询到的结果进行排序。</p>
+<h3 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h3><p>添加索引可以加快查询的速度，在这个例子中，将展示如何创建一个唯一索引。<br>首先，创建索引:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>result = db.profiles.create_index([(<span class="string">'user_id'</span>, pymongo.ASCENDING)],</span><br><span class="line"><span class="meta">... </span>                                  unique=<span class="literal">True</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>list(db.profiles.index_information())</span><br><span class="line">[<span class="string">u'user_id_1'</span>, <span class="string">u'_id_'</span>]</span><br></pre></td></tr></table></figure>
+
+<p>注意我们现在有两个索引了，一个在_id上，它由MongoDB自动创建，另外一个就是刚刚创建的索引了。</p>
+<p>然后添加几个文档：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>user_profiles = [</span><br><span class="line"><span class="meta">... </span>    &#123;<span class="string">'user_id'</span>: <span class="number">211</span>, <span class="string">'name'</span>: <span class="string">'Luke'</span>&#125;,</span><br><span class="line"><span class="meta">... </span>    &#123;<span class="string">'user_id'</span>: <span class="number">212</span>, <span class="string">'name'</span>: <span class="string">'Ziltoid'</span>&#125;]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>result = db.profiles.insert_many(user_profiles)</span><br></pre></td></tr></table></figure>
+
+<p>这个索引会阻止我们插入已经存在的user_id：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>new_profile = &#123;<span class="string">'user_id'</span>: <span class="number">213</span>, <span class="string">'name'</span>: <span class="string">'Drew'</span>&#125;</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>duplicate_profile = &#123;<span class="string">'user_id'</span>: <span class="number">212</span>, <span class="string">'name'</span>: <span class="string">'Tommy'</span>&#125;</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>result = db.profiles.insert_one(new_profile)  <span class="comment"># This is fine.</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>result = db.profiles.insert_one(duplicate_profile)</span><br><span class="line">Traceback (most recent call last):</span><br><span class="line">pymongo.errors.DuplicateKeyError: E11000 duplicate key error index: test_database.profiles.$user_id_1 dup key: &#123; : <span class="number">212</span> &#125;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/数据库/" rel="tag"># 数据库</a>
+          
+            <a href="/tags/Python/" rel="tag"># Python</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019-03-29-git基础.html" rel="next" title="Git基础">
+                <i class="fa fa-chevron-left"></i> Git基础
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019-06-05-Optimization-Method.html" rel="prev" title="Optimization Method">
+                Optimization Method <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="lv-container" data-id="city" data-uid="MTAyMC80MTI1Mi8xNzgwMA"></div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="WeiguoZHAO">
+            
+              <p class="site-author-name" itemprop="name">WeiguoZHAO</p>
+              <p class="site-description motion-element" itemprop="description">Welcome to my blog~</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">56</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">22</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/weiguozhao" title="GitHub &rarr; https://github.com/weiguozhao" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://weibo.com/ViGorZHAO" title="Weibo &rarr; https://weibo.com/ViGorZHAO" rel="noopener" target="_blank"><i class="fa fa-fw fa-weibo"></i>Weibo</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#pymongo基础"><span class="nav-number">1.</span> <span class="nav-text">pymongo基础</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#准备"><span class="nav-number">1.1.</span> <span class="nav-text">准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建MongoClient"><span class="nav-number">1.2.</span> <span class="nav-text">创建MongoClient</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#获取数据库"><span class="nav-number">1.3.</span> <span class="nav-text">获取数据库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#获取集合"><span class="nav-number">1.4.</span> <span class="nav-text">获取集合</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#文档"><span class="nav-number">1.5.</span> <span class="nav-text">文档</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#插入文档"><span class="nav-number">1.6.</span> <span class="nav-text">插入文档</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用find-one-获取第一个匹配的文档"><span class="nav-number">1.7.</span> <span class="nav-text">使用find_one()获取第一个匹配的文档</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#通过ObjectId进行查询"><span class="nav-number">1.8.</span> <span class="nav-text">通过ObjectId进行查询</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#关于Unicode字符串"><span class="nav-number">1.9.</span> <span class="nav-text">关于Unicode字符串</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#批量插入"><span class="nav-number">1.10.</span> <span class="nav-text">批量插入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#查询多个文档"><span class="nav-number">1.11.</span> <span class="nav-text">查询多个文档</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#统计"><span class="nav-number">1.12.</span> <span class="nav-text">统计</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#范围查询"><span class="nav-number">1.13.</span> <span class="nav-text">范围查询</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#索引"><span class="nav-number">1.14.</span> <span class="nav-text">索引</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">WeiguoZHAO</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=7.0.1"></script>
+
+
+  
+  
+
+
+  
+    <script>
+  window.livereOptions = {
+    refer: '2019-04-24-pymongo基础.html'
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
+
+  
+
+
+  
+  <script>
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url).replace(/\/{2,}/g, '/');
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x"></i></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x"></i></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+  
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') { next = next.nextSibling }
+        if (next && next.nodeName.toLowerCase() === 'br') { next.parentNode.removeChild(next) }
+      }
+    });
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+      for (i = 0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<style>
+.MathJax_Display {
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+</style>
+
+    
+  
+
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      
+        background-color: #eee;
+        background-image: linear-gradient(#fcfcfc, #eee);
+        border: 1px solid #d5d5d5;
+        border-radius: 3px;
+      
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      
+        right: 4px;
+        top: 8px;
+      
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1;
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function(i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+        var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; // Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.readOnly = true;
+        ta.value = code;
+        document.body.appendChild(ta);
+        ta.select();
+        ta.setSelectionRange(0, code.length);
+        ta.readOnly = false;
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); // For iOS
+        $(this).blur();
+      })).on('mouseleave', function(e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function() {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+</body>
+</html>

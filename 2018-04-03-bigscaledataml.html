@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/github-logo.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/github-logo.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false,"dimmer":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="[转]使用sklearn大规模机器学习 目录  核外学习(out-of-core learning) 磁盘上数据流式化 sklearn 中的 SGD 流式数据中的特征工程 总结  转载自:吴良超的学习笔记  核外学习(out-of-core learning)核外学习指的是机器的内存无法容纳训练的数据集，但是硬盘可容纳这些数据，这种情况在数据集较大的时候比较常见，一般有两种解决方法：sampli">
+<meta name="keywords" content="技术">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用sklearn大规模机器学习">
+<meta property="og:url" content="https://weiguozhao.github.io/2018-04-03-bigscaledataml.html">
+<meta property="og:site_name" content="Weiguo&#39;s Station">
+<meta property="og:description" content="[转]使用sklearn大规模机器学习 目录  核外学习(out-of-core learning) 磁盘上数据流式化 sklearn 中的 SGD 流式数据中的特征工程 总结  转载自:吴良超的学习笔记  核外学习(out-of-core learning)核外学习指的是机器的内存无法容纳训练的数据集，但是硬盘可容纳这些数据，这种情况在数据集较大的时候比较常见，一般有两种解决方法：sampli">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-04-19-bigscaledataml/1.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-04-19-bigscaledataml/2.png">
+<meta property="og:updated_time" content="2019-06-23T14:18:55.393Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="使用sklearn大规模机器学习">
+<meta name="twitter:description" content="[转]使用sklearn大规模机器学习 目录  核外学习(out-of-core learning) 磁盘上数据流式化 sklearn 中的 SGD 流式数据中的特征工程 总结  转载自:吴良超的学习笔记  核外学习(out-of-core learning)核外学习指的是机器的内存无法容纳训练的数据集，但是硬盘可容纳这些数据，这种情况在数据集较大的时候比较常见，一般有两种解决方法：sampli">
+<meta name="twitter:image" content="https://weiguozhao.github.io/posts_res/2018-04-19-bigscaledataml/1.png">
+
+
+
+
+
+
+  <link rel="canonical" href="https://weiguozhao.github.io/2018-04-03-bigscaledataml.html">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>使用sklearn大规模机器学习 | Weiguo's Station</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Weiguo's Station</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+  
+  
+  
+  
+
+  
+
+  <a href="https://github.com/weiguozhao" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewbox="0 0 250 250" style="fill: #222; color: #fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></a>
+
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weiguozhao.github.io/2018-04-03-bigscaledataml.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="WeiguoZHAO">
+      <meta itemprop="description" content="Welcome to my blog~">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Weiguo's Station">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">使用sklearn大规模机器学习
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-04-03 12:10:00" itemprop="dateCreated datePublished" datetime="2018-04-03T12:10:00+08:00">2018-04-03</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-06-23 22:18:55" itemprop="dateModified" datetime="2019-06-23T22:18:55+08:00">2019-06-23</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/工具/" itemprop="url" rel="index"><span itemprop="name">工具</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="转-使用sklearn大规模机器学习"><a href="#转-使用sklearn大规模机器学习" class="headerlink" title=" [转]使用sklearn大规模机器学习 "></a><center> [转]使用sklearn大规模机器学习 </center></h2><p>目录</p>
+<ul>
+<li>核外学习(out-of-core learning)</li>
+<li>磁盘上数据流式化</li>
+<li>sklearn 中的 SGD</li>
+<li>流式数据中的特征工程</li>
+<li>总结</li>
+</ul>
+<p>转载自:<a href="http://wulc.me/2017/08/08/%E9%80%9A%E8%BF%87%20sklearn%20%E8%BF%9B%E8%A1%8C%E5%A4%A7%E8%A7%84%E6%A8%A1%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" target="_blank" rel="noopener">吴良超的学习笔记</a></p>
+<hr>
+<h3 id="核外学习-out-of-core-learning"><a href="#核外学习-out-of-core-learning" class="headerlink" title="核外学习(out-of-core learning)"></a>核外学习(out-of-core learning)</h3><p>核外学习指的是机器的内存无法容纳训练的数据集，但是硬盘可容纳这些数据，这种情况在数据集较大的时候比较常见，一般有两种解决方法：sampling 与 mini-batch learning。</p>
+<h4 id="sampling（采样）"><a href="#sampling（采样）" class="headerlink" title="sampling（采样）"></a>sampling（采样）</h4><p>采样可以针对样本数目或样本特征，能够减少样本的数量或者feature的数目，两者均能减小整个数据集所占内存，但是采样无可避免地会丢失掉原来数据集中的一些信息（当数据没有冗余的时候），这会导致 variance inflation 问题，也就是进行若干次采样，每次训练得出的模型之间差异都比较大。用 bias-variance 来解释就是出现了high variance，原因是每次采样得到的数据中都有随机噪声，而模型拟合了这些没有规律的噪声，从而导致了每次得到的模型都不一样。</p>
+<p>解决采样带来的 high-variance 问题，可以通过训练多个采样模型，然后将其进行集成，采用这种思路典型的方法有 bagging。</p>
+<h4 id="mini-batch-learning（小批量学习-增量学习）"><a href="#mini-batch-learning（小批量学习-增量学习）" class="headerlink" title="mini-batch learning（小批量学习/增量学习）"></a>mini-batch learning（小批量学习/增量学习）</h4><p>这种方法不同于 sampling，利用了全部的数据，只是每次只用一部分样本（可以是一个样本，也可以是多个样本）来训练模型，通过增加迭代的次数可以近似用全部数据集训练的效果，这种方法需要训练的算法的支持，SGD 恰好就能够提供这种模式的训练，因此 SGD 是这种模式训练的核心。下面也主要针对这种方法进行讲述。</p>
+<p>通过 SGD 进行训练时，需要流式（streaming）读取训练样本，同时注意的是要将样本的顺序随机打乱，以消除样本顺序带来的信息（如先用正样本训练，再用负样本训练，模型会偏向于将样本预测为负）。下面主要讲述如何将磁盘上的数据流式化并送入到模型中进行训练。</p>
+<hr>
+<h3 id="磁盘上数据流式化"><a href="#磁盘上数据流式化" class="headerlink" title="磁盘上数据流式化"></a>磁盘上数据流式化</h3><h4 id="文件读取"><a href="#文件读取" class="headerlink" title="文件读取"></a>文件读取</h4><p>这里读取的数据的格式是每行存储一个样本。最简单的方法就是通过 python 读取文件的 readline 方法实现</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">with open(source_file, &apos;r&apos;) as fp:</span><br><span class="line">    line = fp.readline()</span><br><span class="line">    while line:</span><br><span class="line">        # data processing</span><br><span class="line">        # training</span><br><span class="line">        line = fp.readline()</span><br></pre></td></tr></table></figure>
+
+<p>而往往训练文件都是 csv 格式的，此时需要丢弃第一行，同时可通过 csv 模块进行读取，<br>下面以这个数据文件为例说明：<br><a href="https://archive.ics.uci.edu/ml/machine-learning-databases/00275/Bike-Sharing-Dataset.zip" target="_blank" rel="noopener">Bike-Sharing-Dataset.zip</a><br><a href="/posts_res/2018-04-19-bigscaledataml/Bike-Sharing-Dataset.zip">备用地址:Bike-Sharing-Dataset.zip</a>, </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">import csv</span><br><span class="line">SEP = &quot;,&quot;</span><br><span class="line">with open(source_file, &apos;r&apos;) as fp:</span><br><span class="line">    iterator = csv.reader(fp, delimiter=SEP)</span><br><span class="line">    for n, row in enumerate(iterator):</span><br><span class="line">        if n == 0:</span><br><span class="line">            header = row</span><br><span class="line">        else:</span><br><span class="line">            # data processing</span><br><span class="line">            # training</span><br><span class="line">            pass</span><br><span class="line">    print(&apos;Total rows: %i&apos; % (n+1))</span><br><span class="line">    print(&apos;Header: %s&apos; % &apos;, &apos;.join(header))</span><br><span class="line">    print(&apos;Sample values: %s&apos; % &apos;, &apos;.join(row))</span><br></pre></td></tr></table></figure>
+
+<p>输出为</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Total rows: 17380</span><br><span class="line">Header: instant, dteday, season, yr, mnth, hr, holiday, weekday, workingday, weathersit, temp, atemp, hum, windspeed, casual, registered, cnt</span><br><span class="line">Sample values: 17379, 2012-12-31, 1, 1, 12, 23, 0, 1, 1, 1, 0.26, 0.2727, 0.65, 0.1343, 12, 37, 49</span><br></pre></td></tr></table></figure>
+
+<p>在上面的例子中，每个样本是就是一个 row（list类型），样本的 feature 只能通过 row[index] 方式获取，假如要通过 header 中的名称获取， 可以修改上面获取 iterator 的代码，用 csv.DictReader(f, delimiter = SEP) 来获取 iterator，此时得到的 row 会是一个 dictionary，key 为 header 中的列名，value 为对应的值; 对应的代码为</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">import csv</span><br><span class="line">SEP = &quot;,&quot;</span><br><span class="line">with open(source_file, &apos;r&apos;) as R:</span><br><span class="line">    iterator = csv.DictReader(R, delimiter=SEP)</span><br><span class="line">    for n, row in enumerate(iterator):</span><br><span class="line">        # data processing</span><br><span class="line">        # training</span><br><span class="line">        pass</span><br><span class="line">    print (&apos;Total rows: %i&apos; % (n+1))</span><br><span class="line">    print (&apos;Sample values: %s&apos; % row)</span><br></pre></td></tr></table></figure>
+
+<p>输出为</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Total rows: 17379</span><br><span class="line">Sample values: &#123;&apos;temp&apos;: &apos;0.26&apos;, &apos;cnt&apos;: &apos;49&apos;, &apos;yr&apos;: &apos;1&apos;, &apos;windspeed&apos;: &apos;0.1343&apos;, &apos;casual&apos;: &apos;12&apos;, &apos;registered&apos;: &apos;37&apos;, &apos;season&apos;: &apos;1&apos;, &apos;weathersit&apos;: &apos;1&apos;, &apos;dteday&apos;: &apos;2012-12-31&apos;, &apos;hr&apos;: &apos;23&apos;, &apos;weekday&apos;: &apos;1&apos;, &apos;atemp&apos;: &apos;0.2727&apos;, &apos;hum&apos;: &apos;0.65&apos;, &apos;holiday&apos;: &apos;0&apos;, &apos;instant&apos;: &apos;17379&apos;, &apos;mnth&apos;: &apos;12&apos;, &apos;workingday&apos;: &apos;1&apos;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>除了通过 csv 模块进行读取，还可以通过 pandas 模块进行读取，pandas 模块可以说是处理 csv 文件的神器，csv 每次只能读取一条数据，而 pandas 可以指定每次读取的数据的数目，如下所示:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">import pandas as pd</span><br><span class="line">CHUNK_SIZE = 1000</span><br><span class="line">with open(source_file, &apos;rb&apos;) as R:</span><br><span class="line">    iterator = pd.read_csv(R, chunksize=CHUNK_SIZE) </span><br><span class="line">    for n, data_chunk in enumerate(iterator):</span><br><span class="line">        print (&apos;Size of uploaded chunk: %i instances, %i features&apos; % (data_chunk.shape))</span><br><span class="line">        # data processing</span><br><span class="line">        # training</span><br><span class="line">        pass</span><br><span class="line">    print (&apos;Sample values: \n%s&apos; % str(data_chunk.iloc[0]))</span><br></pre></td></tr></table></figure>
+
+<p>对应的输出为</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">Size of uploaded chunk: 1000 instances, 17 features</span><br><span class="line">Size of uploaded chunk: 1000 instances, 17 features</span><br><span class="line">Size of uploaded chunk: 1000 instances, 17 features</span><br><span class="line">Size of uploaded chunk: 1000 instances, 17 features</span><br><span class="line">Size of uploaded chunk: 1000 instances, 17 features</span><br><span class="line">Size of uploaded chunk: 1000 instances, 17 features</span><br><span class="line">Size of uploaded chunk: 1000 instances, 17 features</span><br><span class="line">Size of uploaded chunk: 1000 instances, 17 features</span><br><span class="line">Size of uploaded chunk: 1000 instances, 17 features</span><br><span class="line">Size of uploaded chunk: 1000 instances, 17 features</span><br><span class="line">Size of uploaded chunk: 1000 instances, 17 features</span><br><span class="line">Size of uploaded chunk: 1000 instances, 17 features</span><br><span class="line">Size of uploaded chunk: 1000 instances, 17 features</span><br><span class="line">Size of uploaded chunk: 1000 instances, 17 features</span><br><span class="line">Size of uploaded chunk: 1000 instances, 17 features</span><br><span class="line">Size of uploaded chunk: 1000 instances, 17 features</span><br><span class="line">Size of uploaded chunk: 1000 instances, 17 features</span><br><span class="line">Size of uploaded chunk: 379 instances, 17 features</span><br><span class="line">Sample values: </span><br><span class="line">instant            17001</span><br><span class="line">dteday        2012-12-16</span><br><span class="line">season                 4</span><br><span class="line">yr                     1</span><br><span class="line">mnth                  12</span><br><span class="line">hr                     3</span><br><span class="line">holiday                0</span><br><span class="line">weekday                0</span><br><span class="line">workingday             0</span><br><span class="line">weathersit             2</span><br><span class="line">temp                0.34</span><br><span class="line">atemp             0.3333</span><br><span class="line">hum                 0.87</span><br><span class="line">windspeed          0.194</span><br><span class="line">casual                 1</span><br><span class="line">registered            37</span><br><span class="line">cnt                   38</span><br><span class="line">Name: 17000, dtype: object</span><br></pre></td></tr></table></figure>
+
+<h4 id="数据库读取"><a href="#数据库读取" class="headerlink" title="数据库读取"></a>数据库读取</h4><p>上面的是直接从文件中读取的数据，但是数据也可能存在数据库中，因为通过数据库不仅能够有效进行增删查改等操作，而且通过 Database Normalization 能够在不丢失信息的基础上减少数据冗余性。</p>
+<p>假设上面的数据已经存储在 SQLite 数据库中，则流式读取的方法如下(<strong>未验证</strong>)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">import sqlite3</span><br><span class="line">import pandas as pd</span><br><span class="line"></span><br><span class="line">DB_NAME = &apos;bikesharing.sqlite&apos;</span><br><span class="line">CHUNK_SIZE = 2500</span><br><span class="line"></span><br><span class="line">conn = sqlite3.connect(DB_NAME)</span><br><span class="line">conn.text_factory = str  # allows utf-8 data to be stored     </span><br><span class="line">sql = &quot;SELECT H.*, D.cnt AS day_cnt FROM hour AS H INNER JOIN day as D ON (H.dteday = D.dteday)&quot;</span><br><span class="line">DB_stream = pd.io.sql.read_sql(sql, conn, chunksize=CHUNK_SIZE)</span><br><span class="line">for j,data_chunk in enumerate(DB_stream):</span><br><span class="line">    print (&apos;Chunk %i -&apos; % (j+1)),</span><br><span class="line">    print (&apos;Size of uploaded chunk: %i istances, %i features&apos; % (data_chunk.shape))</span><br><span class="line">    # data processing</span><br><span class="line">    # training</span><br><span class="line">    pass</span><br></pre></td></tr></table></figure>
+
+<p>输出为</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Chunk 1 - Size of uploaded chunk: 2500 istances, 18 features</span><br><span class="line">Chunk 2 - Size of uploaded chunk: 2500 istances, 18 features</span><br><span class="line">Chunk 3 - Size of uploaded chunk: 2500 istances, 18 features</span><br><span class="line">Chunk 4 - Size of uploaded chunk: 2500 istances, 18 features</span><br><span class="line">Chunk 5 - Size of uploaded chunk: 2500 istances, 18 features</span><br><span class="line">Chunk 6 - Size of uploaded chunk: 2500 istances, 18 features</span><br><span class="line">Chunk 7 - Size of uploaded chunk: 2379 istances, 18 features</span><br></pre></td></tr></table></figure>
+
+<h4 id="样本的读取顺序"><a href="#样本的读取顺序" class="headerlink" title="样本的读取顺序"></a>样本的读取顺序</h4><p>上面简单提到了通过 SGD 训练模型的时候，需要注意样本的顺序必须要是随机打乱的。</p>
+<p>假如给定一批样本，然后用整批的样本来更新，那么就不存在样本的读取顺序问题；但是由于像 SGD 这种 online learning 的训练模式，越是后面才读取的样本，模型一般会拟合得更好，因为这是模型最近看到了这些样本且针对这些样本进行了调整。</p>
+<p>这样的特性有其好处，如处理时间序列的数据时，由于对最近时间的数据拟合得更好，因此不会受到时间太久远的数据的影响，但是在更多的情况下，这种由样本顺序带来的是有弊无益的，如上面提到的先用全部的正样本训练，再用全部的负样本训练。因此有必要对数据先进行 shuffle ，然后再通过 SGD 来进行训练。</p>
+<p>假如内存能够容纳这些数据，那么所有的数据可以在内存中进行一次 shuffle；假如无法容纳，则可以将整个大的数据文件分为若干个小的文件，分别进行 shuffle ，然后再拼接起来，拼接时也不按照原来的顺序，而是进行 shuffle 后再拼接，下面是这两种 shuffle 方法的实现代码。</p>
+<p>在<strong>内存</strong>中进行 shuffle 之前可以通过 zlib 对样本先进行压缩，从而让内存可以容纳更多的样本，实现代码如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">import zlib</span><br><span class="line">from random import shuffle</span><br><span class="line"></span><br><span class="line">def ram_shuffle(filename_in, filename_out, header=True):</span><br><span class="line">    with open(filename_in, &apos;r&apos;) as f:</span><br><span class="line">        zlines = [zlib.compress(line, 9) for line in f]</span><br><span class="line">        if header:</span><br><span class="line">            first_row = zlines.pop(0)</span><br><span class="line">    shuffle(zlines)</span><br><span class="line">    with open(filename_out, &apos;w&apos;) as f:</span><br><span class="line">        if header:</span><br><span class="line">            f.write(zlib.decompress(first_row))</span><br><span class="line">        for zline in zlines:</span><br><span class="line">            f.write(zlib.decompress(zline))</span><br></pre></td></tr></table></figure>
+
+<p>基于<strong>磁盘</strong>的 shuffle 方法首先将整个文件划分为若干个小文件，然后再进行 shuffle， 为了能够实现整个数据集更彻底的 shuffle ，可以将上面的过程重复几遍，同时每次都改变划分的文件的大小，实现的代码如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">from random import shuffle</span><br><span class="line">import pandas as pd</span><br><span class="line">import numpy as np</span><br><span class="line">import os</span><br><span class="line"></span><br><span class="line">def disk_shuffle(filename_in, filename_out, header=True, iterations = 3, CHUNK_SIZE = 2500, SEP=&apos;,&apos;):</span><br><span class="line">    for i in range(iterations):</span><br><span class="line">        with open(filename_in, &apos;rb&apos;) as R:</span><br><span class="line">            iterator = pd.read_csv(R, chunksize=CHUNK_SIZE) </span><br><span class="line">            for n, df in enumerate(iterator):</span><br><span class="line">                if n==0 and header:</span><br><span class="line">                    header_cols =SEP.join(df.columns)+&apos;\n&apos;</span><br><span class="line">                df.iloc[np.random.permutation(len(df))].to_csv(str(n)+&apos;_chunk.csv&apos;, index=False, header=False, sep=SEP)</span><br><span class="line">        ordering = list(range(0,n+1))</span><br><span class="line">        shuffle(ordering)</span><br><span class="line">        with open(filename_out, &apos;wb&apos;) as W:</span><br><span class="line">            if header:</span><br><span class="line">                W.write(header_cols)</span><br><span class="line">            for f in ordering:</span><br><span class="line">                with open(str(f)+&apos;_chunk.csv&apos;, &apos;r&apos;) as R:</span><br><span class="line">                    for line in R:</span><br><span class="line">                        W.write(line)</span><br><span class="line">                os.remove(str(f)+&apos;_chunk.csv&apos;)</span><br><span class="line">        filename_in = filename_out</span><br><span class="line">        CHUNK_SIZE = int(CHUNK_SIZE / 2)</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="sklearn-中的-SGD"><a href="#sklearn-中的-SGD" class="headerlink" title="sklearn 中的 SGD"></a>sklearn 中的 SGD</h3><p>通过前面的步骤可以将数据以流式输入，下面接着就是要通过 SGD 进行训练，在 sklearn 中， sklearn.linear_model.SGDClassifier 和 sklearn.linear_model.SGDRegressor 均是通过 SGD 实现，只是一个用于分类，一个用于回归。下面以 sklearn.linear_model.SGDClassifier 为例进行简单说明，更详细的内容可参考其官方文档。这里仅对其几个参数和方法进行简单的讲解。</p>
+<p>需要注意的参数有：</p>
+<ul>
+<li>loss : 表示具体的分类器，可选的值为 hinge、log、modified_huber、squared_hinge、perceptron；如 hinge 表示 SVM 分类器，log 表示logistics regression等</li>
+<li>penalty：正则项，用于防止过拟合(默认为 L2 正则项)</li>
+<li>learning_rate: 表示选择哪种学习速率方案，共有三种：constant、optimal、invscaling，各种详细含义可参考官方文档</li>
+<li>需要注意的方法主要就是 partial_fit(X, y, classes), X 和 y 是每次流式输入的数据，而 classes 则是具体的分类数目, 若 classes 数目大于2，则会根据 one-vs-rest 规则训练多个分类器。</li>
+</ul>
+<p>需要注意的是 partial_fit 只会对数据遍历一次，需要自己显式指定遍历的次数，如下是使用 sklearn 中的 SGDClassfier 的一个简单例子。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">from sklearn import linear_model</span><br><span class="line">import pandas as pd</span><br><span class="line"></span><br><span class="line">CHUNK_SIZE = 1000</span><br><span class="line">n_iter = 10  # number of iteration over the whole dataset</span><br><span class="line">n_class = 7</span><br><span class="line"></span><br><span class="line">model = linear_model.SGDClassifier(loss = &apos;hinge&apos;, penalty =&apos;l1&apos;,)</span><br><span class="line">for _ in range(n_iter): </span><br><span class="line">    with open(source_file, &apos;rb&apos;) as R:</span><br><span class="line">        iterator = pd.read_csv(R, chunksize=CHUNK_SIZE) </span><br><span class="line">        for n, data_chunk in enumerate(iterator):</span><br><span class="line">            model.partial_fit(data_chunk.x, data_chunk.y, classes = np.array(range(0, n_class)))</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="流式数据中的特征工程"><a href="#流式数据中的特征工程" class="headerlink" title="流式数据中的特征工程"></a>流式数据中的特征工程</h3><h4 id="feature-scaling"><a href="#feature-scaling" class="headerlink" title="feature scaling"></a>feature scaling</h4><p>对于 SGD 算法，特征的 scaling 会影响其优化过程，也就是只有将特征标准化（均值为0，方差为1）或归一化（处于 [0,1] 内）才能加快算法收敛的速度，但是由于数据不能一次读入内存，如果需要标准化或归一化，需要对数据遍历 2 次，第一次遍历是为了求特征的均值和方差（标准化需要）或最大最小值（归一化需要），第二次遍历便可以用上面的均值、方差、最大值，最小值等值进行标准化。</p>
+<p>由于数据是流式输入的，求解均值、最大值、最小值都没有什么问题，但是求解方差的公式为(\(\mu\)为均值)：<br>\[<br>\sigma ^2= \frac{1}{n} \sum_x (x−μ)^2<br>\]</p>
+<p>只有知道均值才能求解，这意味着只有遍历一次求得\(\mu\)后才能求\(\sigma^2\)，这无疑会增加求解的时间，下面对这个公式进行简单的变换，使得\(\mu和 \sigma^2 \)能够同时求出。假如当前有 n 个样本，当前的均值 \( \mu’ \) 可以简单求出，而当前的方差 \( \sigma’^2 \) 可通以下公式求解<br>\[<br>\sigma′^2 = \frac{1}{n} \sum_x (x^2 − 2 x \mu′+\mu′^2 ) = \frac{1}{n} \sum_x (x^2) − \frac{1}{n} (2n\mu′^2 − n \mu′^2)=\frac{1}{n}\sum_x (x^2) − \mu′^2<br>\]</p>
+<p>通过这个公式，可以遍历一次便求出任意个样本的方差，下面通过这个公式求解均值和方差随着样本数量变化而变化的情况，并比较进行 shuffle 前后两者在均值和方差上的区别。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"># calculate the running mean,standard deviation, and range reporting the final result</span><br><span class="line">import os, csv</span><br><span class="line">raw_source = &apos;bikesharing/hour.csv&apos; # unshuffle</span><br><span class="line">shuffle_source = &apos;bikesharing/shuffled_hour.csv&apos;</span><br><span class="line"></span><br><span class="line">def running_statistic(source):</span><br><span class="line">    SEP=&apos;,&apos;</span><br><span class="line">    running_mean = list()</span><br><span class="line">    running_std = list()</span><br><span class="line">    with open(local_path+&apos;/&apos;+source, &apos;rb&apos;) as R:</span><br><span class="line">        iterator = csv.DictReader(R, delimiter=SEP)</span><br><span class="line">        x = 0.0</span><br><span class="line">        x_squared = 0.0</span><br><span class="line">        for n, row in enumerate(iterator):</span><br><span class="line">            temp = float(row[&apos;temp&apos;])</span><br><span class="line">            if n == 0:</span><br><span class="line">                max_x, min_x = temp, temp</span><br><span class="line">            else:</span><br><span class="line">                max_x, min_x = max(temp, max_x),min(temp, min_x)</span><br><span class="line">            x += temp</span><br><span class="line">            x_squared += temp**2</span><br><span class="line">            running_mean.append(x / (n+1))</span><br><span class="line">            running_std.append(((x_squared - (x**2)/(n+1))/(n+1))**0.5)</span><br><span class="line">            # DATA PROCESSING placeholder</span><br><span class="line">            # MACHINE LEARNING placeholder</span><br><span class="line">            pass</span><br><span class="line">        print (&apos;Total rows: %i&apos; % (n+1))</span><br><span class="line">        print (&apos;Feature \&apos;temp\&apos;: mean=%0.3f, max=%0.3f, min=%0.3f,sd=%0.3f&apos; \</span><br><span class="line">               % (running_mean[-1], max_x, min_x, running_std[-1]))</span><br><span class="line">        return running_mean, running_std</span><br><span class="line">print &apos;===========raw data file===========&apos;</span><br><span class="line">raw_running_mean, raw_running_std = running_statistic(raw_source)</span><br><span class="line">print &apos;===========shuffle data file===========&apos;</span><br><span class="line">shuffle_running_mean, shuffle_running_std = running_statistic(shuffle_source)</span><br></pre></td></tr></table></figure>
+
+<p>输出如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">===========raw data file===========</span><br><span class="line">Total rows: 17379</span><br><span class="line">Feature &apos;temp&apos;: mean=0.497, max=1.000, min=0.020,sd=0.193</span><br><span class="line">===========shuffle data file===========</span><br><span class="line">Total rows: 17379</span><br><span class="line">Feature &apos;temp&apos;: mean=0.497, max=1.000, min=0.020,sd=0.193</span><br></pre></td></tr></table></figure>
+
+<p>两者的统计数据一致，符合要求，下面再看看两者的均值和方差随着时间如何变化，也就是将上面得到的 running_mean 和 running_std 进行可视化</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"># plot how such stats changed as data was streamed from disk</span><br><span class="line"># get an idea about how many instances are required before getting a stable mean and standard deviation estimate</span><br><span class="line">import matplotlib.pyplot as plt</span><br><span class="line">%matplotlib inline</span><br><span class="line">for mean, std in ((raw_running_mean, raw_running_std), (shuffle_running_mean, shuffle_running_std)):</span><br><span class="line">    plt.plot(mean,&apos;r-&apos;, label=&apos;mean&apos;)</span><br><span class="line">    plt.plot(std,&apos;b-&apos;, label=&apos;standard deviation&apos;)</span><br><span class="line">    plt.ylim(0.0,0.6)</span><br><span class="line">    plt.xlabel(&apos;Number of training examples&apos;)</span><br><span class="line">    plt.ylabel(&apos;Value&apos;) </span><br><span class="line">    plt.legend(loc=&apos;lower right&apos;, numpoints= 1)</span><br><span class="line">    plt.show()</span><br><span class="line"># The difference in the two charts reminds us of the importance of randomizing the order of the observations.</span><br></pre></td></tr></table></figure>
+
+<p>得到的结果如下</p>
+<p>原始的文件</p>
+<p><img src="/posts_res/2018-04-19-bigscaledataml/1.png" alt="original"></p>
+<p>shuffle 后的文件</p>
+<p><img src="/posts_res/2018-04-19-bigscaledataml/2.png" alt="after"></p>
+<p>可以看到，经过 shuffle 后的数据的均值和方差很快就达到了稳定的状态，可以让 SGD 算法更快地收敛，这也从另一个角度验证了 shuffle 的必要性。</p>
+<h4 id="hasing-trick"><a href="#hasing-trick" class="headerlink" title="hasing trick"></a>hasing trick</h4><p>对于 categorial feature， 往往要对其进行 one-hot 编码，但是进行 one-hot 编码需要知道这个 feature 所有可能的取值的数量，对于流式输入的数据，可以先遍历一遍数据得到 categorial feature 所有可能取值的数目。除此之外，还可以利用接下来要讲的 hashing trick 对categorical feature 进行 one-hot 编码，这种方法对只能遍历一遍的数据有效。</p>
+<p>hahsing trick 利用了 hash 函数，通过hash后取模，将样本的值映射到预先定义好的固定长度的槽列中的某个槽中，这种方法需要对 categorical feature 的所有可能取值有大概的估计，而且可能会出现冲突的情况，但是如果对categorical feature 的所有可能取值有较准确的估计时，冲突的概率会比较低。下面是利用 sklearn 中的 HashingVectorizer 进行这种编码的一个例子</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">from sklearn.feature_extraction.text import HashingVectorizer</span><br><span class="line">h = HashingVectorizer(n_features=1000, binary=True, norm=None)</span><br><span class="line">sparse_vector = h.transform([&apos;A simple toy example will make clear how it works.&apos;])</span><br><span class="line">print(sparse_vector)</span><br></pre></td></tr></table></figure>
+
+<p>输出如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">(0, 61)	1.0</span><br><span class="line">(0, 271)	1.0</span><br><span class="line">(0, 287)	1.0</span><br><span class="line">(0, 452)	1.0</span><br><span class="line">(0, 462)	1.0</span><br><span class="line">(0, 539)	1.0</span><br><span class="line">(0, 605)	1.0</span><br><span class="line">(0, 726)	1.0</span><br><span class="line">(0, 918)	1.0</span><br></pre></td></tr></table></figure>
+
+<p>这里定义的槽列的长度为1000，即假设字典中的单词数目为 1000， 然后将文本映射到这个槽列中，1 表示有这个单词，0表示没有。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>本文主要介绍了如何进行 out-of-core learning，主要思想就是将数据以流式方式读入，然后通过 SGD 算法进行更新，<br>在读入数据之前，首先需要对数据进行 shuffle 操作，消除数据本来的顺序信息等，同时可以让样本的特征的方差和均值更快达到稳定状态。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/技术/" rel="tag"># 技术</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018-03-28-svm-4.html" rel="next" title="Support Vector Machines - Part 4">
+                <i class="fa fa-chevron-left"></i> Support Vector Machines - Part 4
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018-04-10-adaboost.html" rel="prev" title="Adaboost & 前向分布算法">
+                Adaboost & 前向分布算法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="lv-container" data-id="city" data-uid="MTAyMC80MTI1Mi8xNzgwMA"></div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="WeiguoZHAO">
+            
+              <p class="site-author-name" itemprop="name">WeiguoZHAO</p>
+              <p class="site-description motion-element" itemprop="description">Welcome to my blog~</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">56</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">22</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/weiguozhao" title="GitHub &rarr; https://github.com/weiguozhao" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://weibo.com/ViGorZHAO" title="Weibo &rarr; https://weibo.com/ViGorZHAO" rel="noopener" target="_blank"><i class="fa fa-fw fa-weibo"></i>Weibo</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#转-使用sklearn大规模机器学习"><span class="nav-number">1.</span> <span class="nav-text"> [转]使用sklearn大规模机器学习 </span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#核外学习-out-of-core-learning"><span class="nav-number">1.1.</span> <span class="nav-text">核外学习(out-of-core learning)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#sampling（采样）"><span class="nav-number">1.1.1.</span> <span class="nav-text">sampling（采样）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#mini-batch-learning（小批量学习-增量学习）"><span class="nav-number">1.1.2.</span> <span class="nav-text">mini-batch learning（小批量学习/增量学习）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#磁盘上数据流式化"><span class="nav-number">1.2.</span> <span class="nav-text">磁盘上数据流式化</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#文件读取"><span class="nav-number">1.2.1.</span> <span class="nav-text">文件读取</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#数据库读取"><span class="nav-number">1.2.2.</span> <span class="nav-text">数据库读取</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#样本的读取顺序"><span class="nav-number">1.2.3.</span> <span class="nav-text">样本的读取顺序</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#sklearn-中的-SGD"><span class="nav-number">1.3.</span> <span class="nav-text">sklearn 中的 SGD</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#流式数据中的特征工程"><span class="nav-number">1.4.</span> <span class="nav-text">流式数据中的特征工程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#feature-scaling"><span class="nav-number">1.4.1.</span> <span class="nav-text">feature scaling</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#hasing-trick"><span class="nav-number">1.4.2.</span> <span class="nav-text">hasing trick</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">1.5.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">WeiguoZHAO</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=7.0.1"></script>
+
+
+  
+  
+
+
+  
+    <script>
+  window.livereOptions = {
+    refer: '2018-04-03-bigscaledataml.html'
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
+
+  
+
+
+  
+  <script>
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url).replace(/\/{2,}/g, '/');
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x"></i></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x"></i></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+  
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') { next = next.nextSibling }
+        if (next && next.nodeName.toLowerCase() === 'br') { next.parentNode.removeChild(next) }
+      }
+    });
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+      for (i = 0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<style>
+.MathJax_Display {
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+</style>
+
+    
+  
+
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      
+        background-color: #eee;
+        background-image: linear-gradient(#fcfcfc, #eee);
+        border: 1px solid #d5d5d5;
+        border-radius: 3px;
+      
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      
+        right: 4px;
+        top: 8px;
+      
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1;
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function(i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+        var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; // Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.readOnly = true;
+        ta.value = code;
+        document.body.appendChild(ta);
+        ta.select();
+        ta.setSelectionRange(0, code.length);
+        ta.readOnly = false;
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); // For iOS
+        $(this).blur();
+      })).on('mouseleave', function(e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function() {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+</body>
+</html>
