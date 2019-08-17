@@ -1,7 +1,8 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 
-if [[ $1 -eq '' ]]; then
-    echo "usage: sh deploy.sh [push message]"
+message="$1"
+if [ -z "${message}" ]; then
+    echo "usage: $0 [push message]"
     exit 1
 fi
 
@@ -13,8 +14,8 @@ branch=`git symbolic-ref --short -q HEAD`
 if [[ $branch -eq "hexo" ]]; then
     echo "start push to hexo branch..."
     git add .
-    git commit -m "$1"
-    git push
+    git commit -m "${message}"
+    git push origin hexo
     echo "end push to hexo branch..."
 else
     echo "branch must be hexo"
