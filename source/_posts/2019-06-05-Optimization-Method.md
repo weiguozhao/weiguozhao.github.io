@@ -23,7 +23,8 @@ for i in range(nb_epochs):
     theta = theta - learning_rate * theta_grad
 ```
 
-每次按照全局梯度的负方向前进，步数由learning_rate控制。
+每次按照全局梯度的负方向前进，步数由learning_rate控制。批量梯度下降(GD): 1. 可以保证精度; 2. 防止过拟合要加正则项。在线梯度下降(OGD): 1. 着重处理稀疏性。
+
 
 
 ## 1.2 Stochastic Gradient Descent
@@ -229,13 +230,26 @@ $Adagrad$ 最主要的贡献是不再需要人为调整learning_rate，大多数
 
 ## 4.1 简单截断法
 
+- 将不满足阈值的系数设置为0
+
 ## 4.2 Truncated Gradient
+
+- 简单截断法的改进
 
 ## 4.3 FOBOS
 
+- 微调标准梯度下降的结果
+
 ## 4.4 RDA
 
+- 历史梯度加权平均
+- 正则项对特征稀疏化
+- 严格递增序列
+
 ## 4.5 FTRL
+
+- 确保新的权重和历史权重不偏离太远
+- L1正则稀疏性约束
 
 
 ------------
