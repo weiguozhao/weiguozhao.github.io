@@ -4,9 +4,7 @@ title: RNN梯度消失、梯度爆炸&LSTM解决梯度消失的办法
 date: 2018-07-30 12:10 +0800
 categories: 深度学习
 tags:
-- 深度学习
-- 算法
-- 技术
+- 优化算法
 mathjax: true
 copyright: false
 ---

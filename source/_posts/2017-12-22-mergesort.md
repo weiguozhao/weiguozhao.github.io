@@ -4,7 +4,7 @@ title: 归并排序 - MergeSort
 date: 2017-12-22 21:10 +0800
 categories: LeetCode
 tags:
-- 技术
+- 排序
 mathjax: true
 copyright: true
 ---

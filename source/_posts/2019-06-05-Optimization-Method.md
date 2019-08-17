@@ -1,12 +1,11 @@
 ---
 title: Optimization Method
 tags:
-  - 优化算法
-  - 深度学习
+- 优化算法
 mathjax: true
 copyright: true
 date: 2019-06-05 18:05:24
-categories: 优化算法
+categories: 机器学习
 ---
 
 对一些优化算法进行总结：

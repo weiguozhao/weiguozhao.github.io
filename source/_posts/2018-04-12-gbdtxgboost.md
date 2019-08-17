@@ -5,8 +5,7 @@ date: 2018-04-12 12:10 +0800
 categories: 机器学习
 tags:
 - 集成学习
-- 算法
-- 技术
+- 模型算法
 mathjax: true
 copyright: false
 ---

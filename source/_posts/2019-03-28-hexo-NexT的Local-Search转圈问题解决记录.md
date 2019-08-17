@@ -1,12 +1,9 @@
 ---
 title: hexo-NexT的Local Search转圈问题解决记录
-tags:
-  - 问题解决
 mathjax: true
 copyright: true
 date: 2019-03-28 20:20:45
-categories:
-- QuestionSolved
+categories: 小工具
 ---
 
 > cite: https://guahsu.io/2017/12/Hexo-Next-LocalSearch-cant-work/

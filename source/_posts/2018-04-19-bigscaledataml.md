@@ -2,9 +2,7 @@
 layout: post
 title: 使用sklearn大规模机器学习
 date: 2018-04-03 12:10 +0800
-categories: 工具
-tags:
-- 技术
+categories: 机器学习
 mathjax: true
 copyright: false
 ---

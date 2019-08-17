@@ -4,8 +4,7 @@ title: 正负样本不平衡的处理方法
 date: 2018-06-21 12:10 +0800
 categories: 机器学习
 tags:
-- trick
-- 技术
+- 特征选择
 mathjax: true
 copyright: true
 ---

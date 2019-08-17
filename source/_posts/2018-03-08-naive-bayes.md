@@ -4,8 +4,7 @@ title: 朴素贝叶斯 Naive Bayes
 date: 2018-03-08 10:10 +0800
 categories: 机器学习
 tags:
-- 算法
-- 技术
+- 模型算法
 mathjax: true
 copyright: true
 ---

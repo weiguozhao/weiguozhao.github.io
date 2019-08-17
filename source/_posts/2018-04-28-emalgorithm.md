@@ -4,8 +4,7 @@ title: EM算法
 date: 2018-04-28 21:10 +0800
 categories: 机器学习
 tags:
-- 算法
-- 技术
+- 优化算法
 mathjax: true
 copyright: true
 ---

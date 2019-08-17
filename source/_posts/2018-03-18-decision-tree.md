@@ -4,8 +4,7 @@ title: 决策树 Decision Tree
 date: 2018-03-18 20:10 +0800
 categories: 机器学习
 tags:
-- 算法
-- 技术
+- 模型算法
 mathjax: true
 copyright: true
 ---

@@ -2,10 +2,9 @@
 layout: post
 title: 梯度下降
 date: 2018-05-20 12:10 +0800
-categories: 优化算法
+categories: 机器学习
 tags:
-- 算法
-- 技术
+- 优化算法
 mathjax: true
 copyright: true
 ---

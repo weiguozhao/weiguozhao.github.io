@@ -2,9 +2,9 @@
 layout: post
 title: 机器学习评价指标
 date: 2018-09-29 12:10 +0800
-categories: 评估指标
+categories: 基础知识
 tags:
-- 机器学习
+- 评估方法
 mathjax: true
 copyright: false
 ---

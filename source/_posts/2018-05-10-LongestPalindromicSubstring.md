@@ -4,7 +4,7 @@ title: 最长回文子串
 date: 2018-05-10 12:10 +0800
 categories: LeetCode
 tags:
-- 代码
+- 回溯
 mathjax: true
 copyright: false
 ---

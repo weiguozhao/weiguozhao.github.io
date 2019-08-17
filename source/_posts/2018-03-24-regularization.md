@@ -2,9 +2,9 @@
 layout: post
 title: 机器学习中的正则化
 date: 2018-03-24 23:10 +0800
-categories: 机器学习
+categories: 基础知识
 tags:
-- 技术
+- 优化算法
 mathjax: true
 copyright: true
 ---

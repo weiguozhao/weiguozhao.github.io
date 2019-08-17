@@ -2,9 +2,7 @@
 layout: post
 title: Jekyll With Mathjax
 date: 2017-11-12 10:10 +0800
-categories: 工具
-tags:
-- 工具
+categories: 小工具
 mathjax: true
 copyright: true
 ---

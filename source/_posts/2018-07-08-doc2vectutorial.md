@@ -2,10 +2,10 @@
 layout: post
 title: Doc2Vec Tutorial
 date: 2018-07-08 12:10 +0800
-categories: 嵌入算法
+categories: 深度学习
 tags:
-- 算法
-- 技术
+- Embedding
+- 神经网络
 mathjax: true
 copyright: false
 ---

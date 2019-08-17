@@ -2,7 +2,7 @@
 layout: post
 title: 泰勒级数
 date: 2018-03-20 12:10 +0800
-categories: 数学
+categories: 基础知识
 tags:
 - 数学
 mathjax: true

@@ -2,10 +2,9 @@
 layout: post
 title: SVD&PCA&LDA降维
 date: 2018-05-18 12:10 +0800
-categories: 降维
+categories: 机器学习
 tags:
-- 算法
-- 技术
+- 优化算法
 mathjax: true
 copyright: true
 ---

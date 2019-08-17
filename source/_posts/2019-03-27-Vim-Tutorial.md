@@ -1,13 +1,9 @@
 ---
 title: Vim Tutorial
-tags:
-  - 工具
-  - vim
 mathjax: true
 copyright: false
 date: 2019-03-27 14:10:09
-categories:
-- 工具
+categories: 小工具
 ---
 
 **Vim自带的Tutorial:在终端下输入`vimtutor`即可打开vim自带的教程。**

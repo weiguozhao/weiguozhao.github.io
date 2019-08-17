@@ -4,8 +4,7 @@ title: 逻辑斯谛回归 Logistic Regression
 date: 2018-03-11 11:38 +0800
 categories: 机器学习
 tags:
-- 算法
-- 技术
+- 模型算法
 mathjax: true
 copyright: true
 ---

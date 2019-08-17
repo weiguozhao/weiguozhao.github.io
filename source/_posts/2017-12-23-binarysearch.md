@@ -4,7 +4,7 @@ title: 二分查找 - BinarySearch
 date: 2017-12-23 21:10 +0800
 categories: LeetCode
 tags:
-- 技术
+- 搜索
 mathjax: true
 copyright: true
 ---

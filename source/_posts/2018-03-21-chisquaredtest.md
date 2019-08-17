@@ -2,10 +2,9 @@
 layout: post
 title: 卡方检验
 date: 2018-03-21 12:10 +0800
-categories: 评估指标
+categories: 基础知识
 tags:
-- 算法
-- 技术
+- 特征选择
 mathjax: true
 copyright: true
 ---

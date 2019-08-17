@@ -2,10 +2,9 @@
 layout: post
 title: sklearn-GridSearchCV & hyperopt & hyperopt-sklearn 调参
 date: 2018-04-23 21:10 +0800
-categories: 工具
+categories: 机器学习
 tags:
-- trick
-- 技术
+- 优化算法
 mathjax: true
 copyright: true
 ---
