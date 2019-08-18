@@ -70,15 +70,15 @@ footer:
 
   powered:
     # Hexo link (Powered by Hexo).
-    enable: true
+    enable: false
     # Version info of Hexo after Hexo link (vX.X.X).
     version: false
 
   theme:
     # Theme & scheme info link (Theme - NexT.scheme).
-    enable: true
+    enable: false
     # Version info of NexT after scheme info (vX.X.X).
-    version: true
+    version: false
 
   # Beian ICP information for Chinese users. See: http://www.beian.miit.gov.cn
   beian:
@@ -209,11 +209,16 @@ social_icons:
 
 # Blog rolls
 links_icon: link
-links_title: Links
-links_layout: block
-#links_layout: inline
+links_title: 大牛们
+#links_layout: block
+links_layout: inline
 links:
-  #Title: http://example.com
+  colah's blog: http://colah.github.io/
+  #wepon's blog: http://wepon.me/
+  #peghoty's blog: https://www.cnblogs.com/peghoty/p/3857839.html
+  刘建平Pinard: https://www.cnblogs.com/pinard/
+  王喆的Github: https://github.com/wzhe06/Reco-papers
+  美团技术团队: https://tech.meituan.com/
 
 # Sidebar Avatar
 avatar:
@@ -230,11 +235,11 @@ avatar:
 toc:
   enable: true
   # Automatically add list number to toc.
-  number: true
+  number: false
   # If true, all words will placed on next lines if header width longer then sidebar width.
   wrap: false
   # If true, all level of TOC in a post will be displayed, rather than the activated part of it.
-  expand_all: false
+  expand_all: true
   # Maximum heading depth of generated toc. You can set it in one post through `toc_max_depth` in Front-matter.
   max_depth: 6
 
@@ -962,7 +967,7 @@ motion:
 # Dependencies: https://github.com/theme-next/theme-next-pace
 # For more information: https://github.com/HubSpot/pace
 pace:
-  enable: false
+  enable: true
   # Themes list:
   # big-counter | bounce | barber-shop | center-atom | center-circle | center-radar | center-simple
   # corner-indicator | fill-left | flat-top | flash | loading-bar | mac-osx | material | minimal
