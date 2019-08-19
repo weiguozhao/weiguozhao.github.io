@@ -87,7 +87,7 @@ for i in range(nb_epoches):
     theta = theta - alpha * v_t
 ```
 
-- theta_grad $\Longleftrightarrow \nabla_{\theta} J(\theta)$
+- theta\_grad $\Longleftrightarrow \nabla_{\theta} J(\theta)$
 - v_t $\Longleftrightarrow v_t$
 - beta $\Longleftrightarrow \beta$
 - alpha $\Longleftrightarrow \alpha$
@@ -130,6 +130,7 @@ for i in range(nb_epoches):
 **$Prof: (2.2-1) \Rightarrow (2.2-2)$**
 
 $$
+\begin{equation}
 \begin{aligned}
 \theta_t - \alpha \beta v_t 
 &= \theta_{t-1} - \alpha v_t - \alpha \beta v_t \\
@@ -139,6 +140,7 @@ $$
 &= \theta_{t-1} - \alpha \beta v_{t-1} - \alpha [ \beta^2 v_{t-1} + (\beta + 1) \nabla_{\theta} J(\theta_{t-1} - 
 \alpha \beta v_{t-1}) ]
 \end{aligned}
+\end{equation}
 $$
 
 定义alias：

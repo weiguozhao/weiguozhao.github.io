@@ -70,6 +70,12 @@ time_format: HH:mm:ss
 per_page: 10
 pagination_dir: page
 
+# 解决mathjax不换行的问题
+# http://longrm.com/2017/08/23/2017-08-23-hexo-mathjax/
+kramed:
+  gfm: true
+  breaks: false
+
 # local search
 #for theme-next
 search:
