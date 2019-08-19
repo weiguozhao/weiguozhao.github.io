@@ -6,10 +6,6 @@ if [ -z "${message}" ]; then
     exit 1
 fi
 
-echo "start deploy..."
-hexo clean && hexo g && hexo d
-echo "end deoply..."
-
 branch=`git symbolic-ref --short -q HEAD`
 if [[ $branch -eq "hexo" ]]; then
     echo "start push to hexo branch..."
@@ -21,4 +17,9 @@ else
     echo "branch must be hexo"
     exit 1
 fi
+
+echo "start deploy..."
+hexo clean && hexo g && hexo d
+echo "end deoply..."
+
 exit 0
