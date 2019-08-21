@@ -8,56 +8,146 @@ date: 2019-06-05 18:05:24
 categories: 机器学习
 ---
 
-对一些优化算法进行总结：
+## 0 优化算法框架
 
-## 1.1 Batch Gradient Descent
+> - [SGD、Momentum、RMSprop、Adam区别与联系](https://zhuanlan.zhihu.com/p/32488889)
 
-$$
-\theta_t  = \theta_{t-1} - \eta \cdot \nabla_{\theta} J(\theta )
-$$
+1. 计算目标函数关于当前参数的梯度
+  $$
+  g_t = \nabla f(w_t)
+  \tag{0-1}
+  $$
 
-```python
-for i in range(nb_epochs):
-    theta_grad = evaluate_gradient(loss_function, data, theta)
-    theta = theta - learning_rate * theta_grad
-```
+2. 根据历史梯度计算一阶动量和二阶动量
+  $$
+  m_t = \phi (g_1, g_2, \cdots, g_t)
+  \tag{0-2}
+  $$
+  $$
+  V_t = \psi (g_1, g_2, \cdots, g_t)
+  \tag{0-3}
+  $$
 
-每次按照全局梯度的负方向前进，步数由learning_rate控制。批量梯度下降(GD): 1. 可以保证精度; 2. 防止过拟合要加正则项。在线梯度下降(OGD): 1. 着重处理稀疏性。
+3. 计算当前时刻的下降梯度
+  $$
+  \eta_t = \frac{\alpha}{\sqrt{V_t}} \cdot m_t
+  \tag{0-4}
+  $$
 
+4. 根据下降梯度进行更新
+  $$
+  w_{t+1} = w_t - \eta_t
+  \tag{0-5}
+  $$
 
-
-## 1.2 Stochastic Gradient Descent
-
-$$
-\theta_t = \theta_{t-1} - \eta \cdot \nabla_{\theta} J(\theta; x^{(i)}; y^{(i)})
-$$
-
-```python
-for i in range(nb_epochs):
-    np.random.shuffle(data)
-    for example in data:
-        theta_grad = evaluate_gradient(loss_function, example, theta)
-        theta = theta - learning_rate * theta_grad
-```
-
-每次随机按照选定的样本梯度负方向前进，步数由learning_rate控制。
+**核心区别是第3步执行的下降方向，在这个式子中，前半部分是实际的学习率（也即下降步长），后半部分是实际的下降方向。不同优化算法也就是不断地在这两部分上做文章。下文会将变化的地方标红显示**
 
 
-## 1.3 Mini-Bach Gradient Descent
+## 1. Gradient Descent Variants
 
-$$
-\theta_t = \theta_{t-1} - \eta \cdot \nabla_{\theta} J(\theta; x^{(i:i+n)}; y^{(i:i+n)})
-$$
+### 1.1 Batch Gradient Descent
 
-```python
-for i in range(nb_epoches):
-  np.random.shuffle(data)
-  for batch in get_batches(data, batch_size=50):
-    theta_grad = evaluate_gradient(loss_function, batch, theta)
-    theta = theta - learning_rate * theta_grad
-```
+1. 计算目标函数关于当前参数的梯度
+  $$
+  g_t = \nabla f(w_t)
+  \tag{1.1-1}
+  $$
 
-每次选取小的batch，按照batch的梯度负方向前进，步数由learning_rate控制。
+2. 根据历史梯度计算一阶动量和二阶动量
+  $$
+  \color{red} {m_t = g_t}
+  \tag{1.1-2}
+  $$
+  $$
+  \color{red} {V_t = 1}
+  \tag{1.1-3}
+  $$
+
+3. 计算当前时刻的下降梯度
+  $$
+  \eta_t = \frac{\alpha}{\sqrt{V_t}} \cdot m_t = \alpha \cdot g_t
+  \tag{1.1-4}
+  $$
+
+4. 根据下降梯度进行更新
+  $$
+  \begin{align*}
+  w_{t+1} &= w_t - \eta_t \\
+  &= w_t - \alpha \cdot g_t
+  \end{align*}
+  \tag{1.1-5}
+  $$
+  
+
+
+### 1.2 Stochastic Gradient Descent
+
+1. 计算目标函数关于当前参数的梯度
+  $$
+  \color{red}  { g_t = \nabla f(w_t; x^{(i)}, y^{(i)}) } 
+  \tag{1.2-1}
+  $$
+
+其中$(x^{(i)}, y^{(i)})$表示第$i$个样本；
+
+2. 根据历史梯度计算一阶动量和二阶动量
+  $$
+  \color{red} {m_t = g_t}
+  \tag{1.2-2}
+  $$
+  $$
+  \color{red} {V_t = 1}
+  \tag{1.2-3}
+  $$
+
+3. 计算当前时刻的下降梯度
+  $$
+  \eta_t = \frac{\alpha}{\sqrt{V_t}} \cdot m_t = \alpha \cdot g_t
+  \tag{1.2-4}
+  $$
+
+4. 根据下降梯度进行更新
+  $$
+  \begin{align*}
+  w_{t+1} &= w_t - \eta_t \\ &= w_t - \alpha \cdot g_t
+  \end{align*}
+  \tag{1.2-5}
+  $$
+
+
+### 1.3 Mini-Bach Gradient Descent
+
+1. 计算目标函数关于当前参数的梯度
+  $$
+  \color{red}  { g_t = \nabla f(w_t; x^{(i:i+n)}, y^{(i:i+n)}) } 
+  \tag{1.3-1}
+  $$
+
+  其中$(x^{(i:i+n)}, y^{(i:i+n)})$表示第$i$个样本到第$i+n$个样本，$n$表示mini-batch的大小；
+
+2. 根据历史梯度计算一阶动量和二阶动量
+  $$
+  \color{red} {m_t = g_t}
+  \tag{1.3-2}
+  $$
+  $$
+  \color{red} {V_t = 1}
+  \tag{1.3-3}
+  $$
+
+3. 计算当前时刻的下降梯度
+  $$
+  \eta_t = \frac{\alpha}{\sqrt{V_t}} \cdot m_t = \alpha \cdot g_t
+  \tag{1.3-4}
+  $$
+
+4. 根据下降梯度进行更新
+  $$
+  \begin{align*}
+  w_{t+1} &= w_t - \eta_t \\ &= w_t - \alpha \cdot g_t
+  \end{align*}
+  \tag{1.3-5}
+  $$
 
 
 **上述算法存在的问题：**
@@ -69,185 +159,207 @@ for i in range(nb_epoches):
 
 ---------------------------------------------------------------
 
-## 2.1 Gradient Descent with Momentum
+
+## 2. Gradient Descent Optimization Algorithm
+
+### 2.1 Gradient Descent with Momentum
+
+1. 计算目标函数关于当前参数的梯度
+  $$
+  g_t = \nabla f(w_t)
+  \tag{2.1-1}
+  $$
+
+2. 根据历史梯度计算一阶动量和二阶动量，计算当前时刻下降梯度(*将框架的第2步和第3步合并*)
+  $$
+  \color{red} {m_t = \gamma \cdot m_{t-1} + \alpha \cdot g_t }
+  \tag{2.1-2&3}
+  $$
+
+  $$
+  \color{red} { \eta_t = m_t }
+  \tag{2.1-4}
+  $$
+
+3. 根据下降梯度进行更新
+  $$
+  \begin{align*}
+  w_{t+1} &= w_t - \eta_t \\ &= w_t - ( \gamma \cdot m_{t-1} + \alpha \cdot g_t )
+  \end{align*}
+  \tag{2.1-5}
+  $$
+
+一阶动量是移动平均值，这里 $\gamma $ 的经验值为`0.9`。
+
+
+### 2.2 Nesterov Accelerated Gradient
+
+1. 计算目标函数关于当前参数的梯度
+  $$
+  \color{red} { g_t = \nabla f(w_t - \gamma m_{t-1}) }
+  \tag{2.2-1}
+  $$
+
+2. 根据历史梯度计算一阶动量和二阶动量，计算当前时刻下降梯度(*将框架的第2步和第3步合并*)
+  $$
+  \color{red} {m_t = \gamma \cdot m_{t-1} + \alpha \cdot g_t }
+  \tag{2.2-2&3}
+  $$
+
+  $$
+  \color{red} { \eta_t = m_t }
+  \tag{2.2-4}
+  $$
+
+3. 根据下降梯度进行更新
+  $$
+  \begin{align*}
+  w_{t+1} &= w_t - \eta_t \\ &= w_t - ( \gamma \cdot m_{t-1} + \alpha \cdot g_t )
+  \end{align*}
+  \tag{2.2-5}
+  $$
+
+这里 $\gamma $ 的经验值为`0.9`
+
+
+### 2.3 AdaGrad
+
+1. 计算目标函数关于当前参数的梯度
+  $$
+  g_t = \nabla f(w_t)
+  \tag{2.3-1}
+  $$
+
+2. 根据历史梯度计算一阶动量和二阶动量
+  $$
+  m_t = g_t
+  \tag{2.3-2}
+  $$
+  $$
+  \color{red} {V_t = \sum_{\tau = 1}^t g_{\tau}^2 }
+  \tag{2.3-3}
+  $$
+
+3. 计算当前时刻的下降梯度
+  $$
+  \begin{align*}
+  \eta_t &= \frac{\alpha}{\sqrt{V_t}} \cdot m_t \\ &= \frac{\alpha}{\sqrt{ \sum_{\tau = 1}^t g_{\tau}^2 + \epsilon }} \cdot m_t
+  \end{align*}
+  \tag{2.3-4}
+  $$
+
+  这里$\epsilon$是为了避免分母为$0$。
+
+4. 根据下降梯度进行更新
+  $$
+  \begin{align*}
+  w_{t+1} &= w_t - \eta_t \\ &= w_t - \frac{\alpha}{\sqrt{ \sum_{\tau = 1}^t g_{\tau}^2 + \epsilon }} \cdot m_t
+  \end{align*}
+  \tag{2.3-5}
+  $$
+
+
+### 2.4 AdaDelta
+
+首先定义动态平均值 $\color{red}{ E[ g^2 ]\_t = \gamma E[ g^2 ]\_{t-1} + (1 - \gamma) g_t^2 }$，该值仅取决于当前梯度值与上一时刻的动态平均值，其中$\gamma$通常设置成$0.9$。
+
+1. 计算目标函数关于当前参数的梯度
+  $$
+  g_t = \nabla f(w_t)
+  \tag{2.4-1}
+  $$
+
+2. 根据历史梯度计算一阶动量和二阶动量
+  $$
+  m_t = g_t
+  \tag{2.4-2}
+  $$
+  $$
+  \color{red} {V_t = E[ g^2 ]_t }
+  \tag{2.4-3}
+  $$
+
+3. 计算当前时刻的下降梯度
+  $$
+  \begin{align*}
+  \eta_t &= \frac{\alpha}{\sqrt{V_t}} \cdot m_t \\ &= \frac{\alpha}{\sqrt{ E[ g^2 ]_t + \epsilon }} \cdot m_t
+  \end{align*}
+  \tag{2.4-4.1}
+  $$
+
+  这里$\epsilon$是为了避免分母为$0$。将分母$ \sqrt{ E[ g^2 ]\_t + \epsilon} $ 记为 $\color{red}{ RMS[g]\_t} $，定义
+  $$
+  E[ \Delta g^2 ] _t = \gamma E[ \Delta g^2 ] _{t-1} + (1 - \gamma) \Delta g _t^2
+  $$
+
+  则：
+  $$
+  RMS[\Delta g] _t = \sqrt{ E[ \Delta g^2 ] _t + \epsilon }
+  $$
+
+  用$RMS[\Delta g]_{t-1}$代替学习率$\alpha$，则式$(2.4-4.1)$可以转化为:
+  $$
+  \begin{align*}
+  \eta_t &= \frac{\alpha}{RMS[g] _t} \cdot g_t \\ &= \frac{ RMS[\Delta g] _{t-1} }{ RMS[g] _t } \cdot g _t
+  \end{align*}
+  \tag{2.4-4.2}
+  $$
+
+4. 根据下降梯度进行更新
+  $$
+  \begin{align*}
+  w_{t+1} &= w_t - \eta_t \\ &= w_t - \frac{RMS[\Delta g] _{t-1}}{RMS[g] _t} \cdot g_t
+  \end{align*}
+  \tag{2.4-5}
+  $$
+
+
+### 2.5 RMSprop
+
+RMSprop是AdaDelta算法的一个特例。
 
 $$
-\begin{aligned}
-v_t &= \beta v_{t-1} + (1 - \beta) \nabla_{\theta} J(\theta) \\
-\theta_t &= \theta_{t-1} - \alpha v_t
-\end{aligned}
-$$
-
-```python
-for i in range(nb_epoches):
-  np.random.shuffle(data)
-  for batch in get_batches(data, batch_size=50):
-    theta_grad = evaluate_gradient(loss_function, batch, theta)
-    v_t = beta * v_t + (1 - beta) * theta_grad
-    theta = theta - alpha * v_t
-```
-
-- theta\_grad $\Longleftrightarrow \nabla_{\theta} J(\theta)$
-- v_t $\Longleftrightarrow v_t$
-- beta $\Longleftrightarrow \beta$
-- alpha $\Longleftrightarrow \alpha$
-
-对梯度进行指数加权平均，这样使当前梯度不仅与当前方向有关，还与之前的方向有关，这样处理让梯度前进方向更加平滑，减少振荡，能够更快地到达最小值处。经验值 $\beta=0.9$。
-
-
-## 2.2 Nesterov Accelerated Gradient
-
-$$
-\begin{aligned}
-v_t &= \beta v_{t-1} + \nabla_{\theta} J(\theta_{t-1} - \alpha \beta v_{t-1}) \\
-\theta_t &= \theta_{t-1} - \alpha v_t
-\end{aligned}
-\tag{2.2-1}
-$$
-
-$$\Updownarrow$$
-
-$$
-\begin{aligned}
-v_t &= \beta v_{t-1} + \nabla J(\theta_{t-1}) + \beta [ \nabla (\theta_{t-1}) - \nabla (\theta_{t-2})] \\
-\theta_t &= \theta_{t-1} - \alpha v_t
-\end{aligned}
-\tag{2.2-2}
-$$
-
-```python
-for i in range(nb_epoches):
-  np.random.shuffle(data)
-  for batch in get_batches(data, batch_size=50):
-    theta_grad = evaluate_gradient(loss_function, batch, theta)
-    v_t = beta * v_t + theta_grad
-    theta = theta - alpha * v_t
-```
-
-> 如果这次的梯度比上次的梯度变大了，那么有理由相信它会继续变大下去，那就把预计要增大的部分提前加进来；如果相比上次变小了，也是类似的情况。这个多加上去的项就是在近似目标函数的二阶导，所以NAG本质上是多考虑了目标函数的二阶导信息，因此可以加速收敛了！所谓“往前看”的说法，在牛顿法这样的二阶方法中也是经常提到的，比喻起来是说“往前看”，数学本质上则是利用了目标函数的二阶导信息。
-> 在原始形式中，Nesterov Accelerated Gradient（NAG）算法相对于Momentum的改进在于，以“向前看”看到的梯度而不是当前位置梯度去更新。经过变换之后的等效形式中，NAG算法相对于Momentum多了一个本次梯度相对上次梯度的变化量，这个变化量本质上是对目标函数二阶导的近似。由于利用了二阶导的信息，NAG算法才会比Momentum具有更快的收敛速度。
-
-**$Prof: (2.2-1) \Rightarrow (2.2-2)$**
-
-$$
-\begin{equation}
-\begin{aligned}
-\theta_t - \alpha \beta v_t 
-&= \theta_{t-1} - \alpha v_t - \alpha \beta v_t \\
-&= \theta_{t-1} - \alpha (\beta + 1) v_t \\
-&= \theta_{t-1} - \alpha (\beta + 1) [ \beta v_{t-1} + \nabla_{\theta} J(\theta_{t-1} - 
-\alpha \beta v_{t-1}) ] \\
-&= \theta_{t-1} - \alpha \beta v_{t-1} - \alpha [ \beta^2 v_{t-1} + (\beta + 1) \nabla_{\theta} J(\theta_{t-1} - 
-\alpha \beta v_{t-1}) ]
-\end{aligned}
-\end{equation}
-$$
-
-定义alias：
-$$
-\begin{aligned}
-\hat{\theta_t} &= \theta_{t} - \alpha \beta v_{t} \rightarrow \hat{\theta_{t-1}} = \theta_{t-1} - \alpha \beta v_{t-1} \\
-\hat{v_t} &= \beta^2 v_{t-1} + (\beta + 1) \nabla_{\theta} J(\theta_{t-1} - \alpha \beta v_{t-1}) \\ 
-&= \beta^2 v_{t-1} + (\beta + 1) \nabla_{\theta} J(\hat{ \theta_{t-1} })
-\end{aligned}
-$$
-
-则：
-$$
-\begin{aligned}
-\hat{\theta_t} &= \theta_t - \alpha \beta v_t = \hat{\theta_t} - \alpha \hat{v_t}
-\end{aligned}
+E[g^2] _t = 0.9 E[g^2] _{t-1} + 0.1 g^2_t
 $$
 
 $$
-\begin{aligned}
-\hat{v_t} 
-&= \beta^2 v_{t-1} + (\beta + 1) \nabla_{\theta} J(\hat{ \theta_{t-1} }) \\
-&= (\beta + 1) \nabla_{\theta} J(\hat{ \theta_{t-1} }) + \beta^2 (\beta v_{t-2} + \nabla_{\theta} J(\theta_{t-2} - \alpha \beta v_{t-2})) \\
-&= (\beta + 1) \nabla_{\theta} J(\hat{ \theta_{t-1} }) + \beta^2 ( \beta v_{t-2} + \nabla_{\theta} J(\hat{ \theta_{t-2} }) ) \\
-&= (\beta + 1) \nabla_{\theta} J(\hat{ \theta_{t-1} }) + \beta^2 \nabla_{\theta} J(\hat{ \theta_{t-2} }) + \beta^3 v_{t-2} \\
-&= (\beta + 1) \nabla_{\theta} J(\hat{ \theta_{t-1} }) + \beta^2 \nabla_{\theta} J(\hat{ \theta_{t-2} }) + \beta^3 \nabla_{\theta} J(\hat{ \theta_{t-3} }) + \beta^4 v_{t-3} \\
-&= \cdots \\
-&= \cdots \\
-&= (\beta + 1) \nabla_{\theta} J(\hat{ \theta_{t-1} }) + \beta^2 \nabla_{\theta} J(\hat{ \theta_{t-2} }) + \beta^3 \nabla_{\theta} J(\hat{ \theta_{t-3} }) + \beta^4 \nabla_{\theta} J(\hat{ \theta_{t-4} }) + \beta^5 \nabla_{\theta} J(\hat{ \theta_{t-5} }) + \cdots \\
-\\
-\beta \hat{v_{t-1}}
-&= \beta (\beta + 1) \nabla_{\theta} J(\hat{ \theta_{t-2} }) + \beta^3 \nabla_{\theta} J(\hat{ \theta_{t-3} }) + \beta^4 \nabla_{\theta} J(\hat{ \theta_{t-4} }) + \beta^5 \nabla_{\theta} J(\hat{ \theta_{t-5} }) + \beta^6 \nabla_{\theta} J(\hat{ \theta_{t-6} }) + \cdots \\
-\\
-\hat{v_t} - \beta \hat{v_{t-1}}
-&= (\beta + 1) \nabla_{\theta} J(\hat{ \theta_{t-1} }) - \beta \nabla_{\theta} J(\hat{ \theta_{t-2} }) \\
-&= \nabla_{\theta} J(\hat{ \theta_{t-1} }) + \beta [ \nabla_{\theta} J(\hat{ \theta_{t-1} }) - \nabla_{\theta} J(\hat{ \theta_{t-2} })]
-\end{aligned}
+w_{t+1} = w_t - \frac{\alpha}{ \sqrt{ E[g^2] _t + \epsilon } } g_t
 $$
 
-最终得到：
-$$
-\begin{aligned}
-\hat{v_t} &= \beta \hat{v_{t-1}} + \nabla_{\theta} J(\hat{ \theta_{t-1} }) + \beta [ \nabla_{\theta} J(\hat{ \theta_{t-1} }) - \nabla_{\theta} J(\hat{ \theta_{t-2} })] \\
-\hat{\theta_t} &= \hat{\theta_t} - \alpha \hat{v_t}
-\end{aligned}
-$$
+Hinton建议$\gamma$设置成$0.9$，学习率设置成$0.001$。
 
 
-## 2.3 AdaGrad
-
-定义alias:
-$$
-g_{t,i} = \nabla_{\theta_t} J(\theta_{t, i})
-$$
-
-$$
-\begin{aligned}
-\theta_{t+1, i} = \theta_{t, i} - \frac{\eta}{ \sqrt{G_{t,ii} + \epsilon}}  \cdot g_{t, i} \quad \Rightarrow \quad
-\theta_{t+1} &= \theta_t - \frac{\eta}{\sqrt{G_t + \epsilon}} \odot g_{t\cdot}
-\end{aligned}
-$$
-
-其中$G_t \in \mathbb{R}^{d \times d}$是一个对角矩阵，其中当$t$步时的参数为$\theta_i$，则$G_{t,ii}$就表示$t$步时，第$i$个参数的历史梯度平方和。$\epsilon$是平滑因子，为避免分母为$0$通常设置$\epsilon=1e-8$，当没有平方根操作的时候效果会很差。
-
-$Adagrad$ 最主要的贡献是不再需要人为调整learning_rate，大多数应用中只需要设置为默认$0.01$即可。由于每个增加的梯度平方都是非负数，$G_t$在训练中会不断增长，会导致learning_rate最终变得很小，此时模型无法学习到新的knowledge。
+### 2.6 Adam
 
 
-----------------------------------------
+### 2.7 AdaMax
 
 
-## 3.1 AdaDelta
-
-
-## 3.2 RMSprop
-
-
-## 3.3 Adam
-
-
-## 3.4 AdaMax
-
-
-## 3.5 Nadam
+### 2.8 Nadam
 
 
 
 -----------------------
 
-## 4.1 简单截断法
+## 3. Other Optimization Algorithm
 
 - 将不满足阈值的系数设置为0
 
-## 4.2 Truncated Gradient
+### 3.1 Truncated Gradient
 
 - 简单截断法的改进
 
-## 4.3 FOBOS
+### 3.2 FOBOS
 
 - 微调标准梯度下降的结果
 
-## 4.4 RDA
+### 3.3 RDA
 
 - 历史梯度加权平均
 - 正则项对特征稀疏化
 - 严格递增序列
 
-## 4.5 FTRL
+### 3.4 FTRL
 
 - 确保新的权重和历史权重不偏离太远
 - L1正则稀疏性约束
@@ -255,6 +367,6 @@ $Adagrad$ 最主要的贡献是不再需要人为调整learning_rate，大多数
 
 ------------
 
-> - [An overview of gradient descent optimization algorithms]()
+> - [An overview of gradient descent optimization algorithms](https://arxiv.org/pdf/1609.04747.pdf)
 > - [在线最优化求解(Online Optimization)-冯扬]()
 > - [比Momentum更快：揭开Nesterov Accelerated Gradient的真面目](https://zhuanlan.zhihu.com/p/22810533)
