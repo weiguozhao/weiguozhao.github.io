@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+echo "start deploy..."
+hexo clean && hexo g && hexo d
+echo "end deoply..."
+
 message="$1"
 if [ -z "${message}" ]; then
     echo "usage: $0 [push message]"
@@ -17,9 +21,5 @@ else
     echo "branch must be hexo"
     exit 1
 fi
-
-echo "start deploy..."
-hexo clean && hexo g && hexo d
-echo "end deoply..."
 
 exit 0

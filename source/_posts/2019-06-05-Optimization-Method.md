@@ -10,8 +10,6 @@ categories: 机器学习
 
 ## 0 优化算法框架
 
-> - [SGD、Momentum、RMSprop、Adam区别与联系](https://zhuanlan.zhihu.com/p/32488889)
-
 1. 计算目标函数关于当前参数的梯度
   $$
   g_t = \nabla f(w_t)
@@ -88,7 +86,7 @@ categories: 机器学习
   \tag{1.2-1}
   $$
 
-其中$(x^{(i)}, y^{(i)})$表示第$i$个样本；
+  其中$(x^{(i)}, y^{(i)})$表示第$i$个样本；
 
 2. 根据历史梯度计算一阶动量和二阶动量
   $$
@@ -194,7 +192,7 @@ categories: 机器学习
 
 ### 2.2 Nesterov Accelerated Gradient
 
-1. 计算目标函数关于当前参数的梯度
+1. 计算目标函数关于当前参数+下次变化的梯度
   $$
   \color{red} { g_t = \nabla f(w_t - \gamma m_{t-1}) }
   \tag{2.2-1}
@@ -331,12 +329,132 @@ Hinton建议$\gamma$设置成$0.9$，学习率设置成$0.001$。
 
 ### 2.6 Adam
 
+1. 计算目标函数关于当前参数的梯度
+  $$
+  g_t = \nabla f(w_t)
+  \tag{2.6-1}
+  $$
+
+2. 根据历史梯度计算一阶动量和二阶动量
+  $$
+  \color{red}{ m_t = \beta_1 \cdot m_{t-1} + (1 - \beta_1) \cdot g_t }
+  \tag{2.6-2}
+  $$
+  $$
+  \color{red}{ V_t = \beta_2 \cdot V_{t-1} + (1 - \beta_2) \cdot g_t^2 }
+  \tag{2.6-3}
+  $$
+
+  其中的$\beta_1$控制一阶动量，$\beta_2$控制二阶动量；
+
+3. 计算当前时刻的下降梯度
+  $$
+  \begin{align*}
+  \eta_t &= \frac{\alpha}{\sqrt{V_t}} \cdot m_t \\
+  &= \frac{\alpha}{ \sqrt{\beta_2 \cdot V_{t-1} + (1 - \beta_2) \cdot g_t^2} + \epsilon } \cdot \{ \beta_1 \cdot m_{t-1} + (1 - \beta_1) \cdot g_t \}
+  \end{align*}
+  \tag{2.6-4}
+  $$
+
+  其中增加的$\epsilon$为了防止分母等于$0$；
+
+4. 根据下降梯度进行更新
+  $$
+  \begin{align*}
+  w_{t+1} &= w_t - \eta_t \\ 
+  &= w_t - \frac{\alpha}{ \sqrt{\beta_2 \cdot V_{t-1} + (1 - \beta_2) \cdot g_t^2} + \epsilon } \cdot \{ \beta_1 \cdot m_{t-1} + (1 - \beta_1) \cdot g_t \}
+  \end{align*}
+  \tag{2.6-5}
+  $$
+
 
 ### 2.7 AdaMax
+
+Adamax是Adam的一种变体，此方法对学习率的上限提供了一个更简单的范围。
+
+1. 计算目标函数关于当前参数的梯度
+  $$
+  g_t = \nabla f(w_t)
+  \tag{2.7-1}
+  $$
+
+2. 根据历史梯度计算一阶动量和二阶动量
+  $$
+  \color{red}{ m_t = \beta_1 \cdot m_{t-1} + (1 - \beta_1) \cdot g_t }
+  \tag{2.7-2}
+  $$
+  $$
+  \color{red}{ 
+  \begin{align*}
+  V_t &= \beta_2^{\infty} V_{t-1} + (1 - \beta_2^{\infty}) \| g_t \| ^{\infty} \\
+  &= max( \beta_2 \cdot V_{t-1}, \| g_t \| )
+  \end{align*}
+  }
+  \tag{2.7-3}
+  $$
+
+  其中的$\beta_1$控制一阶动量，$\beta_2$控制二阶动量；
+
+3. 计算当前时刻的下降梯度
+  $$
+  \color{red}{
+  \begin{align*}
+  \eta_t &= \frac{\alpha}{V_t} \cdot m_t \\
+  &= \frac{\alpha}{ max( \beta_2 \cdot V_{t-1}, \| g_t \| ) } \cdot \{ \beta_1 \cdot m_{t-1} + (1 - \beta_1) \cdot g_t \}
+  \end{align*}
+  }
+  \tag{2.7-4}
+  $$
+
+4. 根据下降梯度进行更新
+  $$
+  \begin{align*}
+  w_{t+1} &= w_t - \eta_t \\ 
+  &= w_t - \frac{\alpha}{ max( \beta_2 \cdot V_{t-1}, \| g_t \| ) } \cdot \{ \beta_1 \cdot m_{t-1} + (1 - \beta_1) \cdot g_t \}
+  \end{align*}
+  \tag{2.7-5}
+  $$
 
 
 ### 2.8 Nadam
 
+1. 计算目标函数关于当前参数的梯度
+  $$
+  g_t = \nabla f(w_t - \frac{\alpha}{\sqrt{V-t}} \cdot m_{t-1})
+  \tag{2.8-1}
+  $$
+
+2. 根据历史梯度计算一阶动量和二阶动量
+  $$
+  \color{red}{ m_t = \gamma \cdot m_{t-1} + (1 - \beta_1) \cdot g_t }
+  \tag{2.8-2}
+  $$
+  $$
+  \color{red}{ V_t = \beta_2 \cdot V_{t-1} + (1 - \beta_2) \cdot g_t^2 }
+  \tag{2.8-3}
+  $$
+
+  其中的$\beta_1$控制一阶动量，$\beta_2$控制二阶动量；
+
+3. 计算当前时刻的下降梯度
+  $$
+  \begin{align*}
+  \eta_t &= \frac{\alpha}{\sqrt{V_t}} \cdot m_t \\
+  &= \frac{\alpha}{ \sqrt{\beta_2 \cdot V_{t-1} + (1 - \beta_2) \cdot g_t^2} + \epsilon } \cdot \{ \beta_1 \cdot m_{t-1} + (1 - \beta_1) \cdot g_t \}
+  \end{align*}
+  \tag{2.8-4}
+  $$
+
+  其中增加的$\epsilon$为了防止分母等于$0$；
+
+4. 根据下降梯度进行更新
+  $$
+  \begin{align*}
+  w_{t+1} &= w_t - \eta_t \\ 
+  &= w_t - \frac{\alpha}{ \sqrt{\beta_2 \cdot V_{t-1} + (1 - \beta_2) \cdot g_t^2} + \epsilon } \cdot \{ \beta_1 \cdot m_{t-1} + (1 - \beta_1) \cdot g_t \}
+  \end{align*}
+  \tag{2.8-5}
+  $$
 
 
 -----------------------
@@ -367,6 +485,10 @@ Hinton建议$\gamma$设置成$0.9$，学习率设置成$0.001$。
 
 ------------
 
+> - [一个框架看懂优化算法之异同 SGD/AdaGrad/Adam](https://zhuanlan.zhihu.com/p/32230623)
+> - [SGD、Momentum、RMSprop、Adam区别与联系](https://zhuanlan.zhihu.com/p/32488889)
 > - [An overview of gradient descent optimization algorithms](https://arxiv.org/pdf/1609.04747.pdf)
 > - [在线最优化求解(Online Optimization)-冯扬]()
 > - [比Momentum更快：揭开Nesterov Accelerated Gradient的真面目](https://zhuanlan.zhihu.com/p/22810533)
+> - [深度学习最全优化方法总结比较（SGD，Adagrad，Adadelta，Adam，Adamax，Nadam）](https://zhuanlan.zhihu.com/p/22252270)
+> - [Deep Learning 最优化方法之AdaGrad](https://zhuanlan.zhihu.com/p/29920135)
