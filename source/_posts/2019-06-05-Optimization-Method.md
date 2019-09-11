@@ -751,8 +751,145 @@ $ | w\_i^{(t)} - \eta^{(t)} g\_i^{(t)} | \le \lambda^{(t)}\_{TG} = \eta^{(t+0.5)
 
 ### 3.4 FTRL
 
-- 确保新的权重和历史权重不偏离太远
-- L1正则稀疏性约束
+FTRL综合了L1-FOBOS基于梯度下降方法具有较高的精度、L1-RDA能在损失一定精度的情况下产生更好的稀疏性。
+
+#### 3.4.1 L1-FOBOS和L1-RDA在形式上的统一
+
+L1-FOBOS在形式上，令 $ \eta^{(t+0.5)} = \eta^{(t)} = \Theta ( \frac{1}{\sqrt{t}} ) $ 是一个随 $t$变化的非增正序列, 
+每次迭代都可以表示为：
+$$
+w^{(t+0.5)} = w^{(t)} - \eta^{(t)} G^{(t)}
+$$
+
+$$
+w^{(t+1)} = argmin_w \lbrace \frac{1}{2} | w - w^{(t + 0.5)} |_2^2 + \eta^{(t)} \lambda | w |_1 \rbrace
+$$
+
+把这两个公式合并到一起，有:
+$$
+w^{(t+1)} = argmin_w \lbrace \frac{1}{2} | w - w^{(t)} + \eta^{(t)} G^{(t)} |_2^2 + \eta^{(t)} \lambda | w |_1 \rbrace
+$$
+
+通过这个公式很难直接求出 $w^{(t+1)}$ 的解析解，但是我们可以按维度将其分解为 N 个独立的最优化步骤:
+$$
+\begin{align*}
+最优化 &= minimize_{w_i \in \mathbb{R}} \lbrace \frac{1}{2} (w_i - w_i^{(t)} + \eta^{(t)} g_i^{(t)} )^2 + \eta^{(t)} \lambda \mid w_i \mid \rbrace \\
+&= minimize_{w_i \in \mathbb{R}} \lbrace \frac{1}{2} (w_i - w_i^{(t)})^2 + \frac{1}{2} ( \eta^{(t)} g_i^{(t)} )^2 + w_i \eta^{(t)} g_i^{(t)} + w_i^{(t)} \eta^{(t)} g_i^{(t)} + \eta^{(t)} \lambda \mid w_i \mid \rbrace \\
+&= minimize_{w_i \in \mathbb{R}} \lbrace w_i g_i^{(t)} + \lambda \mid w_i \mid + \frac{1}{2} \eta^{(t)} (w_i - w_i^{(t)})^2 + \lbrack \frac{ \eta^{(t)} }{2} (g_i^{(t)})^2 + w_i^{(t)} g_i^{(t)} \rbrack  \rbrace
+\end{align*}
+$$
+
+由于 $\frac{ \eta^{(t)} }{2} (g\_i^{(t)})^2 + w\_i^{(t)} g\_i^{(t)}$ 与变量 $ w_i $ 无关，因此上式可以等价于:
+$$
+minimize_{w_i \in \mathbb{R}} \lbrace w_i g_i^{(t)} + \lambda \mid w_i \mid \frac{1}{2 \eta^{(t)} (w_i - w_i^{(t)})^2 }  \rbrace
+$$
+
+再将这 N 个独立最优化子步骤合并，那么 L1-FOBOS 可以写作:
+$$
+w^{(t+1)} = argmin_w \lbrace G^{(t)} \cdot w + \lambda | w |_1 + \frac{1}{2 \eta^{(t)}} | w - w^{(t)} |_2^2 \rbrace
+$$
+
+而对于 L1-RDA 的公式$(3.3.2-1)$，我们可以写作:
+$$
+w^{(t+1)} = argmin_w \lbrace G^{(1:t)} \cdot w + t \lambda |w|_1 +  \frac{1}{2 \eta^{(t)}} | w - 0 |_2^2 \rbrace
+$$
+
+这里 $G^{(1:t)} = \sum_{s=1}^t G^{(s)}$; 如果令 $ \sigma^{(s)} = \frac{1}{\eta^{(s)}} - \frac{1}{\eta^{(s-1)}}, \sigma^{(1:t)} = \frac{1}{\eta^{(t)}} $, 上面两个式子可以写做:
+$$
+w^{(t+1)} = argmin_w \lbrace G^{(t)} \cdot w + \lambda | w |_1 + \frac{1}{2} sigma^{(1:t)} | w- w^{(t)} | _2^2  \rbrace
+\tag{3.4.1-1}
+$$
+
+$$
+w^{(t+1)} = argmin_w \lbrace G^{(t)} \cdot w + t \lambda | w |_1 + \frac{1}{2} sigma^{(1:t)} | w- 0 | _2^2  \rbrace
+\tag{3.4.1-2}
+$$
+
+比较$(3.4.1-1)$和$(3.4.1-2)$这两个公式，可以看出 L1-FOBOS 和 L1-RDA 的区别在于:
+- (1) 前者对计算的是累加梯度以及 L1 正则项只考虑当前模的贡献，而后者采用了累加的处理方式;
+- (2) 前者的第三项限制$ w $的变化不能离已迭代过的解太远，而后者则限制 $w$ 不能离 0 点太远;
+
+#### 3.4.2 FTRL算法原理
+
+FTRL 综合考虑了 FOBOS 和 RDA 对于正则项和$w$限制的区别，其特征权重的更新公式为:
+$$
+w^{(t+1)} = argmin_w \lbrace G^{(1:t)} \cdot w + \lambda_1 |w|_1 + \lambda_2 |w|_2^2 + \frac{1}{2} \sum_{s=1}^t \sigma^{(s)} | w - w^{(s)} |_2^2 \rbrace
+\tag{3.4.2-1}
+$$
+
+注意，公式 $(3.4.2-1)$ 中出现了L2正则项 $ \frac{1}{2} || w ||_2^2 $，
+L2正则项的引入仅仅相当于对最优化过程多了一个约束，使得结果求解结果更加“平滑”。
+
+公式$(3.4.2-1)$看上去很复杂，更新特征权重貌似非常困难的样子。不妨将其进行改写，将最后一项展开，等价于求下面这样一个最优化问题:
+$$
+w^{(t+1)} = argmin_w \lbrace (G^{(1:t)} - \sum_{s=1}^t \sigma^{(s)} w^{(s)} ) \cdot w + \lambda_1 |w|_1 + \frac{1}{2} ( \lambda_2 + \sum_{s=1}^t \sigma^{(s)} ) \cdot | w |_2^2 + \frac{1}{2} \sum_{s=1}^t \sigma^{(s)} |w^{(s)}|_2^2 \rbrace
+$$
+
+由于 $\frac{1}{2} \sum\_{s=1}^t \sigma^{(s)} || w^{(s)} ||\_2^2$ 相对于 $w$ 来说是一个常数，并且令 $ z^{(t)} = G^{(1:t)} - \sum\_{s=1}^t \sigma^{(s)} w^{(s)} $, 上式等价于:
+$$
+w^{(t+1)} = argmin_w \lbrace z^{(t)} \cdot w + \lambda_1 |w|_1 + \frac{1}{2} (\lambda_2 + \sum_{s=1}^t \sigma^{(s)} )  |w|_2^2 \rbrace
+$$
+
+针对特征权重的各个维度将其拆解成N个独立的标量最小化问题:
+$$
+minimize_{w_i \in \mathbb{R}} \lbrace z_i^{(t)} w_i + \lambda_1 \mid w \mid_1 + \frac{1}{2} ( \lambda_2 + \sum_{s=1}^t \sigma^{(s)} ) w_i^2 \rbrace
+$$
+
+到这里，我们遇到了与式$(3.3.2-2)$类似的优化问题，用相同的分析方法可以得到:
+$$
+w_i^{t+1} = 
+\begin{cases}
+0 & \quad if \mid z_i^{(t)} \mid < \lambda \\
+-( \lambda_2 + \sum_{s=1}^t \sigma^{(s)} )^{-1} ( z_i^{(t)} - \lambda_1 sng( z_i^{(t)} ) ) & \quad otherwise
+\end{cases}
+\tag{3.4.2-2}
+$$
+
+从式 $(3.4.2-2)$ 可以看出，引入 L2 正则化并没有对 FTRL 结果的稀疏性产生任何影响。
+
+
+#### 3.4.3 Per-Coordinate Learning Rates
+
+前面介绍了 FTRL 的基本推导，但是这里还有一个问题是一直没有被讨论到的:关于学习率 $\eta^{(t)}$ 的选择和计算。
+事实上在 FTRL 中，每个维度上的学习率都是单独考虑的 (Per-Coordinate Learning Rates)。
+
+在一个标准的OGD里面使用的是一个全局的学习率策略$\eta^{(t)} = \frac{1}{\sqrt{t}}$，这个策略保证了学习率是一个正的非增长序列，
+对于每一个特征维度都是一样的。考虑特征维度的变化率: 如果特征1 比特征2 的变化更快，那么在维度1 上的学习率应该下降得更快。
+我们很容易就可以想到可以用某个维度上梯度分量来反映这种变化率。在 FTRL 中，维度 $i$ 上的学习率是这样计算的:
+$$
+\eta^{(t)}_i = \frac{\alpha}{ \beta + \sqrt{ \sum_{s=1}^t (g_i^{(s)})^2 } }
+\tag{3.4.3-1}
+$$
+
+由于 $\sigma^{(1:t)} = \frac{1}{\eta^{(t)}}$，所以公式$(3.4.2-2)$中 $\sum\_{s=1}^t \sigma^{(s)} = \frac{1}{\eta^{(t)}} = (\beta + \sqrt{ \sum\_{s=1}^t (g\_i^{(s)})^2 }) / \alpha$。
+这里的 $\alpha$ 和 $\beta$ 是需要输入的参数, 公式 $(3.4.2-2)$ 中学习率写成累加的形式，是为了方便理解后面 FTRL 的迭代计算逻辑。
+
+
+#### 3.4.4 FTRL算法逻辑
+
+到现在为止，我们已经得到了 FTRL 的特征权重维度的更新方法$公式(3.4.2-2)$，每个特征维度的学习率计算方法公式$(3.4.3-1)$，
+那么很容易写出 FTRL 的算法逻辑, 这里是根据$(3.4.2-2)$ 和$(3.4.3-1)$ 写的 L1&L2-FTRL 求解最优化的算法逻辑，如下：
+
+![fengyang](/posts_res/2019-06-05-Optimization-Method/2.png)
+
+而论文`Ad Click Prediction: a View from the Trenches`中 Algorithm 1 给出的是 L1&L2-FTRL 针对 Logistic Regression 的算法逻辑:
+
+![Ad Click Prediction](/posts_res/2019-06-05-Optimization-Method/3.png)
+
+
+### 3.5 Online总结
+
+从类型上来看，简单截断法、TG、FOBOS 属于同一类，都是梯度下降类的算法,并且TG在特定条件可以转换成简单截断法和FOBOS;
+RDA属于简单对偶平均的扩展应用;FTRL 可以视作 RDA 和 FOBOS 的结合，同时具备二者的优点。
+目前来看， RDA 和 FTRL 是最好的稀疏模型 Online Training 的算法。
+
+谈到高维高数据量的最优化求解，不可避免的要涉及到并行计算的问题, [冯扬(8119)的博客](http://blog.sina.com.cn/s/blog_6cb8e53d0101oetv.html)讨论了 batch 模式下的并行逻辑回归，其实只要修改损失函数，就可以用于其它问题的最优化求解。
+另外，对于 Online 下，[Parallelized Stochastic Gradient Descent](http://martin.zinkevich.org/publications/nips2010.pdf)给出了一种很直观的方法:
+
+![Parallelized Stochastic Gradient Descent](/posts_res/2019-06-05-Optimization-Method/4.png)
+
+对于 Online 模式的并行化计算，一方面可以参考 ParallelSGD 的思路，另一方面也可以借鉴 batch 模式下对高维向量点乘以及梯度分量并行计算的思路。
+总之，在理解算法原理的 基础上将计算步骤进行拆解，使得各节点能独自无关地完成计算最后汇总结果即可。
 
 
 ------------
@@ -764,3 +901,4 @@ $ | w\_i^{(t)} - \eta^{(t)} g\_i^{(t)} | \le \lambda^{(t)}\_{TG} = \eta^{(t+0.5)
 > - [比Momentum更快：揭开Nesterov Accelerated Gradient的真面目](https://zhuanlan.zhihu.com/p/22810533)
 > - [深度学习最全优化方法总结比较（SGD,Adagrad,Adadelta,Adam,Adamax,Nadam）](https://zhuanlan.zhihu.com/p/22252270)
 > - [Deep Learning 最优化方法之AdaGrad](https://zhuanlan.zhihu.com/p/29920135)
+> - [Ad_Click_Prediction_a_View_from_the_Trenches](/posts_res/2019-06-05-Optimization-Method/Ad Click Prediction- a View from the Trenches.pdf)
