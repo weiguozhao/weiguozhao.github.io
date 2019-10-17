@@ -38,6 +38,23 @@ $$
 \hat{y}(\mathbf{x}) = w_0 + \sum_{i=1}^{n}w_i x_i + \frac{1}{2} \sum_{f=1}^{k} ((\sum_{i=1}^{n}v_{i,f} x_i)^2-\sum_{i=1}^{n}v_{i,f}^2 x_i^2)
 $$
 
+FM的训练复杂度，利用SGD（Stochastic Gradient Descent）训练模型。模型各个参数的梯度如下:
+
+$$
+\frac{\partial}{\partial\theta} y (\mathbf{x}) = 
+\begin{cases}
+1, & if \quad \theta \quad is \quad w_0 \\
+x_i, & if \quad \theta \quad is \quad w_i \\
+x_i \sum_{j=1}^n v_{j, f} x_j - v_{i, f} x_i^2, & if \quad \theta \quad v_{i, f}
+\end{cases}
+$$
+
+其中, $v\_{j,f}$ 是隐向量 $v\_j$ 的第 $f$ 个元素。
+由于 $\sum\_{j=1}^n v\_{j,f} x\_j$ 只与 $f$ 有关，而与 $i$ 无关，在每次迭代过程中，只需计算一次所有 $f$ 的 $\sum\_{j=1}^n v\_{j,f} x\_j$, 
+就能够方便地得到所有 $v\_{i,f}$ 的梯度。显然，计算所有 $f$ 的 $\sum\_{j=1}^n v\_{j,f} x\_j$ 的复杂度是 $O(kn)$；
+已知 $\sum\_{j=1}^n v\_{j,f} x\_j$ 时，计算每个参数梯度的复杂度是 $O(1)$；得到梯度后，更新每个参数的复杂度是 $O(1)$；
+模型参数一共有 $nk + n + 1$ 个。因此，FM参数训练的复杂度也是 $O(kn)$。综上可知，FM可以在线性时间训练和预测，是一种非常高效的模型。
+
 MSE为：
 $$
 L = \sum_{i=1}^{n} (y_i - \hat{y}_i)^2 + \lambda_w ||W||^2 + \lambda_v ||V||^2
