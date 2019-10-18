@@ -47,6 +47,15 @@
         </{%- if theme.seo %}h2{% else %}h1{%- endif %}>
 
         <div class="post-meta">
+        
+          {### 添加置顶 https://lewky.cn/posts/6ed0d627.html ###}
+          {% if post.top %}
+            <span class="post-meta-item-icon">
+                <i class="fa fa-thumb-tack"></i>
+            </span>
+            <font color="red">置顶</font>
+            <span class="post-meta-divider">|</span>
+          {% endif %}
 
           {%- set date_diff = date(post.date) != date(post.updated) %}
           {%- set time_diff = time(post.date) != time(post.updated) %}
