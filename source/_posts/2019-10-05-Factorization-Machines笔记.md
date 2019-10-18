@@ -60,7 +60,7 @@ $$
 L = \sum_{i=1}^{n} (y_i - \hat{y}_i)^2 + \lambda_w ||W||^2 + \lambda_v ||V||^2
 $$
 
-[tensorflow实现代码](https://github.com/babakx/fm_tensorflow/blob/master/fm_tensorflow.ipynb)为：
+[TensorFlow实现代码](https://github.com/babakx/fm_tensorflow/blob/master/fm_tensorflow.ipynb)为：
 
 其中`p`为特征维度，`k`为$v$的维度
 

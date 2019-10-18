@@ -47,14 +47,13 @@ $$
 
 其中，$y\_i \in {−1,1}$ 是第 $i$ 个样本的label，$L$ 是训练样本数量，$\lambda$ 是惩罚项系数。
 
-[tensorflow-ffm](https://github.com/drcut/FFM-tensorflow):
+[FFM_TensorFlow](https://github.com/drcut/FFM-tensorflow)实现代码:
 
 ```python
 # this is code
 ```
 
 算法流程及工程实现的trick，详细阅读 `参考文献[1]`。
-
 
 
 > 1. [深入FFM原理与实践](https://tech.meituan.com/2016/03/03/deep-understanding-of-ffm-principles-and-practices.html)
