@@ -53,10 +53,85 @@ $$
 
 ```python
 # this is code
+# Set graph level random seed
+tf.set_random_seed(self.random_seed)
+# Input data.
+self.train_features = tf.placeholder(tf.int32, shape=[None, None])  # None * features_M
+self.train_labels = tf.placeholder(tf.float32, shape=[None, 1])  # None * 1
+self.dropout_keep = tf.placeholder(tf.float32, shape=[None])
+self.train_phase = tf.placeholder(tf.bool)
+
+# Variables.
+self.weights = self._initialize_weights()
+
+# Model.
+# _________ sum_square part _____________
+# get the summed up embeddings of features.
+nonzero_embeddings = tf.nn.embedding_lookup(self.weights['feature_embeddings'], self.train_features)
+self.summed_features_emb = tf.reduce_sum(nonzero_embeddings, 1)  # None * K
+# get the element-multiplication
+self.summed_features_emb_square = tf.square(self.summed_features_emb)  # None * K
+
+# _________ square_sum part _____________
+self.squared_features_emb = tf.square(nonzero_embeddings)
+self.squared_sum_features_emb = tf.reduce_sum(self.squared_features_emb, 1)  # None * K
+
+# ________ FM __________
+self.FM = 0.5 * tf.subtract(self.summed_features_emb_square, self.squared_sum_features_emb)  # None * K
+if self.batch_norm:
+    self.FM = self.batch_norm_layer(self.FM, train_phase=self.train_phase, scope_bn='bn_fm')
+self.FM = tf.nn.dropout(self.FM, self.dropout_keep[-1])  # dropout at the bilinear interactin layer
+
+# ________ Deep Layers __________
+for i in range(0, len(self.layers)):
+    self.FM = tf.add(tf.matmul(self.FM, self.weights['layer_%d' % i]),
+                     self.weights['bias_%d' % i])  # None * layer[i] * 1
+    if self.batch_norm:
+        self.FM = self.batch_norm_layer(self.FM, train_phase=self.train_phase,
+                                        scope_bn='bn_%d' % i)  # None * layer[i] * 1
+    self.FM = self.activation_function(self.FM)
+    self.FM = tf.nn.dropout(self.FM, self.dropout_keep[i])  # dropout at each Deep layer
+self.FM = tf.matmul(self.FM, self.weights['prediction'])  # None * 1
+
+# _________out _________
+Bilinear = tf.reduce_sum(self.FM, 1, keep_dims=True)  # None * 1
+self.Feature_bias = tf.reduce_sum(tf.nn.embedding_lookup(self.weights['feature_bias'], self.train_features),
+                                  1)  # None * 1
+Bias = self.weights['bias'] * tf.ones_like(self.train_labels)  # None * 1
+self.out = tf.add_n([Bilinear, self.Feature_bias, Bias])  # None * 1
+
+# Compute the loss.
+if self.loss_type == 'square_loss':
+    if self.lambda_bilinear > 0:
+        self.loss = tf.nn.l2_loss(tf.subtract(self.train_labels, self.out)) + tf.contrib.layers.l2_regularizer(
+            self.lambda_bilinear)(self.weights['feature_embeddings'])  # regulizer
+    else:
+        self.loss = tf.nn.l2_loss(tf.subtract(self.train_labels, self.out))
+elif self.loss_type == 'log_loss':
+    self.out = tf.sigmoid(self.out)
+    if self.lambda_bilinear > 0:
+        self.loss = tf.contrib.losses.log_loss(self.out, self.train_labels, weight=1.0, epsilon=1e-07,
+                                               scope=None) + tf.contrib.layers.l2_regularizer(
+            self.lambda_bilinear)(self.weights['feature_embeddings'])  # regulizer
+    else:
+        self.loss = tf.contrib.losses.log_loss(self.out, self.train_labels, weight=1.0, epsilon=1e-07,
+                                               scope=None)
+
+# Optimizer.
+if self.optimizer_type == 'AdamOptimizer':
+    self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate, beta1=0.9, beta2=0.999,
+                                            epsilon=1e-8).minimize(self.loss)
+elif self.optimizer_type == 'AdagradOptimizer':
+    self.optimizer = tf.train.AdagradOptimizer(learning_rate=self.learning_rate,
+                                               initial_accumulator_value=1e-8).minimize(self.loss)
+elif self.optimizer_type == 'GradientDescentOptimizer':
+    self.optimizer = tf.train.GradientDescentOptimizer(learning_rate=self.learning_rate).minimize(self.loss)
+elif self.optimizer_type == 'MomentumOptimizer':
+    self.optimizer = tf.train.MomentumOptimizer(learning_rate=self.learning_rate, momentum=0.95).minimize(
+        self.loss)
 ```
 
 
 > 1. [Neural Factorization Machines for Sparse Predictive Analytics](https://arxiv.org/abs/1708.05027)
 > 2. [论文笔记《Neural Factorization Machines for Sparse Predictive Analytics》](https://blog.csdn.net/u014475479/article/details/81630959)
-
-> [backup](/posts_res/2019-10-07-Neural-Factorization-Machines-for-Sparse-Predictive-Analytics笔记/NFM.py)
+> 3. [hexiangnan/neural_factorization_machine](https://github.com/hexiangnan/neural_factorization_machine)

@@ -60,53 +60,47 @@ $$
 L = \sum_{i=1}^{n} (y_i - \hat{y}_i)^2 + \lambda_w ||W||^2 + \lambda_v ||V||^2
 $$
 
-[TensorFlow实现代码](https://github.com/babakx/fm_tensorflow/blob/master/fm_tensorflow.ipynb)为：
+[FM_TensorFlow]()为：
 
-其中`p`为特征维度，`k`为$v$的维度
+其中`p`为特征维度，`k`为$v$的维度，label是`one-hot`形式的
 
 ```python
-x = tf.placeholder('float', [None, p])
-y = tf.placeholder('float', [None, 1])
+"""
+y'(x) = w0 + sum( wi * xi ) + 0.5 * sum( (vi xi)**2 - vi**2 * xi**2 )
+"""
+with tf.variable_scope('linear_layer'):
+  # 单独的全局bias
+  w0 = tf.get_variable(name='w0',
+            shape=[self.num_classes],
+            initializer=tf.zeros_initializer())
+	# 线性乘积部分
+	self.w = tf.get_variable(name='w',
+               shape=[self.p, num_classes],
+               initializer=tf.truncated_normal_initializer(mean=0, stddev=0.01))
+  # [n, feature_num] * [feature_num, num_classes] -> [n, num_classes]
+  # [n, num_classes] + [feature_num] -> [n, num_classes]
+  self.linear_terms = tf.add(tf.matmul(self.X, self.w), w0)
 
-# bias
-w0 = tf.Variable(tf.zeros([1]))
-# 一阶权重
-w = tf.Variable(tf.zeros([p]))
-# 二阶交叉权重
-v = tf.Variable(tf.random_normal([k, p], mean=0, stddev=0.01))
-
-# bias + 一阶线性乘积结果
-linear_terms = tf.add(w0, tf.reduce_sum(tf.multiply(w, x), 1, keep_dims=True))  # n * 1
-# 二阶交叉结果
-pair_interactions = 0.5 * tf.reduce_sum(
-    tf.subtract(
-        tf.pow(tf.matmul(x, tf.transpose(v)), 2),
-        tf.matmul(tf.pow(x, 2), tf.transpose(tf.pow(v, 2)))
-    ), axis=1, keep_dims=True)
-
-# FM预测结果
-y_hat = tf.add(linear_terms, pair_interactions)
-
-# 权重正则项系数
-lambda_w = tf.constant(0.001, name='lambda_w')
-lambda_v = tf.constant(0.001, name='lambda_v')
-l2_norm = tf.reduce_sum(
-    tf.add(
-        tf.multiply(lambda_w, tf.pow(w, 2)),
-        tf.multiply(lambda_v, tf.pow(v, 2))
-    )
-)
-
-# label的误差
-error = tf.reduce_mean(tf.square(y - y_hat))
-loss = tf.add(error, l2_norm)
-
-train_op = tf.train.GradientDescentOptimizer(learning_rate=0.01).minimize(loss)
+  with tf.variable_scope('interaction_layer'):
+    # 特征交叉部分
+    self.v = tf.get_variable(name='v',
+                 shape=[self.p, self.k],
+                 initializer=tf.truncated_normal_initializer(mean=0, stddev=0.01))
+    self.interaction_terms = tf.multiply(0.5,
+                      tf.reduce_mean(tf.subtract(tf.pow(tf.matmul(self.X, self.v), 2),
+                                    tf.matmul(self.X, tf.pow(self.v, 2))),
+                      1, keep_dims=True))
+  with tf.name_scope("predict_layer"):
+    self.y_out = tf.add(self.linear_terms, self.interaction_terms)
+    if self.num_classes == 2:
+      self.y_out_prob = tf.nn.sigmoid(self.y_out)
+    elif self.num_classes > 2:
+      self.y_out_prob = tf.nn.softmax(self.y_out)
 ```
 
 论文及工程地址：
 
 > 1. [Factorization Machines](https://www.csie.ntu.edu.tw/~b97053/paper/Rendle2010FM.pdf)
 > 2. [fm_tensorflow](https://github.com/babakx/fm_tensorflow/blob/master/fm_tensorflow.ipynb)
+> 3. [LLSean/data-mining](https://github.com/LLSean/data-mining/tree/master/fm)
 
-> [backup](/posts_res/2019-10-05-Factorization-Machines/FM_model.py.pdf)
