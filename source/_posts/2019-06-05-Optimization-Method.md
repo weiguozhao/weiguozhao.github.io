@@ -918,3 +918,5 @@ RDA属于简单对偶平均的扩展应用;FTRL 可以视作 RDA 和 FOBOS 的�
 > - [深度学习最全优化方法总结比较（SGD,Adagrad,Adadelta,Adam,Adamax,Nadam）](https://zhuanlan.zhihu.com/p/22252270)
 > - [Deep Learning 最优化方法之AdaGrad](https://zhuanlan.zhihu.com/p/29920135)
 > - [Ad_Click_Prediction_a_View_from_the_Trenches](/posts_res/2019-06-05-Optimization-Method/Ad Click Prediction- a View from the Trenches.pdf)
+> - [各大公司广泛使用的在线学习算法FTRL详解](https://www.cnblogs.com/EE-NovRain/p/3810737.html)
+
