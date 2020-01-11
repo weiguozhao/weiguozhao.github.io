@@ -8,7 +8,10 @@ categories: TODO
 top: true
 ---
 
-some documents in [/posts_res/Good-Project-To-Learn]()
+### 看透论文的整个流程
+
+<img src="/posts_res/Good-Project-To-Learn/thinking.png" height=70% width=70%/>
+
 
 ### TO Learn
 
@@ -22,6 +25,15 @@ some documents in [/posts_res/Good-Project-To-Learn]()
 - [suvigyavijay/DeepRecommender](https://github.com/suvigyavijay/DeepRecommender)
 - [HIT-SCIR/ELMoForManyLangs](https://github.com/HIT-SCIR/ELMoForManyLangs)
 - [robi56/Deep-Learning-for-Recommendation-Systems](https://github.com/robi56/Deep-Learning-for-Recommendation-Systems)
+- [alibaba/x-deeplearning](https://github.com/alibaba/x-deeplearning)
+- [princewen/tensorflow_practice](https://github.com/princewen/tensorflow_practice)
+- [LLSean/data-mining](https://github.com/LLSean/data-mining)
+- [yumeng5/Spherical-Text-Embedding](https://github.com/yumeng5/Spherical-Text-Embedding)
+- [xuwei517/FlinkExample](https://github.com/xuwei517/FlinkExample)
+- [Johnson0722/CTR_Prediction](https://github.com/Johnson0722/CTR_Prediction)
+- [jdwittenauer/ipython-notebooks](https://github.com/jdwittenauer/ipython-notebooks)
+
+------------------------------
 
 
 ### Summary Projects
@@ -35,11 +47,15 @@ some documents in [/posts_res/Good-Project-To-Learn]()
 - [kon9chunkit/GitHub-Chinese-Top-Charts](https://github.com/kon9chunkit/GitHub-Chinese-Top-Charts)
     - GitHub中文排行榜
 
+------------------------------
+
 
 ### Recommendation System
 
 - [Factorization Machines](https://www.csie.ntu.edu.tw/~b97053/paper/Rendle2010FM.pdf)
   - [fm_tensorflow_code](https://github.com/babakx/fm_tensorflow/blob/master/fm_tensorflow.ipynb)
+
+------------------------------
 
 
 ### Natural Language Processing
@@ -47,11 +63,15 @@ some documents in [/posts_res/Good-Project-To-Learn]()
 - [DSSM论文阅读与总结](https://zhuanlan.zhihu.com/p/53326791)
     - 微软深度网络的语义模型
 
+------------------------------
+
 
 ### CV
 
 - [ImageNet Classification with Deep Convolutional Neural Networks]()
     - 经典CNN论文
+
+------------------------------
 
 
 ### Machine Learning
@@ -59,11 +79,15 @@ some documents in [/posts_res/Good-Project-To-Learn]()
 - [danielsabinasz/TensorSlow](https://github.com/danielsabinasz/TensorSlow)
     - Python实现的TensorFlow
 
+------------------------------
+
 
 ### Distribute System
 
 - [dmlc/ps-lite](https://github.com/dmlc/ps-lite)
     - ps-lite架构的分布式
+
+------------------------------
 
 
 ### Tools & Corpus
@@ -73,8 +97,21 @@ some documents in [/posts_res/Good-Project-To-Learn]()
 - [apachecn/sklearn-doc-zh](https://github.com/apachecn/sklearn-doc-zh)
     - 翻译的scikit-learns
 
+------------------------------
+
 
 ### Contest Experiences
 
 - [guoday/Tencent2019_Preliminary_Rank1st](https://github.com/guoday/Tencent2019_Preliminary_Rank1st)
     - 2019腾讯广告大赛冠军Code
+
+------------------------------
+
+
+```txt
+  _   _      _ _    __        __         _     _ 
+ | | | | ___| | | __\ \      / /__  _ __| | __| |
+ | |_| |/ _ \ | |/ _ \ \ /\ / / _ \| '__| |/ _` |
+ |  _  |  __/ | | (_) \ V  V / (_) | |  | | (_| |
+ |_| |_|\___|_|_|\___/ \_/\_/ \___/|_|  |_|\__,_|
+ ```
