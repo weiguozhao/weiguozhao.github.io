@@ -179,24 +179,29 @@ def binary_search_template2(left, right):
 ### 7. 二分排序
 
 ```cpp
-//O(nlogn)
-void binarysort(vector<int> &arr)
-{
+// 时间复杂度：O(n) * O(logn) = O(nlogn)
+void binarysort(vector<int> &arr) {
 	int start, end, tmp = 0, mid, j;
+    // 每次将 arr[i] 插入到排好序的 arr[0:i-1] 中，时间复杂度 O(n)
 	for (int i = 1; i < arr.size(); i++) {
 		start = 0; 
-		end = i - 1; 
+        // arr[i] 可能就是较大的，要放在arr[i]的位置，因此 end = i
+		end = i; 
+        // 待插入的值tmp
 		tmp = arr[i];
-		while (start <= end) {
+        // 二分查找到要插入的index，时间复杂度 O(logn)
+		while (start < end) {
 			mid = (start + end) >> 1;
-			if (tmp < arr[mid])
-				end = mid - 1;
-			else
+			if (arr[mid] < tmp)
 				start = mid + 1;
+			else
+				end = mid;
 		}
+        // 往后挪值
 		for (j = i - 1; j >= start; j--) {
 			arr[j + 1] = arr[j];
 		}
+        // 插入
 		arr[start] = tmp;
 	}
 }
