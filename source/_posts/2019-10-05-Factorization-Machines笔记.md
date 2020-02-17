@@ -25,8 +25,8 @@ $$
 $$
 \begin{aligned}
 pair\_interactions &= \sum_{i=1}^n \sum_{j=i+1}^n <v_i, v_j> x_i x_j \\
-&= \frac{1}{2} \sum_{i=1}^n \sum_{j=1}^n <v_i, v_j> x_i x_j - \frac{1}{2} \sum_{i=1}^n <v_i, v_j> x_i x_j \\
-&= \frac{1}{2} \lgroup \sum_{i=1}^n \sum_{j=1}^n \sum_{f=1}^k v_{i, f} v_{j,f} x_i x_j - \sum_{i=1}^n \sum_{f=1}^k v_{i,f} v_{j,f} x_i x_j \rgroup \\
+&= \frac{1}{2} \sum_{i=1}^n \sum_{j=1}^n <v_i, v_j> x_i x_j - \frac{1}{2} \sum_{i=1}^n <v_i, v_i> x_i x_i \\
+&= \frac{1}{2} \lgroup \sum_{i=1}^n \sum_{j=1}^n \sum_{f=1}^k v_{i, f} v_{j,f} x_i x_j - \sum_{i=1}^n \sum_{f=1}^k v_{i,f} v_{i,f} x_i x_i \rgroup \\
 &= \frac{1}{2} \sum_{f=1}^k \lgroup \lgroup \sum_{i=1}^n v_{i,f} x_i \rgroup \lgroup \sum_{j=1}^n v_{j,f} x_j \rgroup - \sum_{i=1}^n v_{i,f}^2 x_i^2 \rgroup \\
 &= \frac{1}{2} \sum_{f=1}^k \lgroup \lgroup \sum_{i=1}^n v_{i,f} x_i \rgroup^2 - \sum_{i=1}^n v_{i,f}^2 x_i^2 \rgroup
 \end{aligned}
