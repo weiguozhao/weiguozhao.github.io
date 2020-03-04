@@ -7,6 +7,7 @@ tags:
 - 排序
 mathjax: true
 copyright: true
+comments: false
 ---
 
 ## <center> 归并排序 - MergeSort </center>

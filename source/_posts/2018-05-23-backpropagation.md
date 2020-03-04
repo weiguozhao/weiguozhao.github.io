@@ -73,12 +73,14 @@ copyright: true
 
 **证明BP2**
 
-\\[
+$$
+\begin{equation*}
 \begin{aligned}
-\because z_k^{l+1} &= \sum\_j w\_{kj}^{l+1} a\_j^l + b\_k^{l+1} = \sum\_j w\_{kj}^{l+1} \cdot \sigma(z\_j^l) + b\_k^{l+1} \\\
-\therefore \frac{\partial z\_k^{l+1}}{\partial z\_j^l} & = w\_{kj}^{l+1} \cdot \sigma' (z\_j^l)
+\because z_k^{l+1} &= \sum_j w_{kj}^{l+1} a_j^l + b_k^{l+1} = \sum_j w_{kj}^{l+1} \cdot \sigma(z_j^l) + b_k^{l+1} \\
+\therefore \frac{\partial z_k^{l+1}}{\partial z_j^l} & = w_{kj}^{l+1} \cdot \sigma' (z_j^l)
 \end{aligned}
-\\]
+\end{equation*}
+$$
 
 \\[
 \begin{equation}
@@ -157,36 +159,36 @@ copyright: true
 \end{equation}
 \\]
 
-* (3) 对 \\( l = n_l-1, n_l-2, n_l-3, \ldots, 2 \\) 的各个层，第 \\( l \\) 层的第 \\( i \\) 个节点的残差计算方法如下：
+* (3) 对 $ l = n\_l - 1, n\_l-2, n\_l-3, \ldots, 2 $ 的各个层，第 $ l $ 层的第 $i$ 个节点的残差计算方法如下：
 \\[
 \delta^{(l)}\_i = \left( \sum\_{j=1}^{s\_{l+1}} W^{(l)}\_{ji} \delta^{(l+1)}\_j \right) f'(z^{(l)}\_i)
 \\]
 
 **推导过程**
 
-\\[
-\begin{equation}
+$$
+\begin{equation*}
 \begin{aligned}
-\delta^{(n\_l-1)}\_i 
-& = \frac{\partial}{\partial z^{(n\_l-1)}\_i} J(W,b; x,y) \\\
-& = \frac{\partial}{\partial z^{(n\_l-1)}\_i} \frac{1}{2} \|\|y - h\_{W,b}(x) \|\|^2 \\\
-& = \frac{\partial}{\partial z^{(n\_l-1)}\_i} \frac{1}{2} \sum\_{j=1}^{S\_{n\_l}}(y\_j - a\_j^{(n\_l)})^2 \\\
-& = \frac{1}{2} \sum\_{j=1}^{S\_{(n\_l)}}\frac{\partial}{\partial z^{n\_l-1}\_i}(y\_j - a\_j^{(n\_l)})^2 \\\
-& = \frac{1}{2} \sum\_{j=1}^{S\_{(n\_l)}}\frac{\partial}{\partial z^{n\_l-1}\_i}(y\_j - f(z\_j^{(n\_l)}))^2 \\\
-& = \sum\_{j=1}^{S\_{n\_l}} - (y\_j - f(z\_j^{(n\_l)})) \cdot \frac{\partial}{\partial z\_i^{(n\_l-1)}}f(z\_j^{(n\_l)}) \\\
-& = \sum\_{j=1}^{S\_{n\_l}} - (y\_j - f(z\_j^{(n\_l)})) \cdot f'(z\_j^{(n\_l)}) \cdot \frac{\partial z\_j^{(n\_l)}}{\partial z\_i^{(n\_l-1)}} \\\
-& = \sum\_{j=1}^{S\_{n\_l}} \delta\_j^{(n\_l)} \cdot \frac{\partial z\_j^{(n\_l)}}{\partial z\_i^{(n\_l-1)}} \\\
-& = \sum\_{j=1}^{S\_{n_l}} \left(\delta\_j^{(n\_l)} \cdot \frac{\partial}{\partial z\_i^{(n\_l-1)}}\sum\_{k=1}^{S\_{n\_l-1}}f(z\_k^{(n\_l-1)}) \cdot W\_{jk}^{n\_l-1} \right) \\\
-& = \sum\_{j=1}^{S\_{n\_l}} \delta\_j^{(n\_l)} \cdot  W\_{ji}^{n\_l-1} \cdot f'(z\_i^{(n\_l-1)}) \\\
-& = \left( \sum\_{j=1}^{S\_{n\_l}} W\_{ji}^{n\_l-1} \delta\_j^{(n\_l)} \right) f'(z\_i^{(n\_l-1)}) \\\
+\delta^{(n_l-1)}_i 
+& = \frac{\partial}{\partial z^{(n_l-1)}_i} J(W,b; x,y) \\
+& = \frac{\partial}{\partial z^{(n_l-1)}_i} \frac{1}{2} ||y - h_{W,b}(x) ||^2 \\
+& = \frac{\partial}{\partial z^{(n_l-1)}_i} \frac{1}{2} \sum_{j=1}^{S_{n_l}}(y_j - a_j^{(n_l)})^2 \\
+& = \frac{1}{2} \sum_{j=1}^{S_{(n_l)}}\frac{\partial}{\partial z^{n_l-1}_i}(y_j - a_j^{(n_l)})^2 \\
+& = \frac{1}{2} \sum_{j=1}^{S_{(n_l)}}\frac{\partial}{\partial z^{n_l-1}_i}(y_j - f(z_j^{(n_l)}))^2 \\
+& = \sum_{j=1}^{S_{n_l}} - (y_j - f(z_j^{(n_l)})) \cdot \frac{\partial}{\partial z_i^{(n_l-1)}}f(z_j^{(n_l)}) \\
+& = \sum_{j=1}^{S_{n_l}} - (y_j - f(z_j^{(n_l)})) \cdot f'(z_j^{(n_l)}) \cdot \frac{\partial z_j^{(n_l)}}{\partial z_i^{(n_l-1)}} \\
+& = \sum_{j=1}^{S_{n_l}} \delta_j^{(n_l)} \cdot \frac{\partial z_j^{(n_l)}}{\partial z_i^{(n_l-1)}} \\
+& = \sum_{j=1}^{S_{n_l}} \left(\delta_j^{(n_l)} \cdot \frac{\partial}{\partial z_i^{(n_l-1)}}\sum_{k=1}^{S_{n_l-1}}f(z_k^{(n_l-1)}) \cdot W_{jk}^{n_l-1} \right) \\
+& = \sum_{j=1}^{S_{n_l}} \delta_j^{(n_l)} \cdot  W_{ji}^{n_l-1} \cdot f'(z_i^{(n_l-1)}) \\
+& = \left( \sum_{j=1}^{S_{n_l}} W_{ji}^{n_l-1} \delta_j^{(n_l)} \right) f'(z_i^{(n_l-1)}) \\
 \end{aligned}
-\end{equation}
-\\]
+\end{equation*}
+$$
 
-将上式中的 \\( n_l-1 \\) 与 \\( n_l \\) 的关系替换为 \\( l \\) 与 \\( l+1 \\) 的关系，就可以得到：
-\\[
-\delta^{(l)}\_i = \left( \sum\_{j=1}^{s_{l+1}} W^{(l)}\_{ji} \delta^{(l+1)}_j \right) f'(z^{(l)}_i)
-\\]
+将上式中的 \\( n\_l-1 \\) 与 \\( n\_l \\) 的关系替换为 \\( l \\) 与 \\( l+1 \\) 的关系，就可以得到：
+$$
+\delta^{(l)}_i = \left( \sum_{j=1}^{s_{l+1}} W^{(l)}_{ji} \delta^{(l+1)}_j \right) f'(z^{(l)}_i)
+$$
 
 以上逐次从后向前求导的过程即为“反向传导”的本意所在。
 
@@ -205,10 +207,18 @@ copyright: true
 
 那么，反向传播算法可表示为以下几个步骤：
 
-1. 进行前馈传导计算，利用前向传导公式，得到 \\( L_2, L_3, \ldots \\) 直到输出层 \\( L_{n_l} \\) 的激活值。
+1. 进行前馈传导计算，利用前向传导公式，得到 \\( L\_2, L\_3, \ldots \\) 直到输出层 \\( L\_{n_l} \\) 的激活值。
 2. 对输出层（第 \\( n_l \\) 层），计算:\\[\begin{align} \delta^{(n_l)} = - (y - a^{(n_l)}) \bullet f'(z^{(n_l)}) \end{align}\\]
 3. 对于 \\( l = n_l-1, n_l-2, n_l-3, \ldots, 2 \\) 的各层，计算：\\[\begin{align} \delta^{(l)} = \left((W^{(l)})^T \delta^{(l+1)}\right) \bullet f'(z^{(l)}) \end{align} \\]
-4. 计算最终需要的偏导数值：\\[ \begin{align} \nabla_{W^{(l)}} J(W,b;x,y) &= \delta^{(l+1)} (a^{(l)})^T, \\\ \nabla_{b^{(l)}} J(W,b;x,y) &= \delta^{(l+1)}.\end{align} \\]
+4. 计算最终需要的偏导数值：
+$$
+\begin{equation*}
+\begin{aligned}
+\nabla_{W^{(l)}} J(W,b;x,y) &= \delta^{(l+1)} (a^{(l)})^T, \\
+\nabla_{b^{(l)}} J(W,b;x,y) &= \delta^{(l+1)}.
+\end{aligned}
+\end{equation*}
+$$
 
 <br>
 
@@ -226,7 +236,7 @@ copyright: true
 
 * (1) 对于所有 \\( l \\)，令 \\( \Delta W^{(l)} := 0, \Delta b^{(l)} := 0 \\) (设置为全零矩阵或全零向量)
 * (2) 对于 \\( i = 1 \\) 到 \\( m \\)，
-* (2.1) 使用反向传播算法计算 \\( \nabla_{W^{(l)}} J(W,b;x,y) \\) 和 \\( \nabla_{b^{(l)}} J(W,b;x,y) \\);
+* (2.1) 使用反向传播算法计算 \\( \nabla\_{W^{(l)}} J(W,b;x,y) \\) 和 \\( \nabla\_{b^{(l)}} J(W,b;x,y) \\);
 * (2.2) 计算 \\( \Delta W^{(l)} := \Delta W^{(l)} + \nabla_{W^{(l)}} J(W,b;x,y) \\);
 * (2.3) 计算 \\( \Delta b^{(l)} := \Delta b^{(l)} + \nabla_{b^{(l)}} J(W,b;x,y) \\);
 * (3) 更新权重参数：
@@ -247,11 +257,11 @@ b^{(l)} &= b^{(l)} - \alpha \left[\frac{1}{m} \Delta b^{(l)}\right]
 转自：[hschen0712/machine-learning-notes](https://github.com/hschen0712/machine-learning-notes/blob/master/Deep-Learning/back-propagation-through-time.ipynb)
 
 RNN（递归神经网络，Recurrent Neural Network）是一种具有长时记忆能力的神经网络模型，被广泛应用于序列标注（Sequence Labeling）问题。
-在序列标注问题中，模型的输入是一段时间序列，记为$ x = \lbrace x_1, x_2, ..., x_T \rbrace $，
-我们的目标是为输入序列的每个元素打上标签集合中的对应标签，记为$ y = \lbrace y_1, y_2, ..., y_T \rbrace $。
+在序列标注问题中，模型的输入是一段时间序列，记为$ x = \lbrace x\_1, x\_2, ..., x\_T \rbrace $，
+我们的目标是为输入序列的每个元素打上标签集合中的对应标签，记为$ y = \lbrace y\_1, y\_2, ..., y\_T \rbrace $。
 
 NLP中的大部分任务（比如分词、实体识别、词性标注）都可以最终归结为序列标注问题。
-这类问题中，输入是语料库中一段由 $T$ 个词（或字）构成的文本 $ x = \lbrace x_1, x_2, ..., x_T \rbrace $（其中$x_t$表示文本中的第$t$个词）；
+这类问题中，输入是语料库中一段由 $T$ 个词（或字）构成的文本 $ x = \lbrace x\_1, x\_2, ..., x\_T \rbrace $（其中$x\_t$表示文本中的第$t$个词）；
 输出是每个词对应的标签，根据任务的不同标签的形式也各不相同，但本质上都是针对每个词根据它的上下文进行标签的分类。
 
 一个典型的RNN的结构如下图所示：
@@ -260,10 +270,10 @@ NLP中的大部分任务（比如分词、实体识别、词性标注）都可�
 
 从图中可以看到，一个RNN通常由三层组成，分别是输入层、隐藏层和输出层。
 与一般的神经网络不同的地方是，RNN的隐藏层存在一条有向反馈边，正是这种反馈机制赋予了RNN记忆能力。
-要理解左边的图可能有点难度，我们可以将其展开为右边这种更直观的形式，其中RNN的每个神经元接受当前时刻的输入$x_t$ 以及上一时刻隐单元的输出$h_{t-1}$，
-计算出当前神经元的输入 $s_t$，经过激活函数变换得到输出 $h_t$，并传递给下一时刻的隐单元。
+要理解左边的图可能有点难度，我们可以将其展开为右边这种更直观的形式，其中RNN的每个神经元接受当前时刻的输入$x\_t$ 以及上一时刻隐单元的输出$h\_{t-1}$，
+计算出当前神经元的输入 $s\_t$，经过激活函数变换得到输出 $h\_t$，并传递给下一时刻的隐单元。
 此外，我们还需要注意到RNN中每个时刻上的神经元的参数都是相同的（类似CNN的权值共享），这么做一方面是减小参数空间，保证泛化能力；
-另一方面是为了赋予RNN记忆能力，将有用信息存储在$W_{in},W_{rec},W_{out}$三个矩阵中。
+另一方面是为了赋予RNN记忆能力，将有用信息存储在$W\_{in},W\_{rec},W\_{out}$三个矩阵中。
 
 由于RNN是一种基于时序数据的神经网络模型，因此传统的BP算法并不适用于该模型的优化，这要求我们提出新的优化算法。
 RNN中最常用的优化算法是随时间反向传播（BackPropagation Through Time，BPTT），下文将叙述BPTT算法的数学推导。
@@ -363,20 +373,20 @@ $$
 
 1. 本文只讨论输入为one-hot vector的情况，这种向量的特点是茫茫0海中的一个1，即只用一个1表示某个单词的出现；其余的0均表示单词不出现。
 2. RNN要预测的输出是一个one-hot vector，表示下一个时刻各个单词出现的概率。
-3. 由于$y_t$是one-hot vector，不妨假设$y_{t,j} = 1( y_{t,i} =0 ,i \neq j)$，那么当前时刻的交叉熵为 $$ E_t = - y_t^T log(\hat{y}_t) = -log(\hat{y}_{t,j}) $$。也就是说如果 $t$ 出现的是第 $j$ 个词，那么计算交叉熵时候只要看 $\hat{y}_t$ 的第$j$个分量即可。
-4. 由于$x_t$是one-hot向量，假设第$j$个词出现，则$W_{in}x_t$相当于把$W_{in}$的第$j$列选出来，因此这一步是不用进行任何矩阵运算的，直接做下标操作即可。
+3. 由于$y\_t$是one-hot vector，不妨假设$y\_{t,j} = 1( y\_{t,i} =0 ,i \neq j)$，那么当前时刻的交叉熵为 $$ E_t = - y_t^T log(\hat{y}_t) = -log(\hat{y}_{t,j}) $$。也就是说如果 $t$ 出现的是第 $j$ 个词，那么计算交叉熵时候只要看 $\hat{y}\_t$ 的第$j$个分量即可。
+4. 由于$x\_t$是one-hot向量，假设第$j$个词出现，则$W\_{in}x\_t$相当于把$W\_{in}$的第$j$列选出来，因此这一步是不用进行任何矩阵运算的，直接做下标操作即可。
 
 BPTT与BP类似，是在时间上反传的梯度下降算法。
-RNN中，我们的目的是求得 $\frac{\partial E}{\partial W_{in}}, \frac{\partial E}{\partial W_{rec}}, \frac{\partial E}{\partial W_{out}}$，
-根据这三个变化率来优化三个参数 $W_{in},W_{rec},W_{out}$。注意到 $\frac{\partial E}{\partial W_{in}} = \sum_t \frac{\partial E_t}{\partial W_{in}}$，
+RNN中，我们的目的是求得 $\frac{\partial E}{\partial W\_{in}}, \frac{\partial E}{\partial W\_{rec}}, \frac{\partial E}{\partial W\_{out}}$，
+根据这三个变化率来优化三个参数 $W\_{in},W\_{rec},W\_{out}$。注意到 $\frac{\partial E}{\partial W\_{in}} = \sum\_t \frac{\partial E\_t}{\partial W\_{in}}$，
 因此我们只要对每个时刻的损失函数求偏导数再加起来即可。矩阵求导有两种布局方式：分母布局（Denominator Layout）和分子布局（Numerator Layout），关于分子布局和分母布局的区别，请参考文献3。
 如果这里采用分子布局，那么更新梯度时还需要将梯度矩阵进行一次转置，因此出于数学上的方便，后续的矩阵求导都将采用分母布局。
 
 <br>
 
-#### 2.2 计算 $\frac{\partial E_t}{\partial W_{out}}$
+#### 2.2 计算 $\frac{\partial E\_t}{\partial W\_{out}}$
 
-注意到$E_t$是$W_{out}$的复合函数，参考文献3中Scalar-by-matrix identities一节中关于复合矩阵函数求导法则（右边的是分母布局）： 
+注意到$E\_t$是$W\_{out}$的复合函数，参考文献3中Scalar-by-matrix identities一节中关于复合矩阵函数求导法则（右边的是分母布局）： 
 
 ![matrix](/posts_res/2018-05-23-backpropagation/2-2.jpg)
 
@@ -403,15 +413,15 @@ $$ \frac{\partial E}{\partial W_{out}} = \sum_{t=0}^T r_t\otimes h_t $$
 
 <br>
 
-#### 2.3 计算$\frac{\partial E_t}{\partial W_{rec}}$
+#### 2.3 计算$\frac{\partial E\_t}{\partial W\_{rec}}$
 
-由于$W_{rec}$是各个时刻共享的，所以$t$时刻之前的每个时刻$W_{rec}$的变化都对$E_t$有贡献，反过来求偏导时，也要考虑之前每个时刻$W_{rec}$对$E$的影响。
-我们以$s_k$为中间变量，应用链式法则：
+由于$W\_{rec}$是各个时刻共享的，所以$t$时刻之前的每个时刻$W\_{rec}$的变化都对$E\_t$有贡献，反过来求偏导时，也要考虑之前每个时刻$W\_{rec}$对$E$的影响。
+我们以$s\_k$为中间变量，应用链式法则：
 
 $$\frac{\partial E_t}{\partial W_{rec}} = \sum_{k=0}^t \frac{\partial s_k}{\partial W_{rec}} \frac{\partial E_t}{\partial s_k}$$
 
-但由于$\frac{\partial s_k}{\partial W_{rec}}$（分子向量，分母矩阵）以目前的数学发展水平是没办法求的，
-因此我们要求这个偏导，可以拆解为$E_t$对$W_{rec}(i,j)$的偏导数：
+但由于$\frac{\partial s\_k}{\partial W\_{rec}}$（分子向量，分母矩阵）以目前的数学发展水平是没办法求的，
+因此我们要求这个偏导，可以拆解为$E\_t$对$W\_{rec}(i,j)$的偏导数：
 
 $$
 \frac{\partial E_t}{\partial W_{rec}(i,j)} 
@@ -419,7 +429,7 @@ $$
 = \sum_{k=0}^t  tr[(\delta_k^{(t)})^T\frac{\partial s_k}{\partial W_{rec}(i,j)}]
 $$
 
-其中，$\delta^{(t)}_k=\frac{\partial E_t}{\partial s_k}$，遵循
+其中，$\delta^{(t)}\_k=\frac{\partial E_t}{\partial s\_k}$，遵循
 
 $$s_k\to h_k\to s_{k+1}\to ...\to E_t$$
 
@@ -451,7 +461,7 @@ $$
 \end{cases}
 $$
 
-由 $ \delta^{(t)}_t $ 出发，
+由 $ \delta^{(t)}\_t $ 出发，
 我们可以往前推出每一个 $ \delta $ ，
 将 $$ \delta^{(t)}_0,...,\delta^{(t)}_t $$ 
 代入 $$\frac{\partial E_t}{\partial W_{rec}(i,j)}$$
@@ -466,11 +476,11 @@ $$
 \frac{\partial E}{\partial W_{rec}} =\sum_{t=0}^T \sum_{k=0}^t \delta^{(t)}_k \otimes h_{k-1}
 $$
 
-不失严谨性，定义$h_{-1}$为全0的向量。
+不失严谨性，定义$h\_{-1}$为全0的向量。
 
 <br>
 
-#### 2.4 计算$\frac{\partial E_t}{\partial W_{in}}$
+#### 2.4 计算$\frac{\partial E\_t}{\partial W\_{in}}$
 
 按照上述思路，我们可以得到 
 
@@ -500,14 +510,14 @@ $$ \delta_t = \frac{\partial E_t}{\partial s_t} = (W_{out}^T r_t) \odot (1 - h_t
 
 #### 2.6 部分思考
 
-- 为什么RNN中要对隐藏层的输出进行一次运算$z_t=W_{out}h_t$，然后再对$z_t$进行一次softmax，而不是直接对$h_t$进行softmax求得概率？为什么要有$W_{out}$这个参数？
-    - 答：$x_t$是一个$K\times 1$的向量，我们要将它映射到一个$H\times 1$的$h_t$（其中$H$是隐神经元的个数），从$x_t$到$h_t$相当于对词向量做了一次编码；最终我们要得到的是一个$K\times 1$的向量（这里$K$是词汇表大小），表示每个词接下来出现的概率，所以我们需要一个矩阵$K\times H$的$W_{out}$来将$h_t$映射回原来的空间去，这个过程相当于解码。因此，RNN可以理解为一种编解码网络。
-- $W_{in},W_{rec},W_{out}$三个参数分别有什么意义？
-    - 答： $W_{in}$将$K\times 1$的one-hot词向量映射到$H\times 1$隐藏层空间，将输入转化为计算机内部可理解可处理的形式，这个过程可以理解为一次编码过程；$W_{rec}$则是隐含层到自身的一个映射，它定义了模型如何结合上文信息，在编码中融入了之前的“记忆”；$W_{in},W_{rec}$结合了当前输入单词和之前的记忆，形成了当前时刻的知识状态。$W_{out}$是隐含层到输出的映射，$z=W_{out}h$是映射后的分数，这个过程相当于一次解码。这个解码后的分数再经过一层softmax转化为概率输出来，我们挑选概率最高的那个作为我们的预测。作为总结， RNN的记忆由两部分构成，一部分是当前的输入，另一部分是之前的记忆。
+- 为什么RNN中要对隐藏层的输出进行一次运算$z\_t=W\_{out}h\_t$，然后再对$z\_t$进行一次softmax，而不是直接对$h\_t$进行softmax求得概率？为什么要有$W\_{out}$这个参数？
+    - 答：$x\_t$是一个$K\times 1$的向量，我们要将它映射到一个$H\times 1$的$h\_t$（其中$H$是隐神经元的个数），从$x\_t$到$h\_t$相当于对词向量做了一次编码；最终我们要得到的是一个$K\times 1$的向量（这里$K$是词汇表大小），表示每个词接下来出现的概率，所以我们需要一个矩阵$K\times H$的$W\_{out}$来将$h\_t$映射回原来的空间去，这个过程相当于解码。因此，RNN可以理解为一种编解码网络。
+- $W\_{in},W\_{rec},W\_{out}$三个参数分别有什么意义？
+    - 答： $W\_{in}$将$K\times 1$的one-hot词向量映射到$H\times 1$隐藏层空间，将输入转化为计算机内部可理解可处理的形式，这个过程可以理解为一次编码过程；$W\_{rec}$则是隐含层到自身的一个映射，它定义了模型如何结合上文信息，在编码中融入了之前的“记忆”；$W\_{in},W\_{rec}$结合了当前输入单词和之前的记忆，形成了当前时刻的知识状态。$W\_{out}$是隐含层到输出的映射，$z=W\_{out}h$是映射后的分数，这个过程相当于一次解码。这个解码后的分数再经过一层softmax转化为概率输出来，我们挑选概率最高的那个作为我们的预测。作为总结， RNN的记忆由两部分构成，一部分是当前的输入，另一部分是之前的记忆。
 - BPTT和BP的区别在哪？为什么不能用BP算法训练RNN？
     - 答：BP算法只考虑了误差的导数在上下层级之间梯度的反向传播；而BPTT则同时包含了梯度在纵向层级间的反向传播和在时间维度上的反向传播，同时在两个方向上进行参数优化。
 - 文中词$x_t$的特征是一个one-hot vector，这里能不能替换为word2vec训练出的词向量？效果和性能如何？
-    - 答：RNNLM本身自带了训练词向量的过程。由于$x_t$是one-hot向量，假设出现的词的索引为$j$，那么$W_{in}x_t$就是把$W_{in}$的第$j$列$W[:,j]$取出，这个列向量就相当于该词的词向量。实际上用语言模型训练词向量的思想最早可以追溯到03年Bengio的一篇论文《A neural probabilistic language model 》，这篇论文中作者使用一个神经网络模型来训练n-gram模型，顺便学到了词向量。本文出于数学推导以及代码实现上的方便采用了one-hot向量作为输入。实际工程中，词汇表通常都是几百万，内存没办法装下几百万维的稠密矩阵，所以工程上基本上没有用one-hot的，基本都是用词向量。
+    - 答：RNNLM本身自带了训练词向量的过程。由于$x\_t$是one-hot向量，假设出现的词的索引为$j$，那么$W\_{in}x\_t$就是把$W\_{in}$的第$j$列$W[:,j]$取出，这个列向量就相当于该词的词向量。实际上用语言模型训练词向量的思想最早可以追溯到03年Bengio的一篇论文《A neural probabilistic language model 》，这篇论文中作者使用一个神经网络模型来训练n-gram模型，顺便学到了词向量。本文出于数学推导以及代码实现上的方便采用了one-hot向量作为输入。实际工程中，词汇表通常都是几百万，内存没办法装下几百万维的稠密矩阵，所以工程上基本上没有用one-hot的，基本都是用词向量。
 
 
 -------

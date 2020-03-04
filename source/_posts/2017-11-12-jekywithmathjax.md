@@ -5,6 +5,7 @@ date: 2017-11-12 10:10 +0800
 categories: 小工具
 mathjax: true
 copyright: true
+comments: false
 ---
 
 <!-- 如果该blog有其他图片代码文件，需在/posts_res/2018-01-01-template/存放 -->

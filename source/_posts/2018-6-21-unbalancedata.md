@@ -93,8 +93,7 @@ copyright: true
 推荐看论文[Learning from Imbalanced Data](/posts_res/2018-04-03-interview/Learning from Imbalanced Data.pdf)
 
 主要包括四大类方法:
->
-1. Sampling
+> 1. Sampling
 2. Cost Sensitive Methods
 3. Kernal-Based Methods and Active Learning Methods
 4. One-Class Learning or Novelty Detection Methods
@@ -104,13 +103,11 @@ copyright: true
 
 *当作异常点检测问题或变化趋势检测问题*
 
->
-识别异常点可以用四分位数(Tukey's text)方法，详见[这里](https://www.zhihu.com/question/38066650/answer/202282227)
+> 识别异常点可以用四分位数(Tukey's text)方法，详见[这里](https://www.zhihu.com/question/38066650/answer/202282227)
 [One-Class SVM介绍](https://zhuanlan.zhihu.com/p/32784067)
 
 
 -------------
 
->
-1. [CTR 预估正负样本 不平衡，请问怎么解决?](https://www.zhihu.com/question/27535832/answer/223882022)
+> 1. [CTR 预估正负样本 不平衡，请问怎么解决?](https://www.zhihu.com/question/27535832/answer/223882022)
 2. [在分类中如何处理训练集中不平衡问题](https://blog.csdn.net/heyongluoyao8/article/details/49408131)

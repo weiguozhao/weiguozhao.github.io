@@ -15,7 +15,6 @@ top: true
 
 ### TO Learn
 
-- [azl397985856/leetcode](https://github.com/azl397985856/leetcode)
 - [google-research/bert](https://github.com/google-research/bert)
 - [brightmart/albert_zh](https://github.com/brightmart/albert_zh)
 - [facebookresearch/dlrm](https://github.com/facebookresearch/dlrm)
@@ -27,12 +26,12 @@ top: true
 - [HIT-SCIR/ELMoForManyLangs](https://github.com/HIT-SCIR/ELMoForManyLangs)
 - [robi56/Deep-Learning-for-Recommendation-Systems](https://github.com/robi56/Deep-Learning-for-Recommendation-Systems)
 - [alibaba/x-deeplearning](https://github.com/alibaba/x-deeplearning)
-- [princewen/tensorflow_practice](https://github.com/princewen/tensorflow_practice)
 - [LLSean/data-mining](https://github.com/LLSean/data-mining)
 - [yumeng5/Spherical-Text-Embedding](https://github.com/yumeng5/Spherical-Text-Embedding)
 - [xuwei517/FlinkExample](https://github.com/xuwei517/FlinkExample)
 - [Johnson0722/CTR_Prediction](https://github.com/Johnson0722/CTR_Prediction)
 - [jdwittenauer/ipython-notebooks](https://github.com/jdwittenauer/ipython-notebooks)
+
 
 ------------------------------
 
@@ -41,12 +40,16 @@ top: true
 
 - [weiguozhao/LeetCodes](https://github.com/weiguozhao/LeetCodes)
     - 自己刷的LeetCode
+    - LeetCode大佬的[azl397985856/leetcode](https://github.com/azl397985856/leetcode)
 - [wzhe06/Reco-papers](https://github.com/wzhe06/Reco-papers)
     - 推荐系统相关经典论文、资源等
 - [princewen/tensorflow_practice](https://github.com/princewen/tensorflow_practice)
     - TF实战练习，包括强化学习、推荐系统、NLP等
 - [kon9chunkit/GitHub-Chinese-Top-Charts](https://github.com/kon9chunkit/GitHub-Chinese-Top-Charts)
     - GitHub中文排行榜
+- [IBBD技术博客](https://github.com/IBBD/IBBD.github.io/blob/master/0-index.md)
+    - 涉及大数据、前后端、后台、其他工具等
+
 
 ------------------------------
 

@@ -23,22 +23,22 @@ copyright: true
 
 ### 1. 基本思想
 
-朴素贝叶斯法通过训练数据集学习联合概率分布\\( P(X,Y) \\)。具体地，学习以下先验概率分布及条件概率分布。
+朴素贝叶斯法通过训练数据集学习联合概率分布$ P(X,Y) $。具体地，学习以下先验概率分布及条件概率分布。
 
 先验概率分布：
 
-\\[P(Y=c_k),\quad k=1,2,...,K\\]
+$$P(Y=c_k),\quad k=1,2,...,K$$
 
 条件概率分布: 
-\\[P(X=x | Y=c\_k)=P(X^{(1)}=x^{(1)},...,X^{(n)}=x^{(n)} | Y=c\_k),\quad k=1,2,...,K\\]
+$$P(X=x | Y=c\_k)=P(X^{(1)}=x^{(1)},...,X^{(n)}=x^{(n)} | Y=c\_k),\quad k=1,2,...,K$$
 
-于是通过贝叶斯公式\\(P(X,Y) = P(X | Y)\cdot P(Y)\\)，
-可以学习到联合概率分布\\(P(X,Y)\\)。
+于是通过贝叶斯公式$P(X,Y) = P(X | Y)\cdot P(Y)$，
+可以学习到联合概率分布$P(X,Y)$。
 
-**但是，条件概率分布\\(P(X=x \| Y=c\_k)\\)有指数级数量的参数，其估计实际是不可行的。事实上，假设\\(x^{(j)}\\) 可取值有\\(S\_j\\)个，\\(j=1,2,...,n\\)，\\(Y\\)可取值有\\(K\\)个，那么参数个数为$K\prod_{j=1}^nS\_j$。**
+**但是，条件概率分布$P(X=x \| Y=c\_k)$有指数级数量的参数，其估计实际是不可行的。事实上，假设$x^{(j)}$ 可取值有$S\_j$个，$j=1,2,...,n$，$Y$可取值有$K$个，那么参数个数为$K\prod_{j=1}^nS\_j$。**
 
 朴素贝叶斯法对条件概率分布作了条件独立性的假设，即假设特征之间相互独立，公式表达如下：
-\\[P(X=x | Y=c\_k) \quad = \quad P(X^{(1)}=x^{(1)},...,X^{(n)}=x^{(n)} | Y=c\_k) \quad = \quad \prod\_{j=1}^{n}P(X^{(j)}=x^{(j)} | Y=c\_k)\\]
+$$P(X=x | Y=c\_k) \quad = \quad P(X^{(1)}=x^{(1)},...,X^{(n)}=x^{(n)} | Y=c\_k) \quad = \quad \prod\_{j=1}^{n}P(X^{(j)}=x^{(j)} | Y=c\_k)$$
 
 
 -----------
@@ -47,26 +47,31 @@ copyright: true
 
 输入：
 
-训练数据\\( T={((x_1, y_1)),...,(x\_N,y\_N)} \\)，其中\\( x\_i=(x\_i^{(1)},x\_i^{(2)},...,x\_i^{(n)})^T \\),\\( x\_i^{(j)} \\)是第\\( i \\)个样本的第\\( j \\)个特征，\\( x\_i^{(j)}\in {a\_{j1},a\_{j2},...,a\_{jS\_j}} \\), \\( a\_{jl} \\)是第\\( j \\)个特征可能取的第\\( l \\)个值，\\( j=1,2,...,n \quad l=1,2,...,S\_j, \quad y\_i \in {c\_1, c\_2, ..., c\_k} \\); 实例\\( x \\)
+训练数据$ T={((x\_1, y\_1)),...,(x\_N,y\_N)} $，
+其中$ x\_i=(x\_i^{(1)},x\_i^{(2)},...,x\_i^{(n)})^T $,
+$x\_i^{(j)}$是第$i$个样本的第$j$个特征，
+$x\_i^{(j)} \in {a\_{j1},a\_{j2},...,a\_{jS\_j}}$,
+$a\_{jl}$是第$j$个特征可能取的第$l$个值，
+$j=1,2,...,n$, $l=1,2,...,S\_j$, $y\_i \in {c\_1, c\_2, ..., c\_k}$;
 
 输出：
 
-实例\\( x \\)的分类
+实例$x$的分类
 
 （1）计算先验概率及条件概率
 
-\\[P(Y=c_k) = \frac{\sum_{i=1}^N I(y_i=c\_k)}{N}, \quad k=1,2,...,K\\]
+$$P(Y=c_k) = \frac{\sum_{i=1}^N I(y_i=c_k)}{N}, \quad k=1,2,...,K$$
 
-\\[P(X^{(j)}=a_{jl} \| Y=c_k)=\frac{\sum_{i=1}^N I(x_i^{(j)}, y_i=c_k)}{\sum_{i=1}^N I(y_i=c\_k)}\\]
+$$P(X^{(j)}=a_{jl} \| Y=c_k)=\frac{\sum_{i=1}^N I(x_i^{(j)}, y_i=c_k)}{\sum_{i=1}^N I(y_i=c_k)}$$
 
-\\[j=1,2,...,n; \quad l=1,2,...,S_j; \quad k=1,2,...,K\\]
+$$j=1,2,...,n; \quad l=1,2,...,S_j; \quad k=1,2,...,K$$
 
-（2）对于给定的实例\\( x=(x^{(1)}, x^{(2)},.., x^{(n)})^T \\)，计算
+（2）对于给定的实例$ x=(x^{(1)}, x^{(2)},.., x^{(n)})^T $，计算
 
-\\[P(Y=c_k) \prod_{j=1}^n P(X^{(j)}=x^{(j)} \| Y=c_k), \quad k=1,2,...,K\\]
+$$P(Y=c_k) \prod_{j=1}^n P(X^{(j)}=x^{(j)} \| Y=c_k), \quad k=1,2,...,K$$
 
-（3）确定实例\\( x \\)的类
-\\[ y = \mathop{\arg\max}\_{c\_k} P(Y=c\_k) \prod\_{j=1}^n P(X^{(j)} \| Y=c\_k)\\]
+（3）确定实例$ x $的类
+$$ y = \mathop{\arg\max}_{c_k} P(Y=c_k) \prod_{j=1}^n P(X^{(j)} \| Y=c_k)$$
 
 
 ------
@@ -74,44 +79,44 @@ copyright: true
 ### 3. 后验概率最大化的意义
 
 朴素贝叶斯法将实例分到后验概率最大的类中，这等价于期望风险最小化，假设选择0-1损失函数：
-\\[ L(Y,f(X)) = \begin{cases}
-1, & Y \neq f(X) \\\
+$$ L(Y,f(X)) = \begin{cases}
+1, & Y \neq f(X) \\
 0, & Y = f(X)
-\end{cases} \\]
+\end{cases} $$
 
-式中\\( f(X) \\)是决策函数，这时期望风险函数为
-\\[ R\_{exp}(f)=E[L(Y,f(X)] \\]
+式中$ f(X) $是决策函数，这时期望风险函数为
+$$ R_{exp}(f)=E[L(Y,f(X)] $$
 
-期望是对联合分布 \\( P(X,Y) \\)取的，由此取条件期望
-\\[
+期望是对联合分布 $ P(X,Y) $取的，由此取条件期望
+$$
 \begin{equation}
 \begin{aligned}
 R_{exp}(f)
-& = \iint_{D_{xy}}L(y,f(x)) \cdot P(x,y) dxdy \\\
-& = \int_{D_x} \int_{D_y} L(y, f(x)) \cdot P(y\|x) \cdot P(x) dxdy \\\
-& = \int_{D_x} [\int_{D_y} L(x,f(x)) \cdot P(y\|x) dy] P(x) dx \\\
-& = E\_X \sum\_{k=1}^K [L(c\_k, f(X)]P(c\_k|X)
+& = \iint_{D_{xy}}L(y,f(x)) \cdot P(x,y) dxdy \\
+& = \int_{D_x} \int_{D_y} L(y, f(x)) \cdot P(y\|x) \cdot P(x) dxdy \\
+& = \int_{D_x} [\int_{D_y} L(x,f(x)) \cdot P(y\|x) dy] P(x) dx \\
+& = E_X \sum_{k=1}^K [L(c_k, f(X)]P(c_k|X)
 \end{aligned}
 \end{equation}
-\\]
+$$
 
-为了使期望风险最小化，只需要对 \\( X=x \\)逐个极小化，由此得到：
-\\[
+为了使期望风险最小化，只需要对 $ X=x $逐个极小化，由此得到：
+$$
 \begin{equation}
 \begin{aligned}
 f(x) 
-& = \mathop{\arg\min}\_{y\in \mathbb{y}} \sum_{k=1}^K L(c_k,y)P(c_k|X=x) \\\
-& = \mathop{\arg\min}\_{y\in \mathbb{y}} \sum_{k=1}^K P(y \neq c_k| X=x) \\\
-& = \mathop{\arg\min}\_{y\in \mathbb{y}} (1-P(y=c_k|X=x) \\\
-& = \mathop{\arg\max}\_{y\in \mathbb{y}} P(y=c_k|X=x)
+& = \mathop{\arg\min}_{y\in \mathbb{y}} \sum_{k=1}^K L(c_k,y)P(c_k|X=x) \\
+& = \mathop{\arg\min}_{y\in \mathbb{y}} \sum_{k=1}^K P(y \neq c_k| X=x) \\
+& = \mathop{\arg\min}_{y\in \mathbb{y}} (1-P(y=c_k|X=x) \\
+& = \mathop{\arg\max}_{y\in \mathbb{y}} P(y=c_k|X=x)
 \end{aligned}
 \end{equation}
-\\]
+$$
 
 这样，根据期望奉献最小化准则就得到了后验概率最大化准则：
-\\[ 
-f(x)=\mathop{\arg\max}\_{y=c_k} P(c_k|X=x) 
-\\]
+$$ 
+f(x)=\mathop{\arg\max}_{y=c_k} P(c_k|X=x) 
+$$
 
 即朴素贝叶斯法采用的原理。
 

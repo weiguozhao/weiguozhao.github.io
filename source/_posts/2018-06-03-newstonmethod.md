@@ -94,8 +94,7 @@ $$ X_{k+1} = X_k - H_k^{-1} \cdot g_k, \quad k=0,1,2... $$
 
 这就是原始的牛顿迭代法，其迭代格式中的搜索方向$ d\_k = - H\_k^{-1} \cdot  g\_k $称为**牛顿方向**，下面给出牛顿法的完整算法描述。
 
->
-1. 给定初值$ x\_0 $和精度阈值$ \epsilon $，并令$ k=0$；
+> 1. 给定初值$ x\_0 $和精度阈值$ \epsilon $，并令$ k=0$；
 2. 计算$ g\_k $和$ H\_k $；
 3. 若$ \|\| gk \|\| < \epsilon $，则停止迭代；否则确定搜索方向$ d\_k = -H\_k^{-1} \cdot g\_k $；
 4. 计算新的迭代点 $ x\_{k+1} = x\_k + d\_k $；
@@ -242,13 +241,12 @@ $$ \Delta D_k = \frac{s_k s_k^T}{s_k^T y_k} - \frac{D_k y_k y_k^T D_k}{y_k^T D_k
 
 综上，我们给出DFP算法的一个完整算法描述：
 
->
-1. 给定初值$x_0$和精度阈值$\epsilon$，并令$ D_0=I, \quad k=0$，
-2. 确定搜索方向$ d_k = - D_k \cdot g_k $，
-3. 利用$(*)$式得到步长$\lambda_k$，令$ s_k = \lambda_k d_k, \quad x_{k+1}=x_k + s_k $，
+> 1. 给定初值$x\_0$和精度阈值$\epsilon$，并令$ D\_0=I, \quad k=0$，
+2. 确定搜索方向$ d\_k = - D\_k \cdot g\_k $，
+3. 利用$(*)$式得到步长$\lambda\_k$，令$ s\_k = \lambda\_k d\_k, \quad x\_{k+1}=x\_k + s\_k $，
 4. 若$ \|\| g_{k+1} \|\| < \epsilon$，则算法结束，
-5. 计算 $ y_k = g_{k+1} - g_k $，
-6. 计算$ D_{k+1} = D_k + \Delta D_k = D_k + \frac{s_k s_k^T}{s_k^T y_k} - \frac{D_k y_k y_k^T D_k}{y_k^T D_k y_k} $，
+5. 计算 $ y\_k = g\_{k+1} - g\_k $，
+6. 计算$ D\_{k+1} = D\_k + \Delta D\_k = D\_k + \frac{s\_k s\_k^T}{s\_k^T y\_k} - \frac{D\_k y\_k y\_k^T D\_k}{y\_k^T D\_k y\_k} $，
 7. 令$ k = k+1$，转至第2步。 
 
 
@@ -284,32 +282,30 @@ $$ \Delta B_k = \frac{y_k y_k^T}{y_k^T s_k} - \frac{B_k s_k s_k^T B_k}{s_k^T B_k
 
 最后，我们给出BFGS算法的一个完整算法描述：
 
->
-1. 给定初值$x_0$和精度阈值$\epsilon$，并令$ B_0=I, \quad k=0$，
-2. 确定搜索方向$ d_k = - B_k^{-1} \cdot g_k $，
-3. 利用$(*)$式得到步长$\lambda_k$，令$ s_k = \lambda_k d_k, \quad x_{k+1}=x_k + s_k $，
+> 1. 给定初值$x\_0$和精度阈值$\epsilon$，并令$ B\_0=I, \quad k=0$，
+2. 确定搜索方向$ d\_k = - B\_k^{-1} \cdot g\_k $，
+3. 利用$(*)$式得到步长$\lambda\_k$，令$ s\_k = \lambda\_k d\_k, \quad x\_{k+1}=x\_k + s\_k $，
 4. 若$ \|\| g_{k+1} \|\| < \epsilon$，则算法结束，
-5. 计算 $ y_k = g_{k+1} - g_k $，
-6. 计算$ B_{k+1} = B_k + \Delta B_k = B_k + \frac{y_k y_k^T}{y_k^T s_k} - \frac{B_k s_k s_k^T B_k}{s_k^T B_k s_k} $，
+5. 计算 $ y\_k = g\_{k+1} - g\_k $，
+6. 计算$ B\_{k+1} = B\_k + \Delta B\_k = B\_k + \frac{y\_k y\_k^T}{y\_k^T s\_k} - \frac{B\_k s\_k s\_k^T B\_k}{s\_k^T B\_k s\_k} $，
 7. 令$ k = k+1$，转至第2步。 
 
 
-上面算法中的第2步通常是通过求解线性代数方程组$ B_k d_k = -g_k $来进行，然而更一般的做法是通过对第6步中的递推关系，
-应用$Sherman-Morrison$公式，直接给出$B_{k+1}^{-1}$和$B_k^{-1}$之间的关系：
+上面算法中的第2步通常是通过求解线性代数方程组$ B\_k d\_k = -g\_k $来进行，然而更一般的做法是通过对第6步中的递推关系，
+应用$Sherman-Morrison$公式，直接给出$B\_{k+1}^{-1}$和$B\_k^{-1}$之间的关系：
 
 $$ B_{k+1}^{-1} = \left( I - \frac{s_k y_k^T}{y_k^T s_k} \right) B_k^{-1} \left( I - \frac{y_k s_k^T}{y_k^T s_k} \right) + \frac{s_k s_k^T}{y_k^T s_k} $$
 
-利用上式，我们很容易将上述BFGS算法进行改进，为了避免出现矩阵求逆符号，我们统一将$B_i^{-1}$换用$D_i$（这样做仅仅只是符号上看起来舒服起见）。
+利用上式，我们很容易将上述BFGS算法进行改进，为了避免出现矩阵求逆符号，我们统一将$B\_i^{-1}$换用$D\_i$（这样做仅仅只是符号上看起来舒服起见）。
 这样，整个算法中不再需要求解线性代数方程组，由矩阵-向量运算就可以完成了。
 
 改进后的BFGS算法如下：
 
->
-1. 给定初值$x_0$和精度阈值$\epsilon$，并令$ D_0=I, \quad k=0$，
-2. 确定搜索方向$ d_k = - D_k \cdot g_k $，
-3. 利用$(*)$式得到步长$\lambda_k$，令$ s_k = \lambda_k d_k, \quad x_{k+1}=x_k + s_k $，
+> 1. 给定初值$x\_0$和精度阈值$\epsilon$，并令$ D\_0=I, \quad k=0$，
+2. 确定搜索方向$ d\_k = - D\_k \cdot g\_k $，
+3. 利用$(*)$式得到步长$\lambda\_k$，令$ s\_k = \lambda\_k d\_k, \quad x\_{k+1}=x\_k + s\_k $，
 4. 若$ \|\| g_{k+1} \|\| < \epsilon$，则算法结束，
-5. 计算 $ y_k = g_{k+1} - g_k $，
+5. 计算 $ y\_k = g\_{k+1} - g\_k $，
 6. 计算$ D_{k+1} = \left( I - \frac{s_k y_k^T}{y_k^T s_k} \right) D_k \left( I - \frac{y_k s_k^T}{y_k^T s_k} \right) + \frac{s_k s_k^T}{y_k^T s_k} $，
 7. 令$ k = k+1$，转至第2步。 
 
@@ -389,11 +385,11 @@ D_{k+1} =
 \end{equation} \tag{6.**}
 $$
 
-由上式可以看到，计算$D_{k+1}$需要用到$ \lbrace s_i, y_i \rbrace_{i=0}^k $，因此，若从$ s_0, y_0 $开始连续存储 $ m $ 组的话，只能存储到$ s_{m-1}, y_{m-1} $，
-亦即只能依次计算 $ D_1, D_2, \cdots $，直到$ D_m $，那$ D_{m+1}, D_{m+2} $该如何计算呢？
+由上式可以看到，计算$D\_{k+1}$需要用到$ \lbrace s\_i, y\_i \rbrace\_{i=0}^k $，因此，若从$ s\_0, y\_0 $开始连续存储 $ m $ 组的话，只能存储到$ s\_{m-1}, y\_{m-1} $，
+亦即只能依次计算 $ D\_1, D\_2, \cdots $，直到$ D\_m $，那$ D\_{m+1}, D\_{m+2} $该如何计算呢？
 
-自然地，如果一定要丢弃一些向量，那么肯定优先考虑那些最早生成的向量，具体来说，计算$D_{m+1}$时，我们保存$ \lbrace s_i, y_i \rbrace_{i=1}^m $，丢掉$ \lbrace s_0, y_0 \rbrace;$ 
-计算$ D_{m+2} $时，我们保存$ \lbrace s_i, y_i\rbrace_{i=2}^{m+1} $，丢掉了$ \lbrace s_i, y_i \rbrace_{i=0}^1; \cdots $
+自然地，如果一定要丢弃一些向量，那么肯定优先考虑那些最早生成的向量，具体来说，计算$D\_{m+1}$时，我们保存$ \lbrace s\_i, y\_i \rbrace\_{i=1}^m $，丢掉$ \lbrace s\_0, y\_0 \rbrace;$ 
+计算$ D\_{m+2} $时，我们保存$ \lbrace s\_i, y\_i\rbrace\_{i=2}^{m+1} $，丢掉了$ \lbrace s\_i, y\_i \rbrace\_{i=0}^1; \cdots $
 
 但是舍弃掉一些向量后，就只能近似计算了，当$k+1 > m$时，仿照$(6.**)$式，可以构造近似计算公式：
 
