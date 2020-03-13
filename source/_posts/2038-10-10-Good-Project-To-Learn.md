@@ -10,11 +10,12 @@ top: true
 
 ### 看透论文的整个流程
 
-<img src="/posts_res/Good-Project-To-Learn/thinking.png" height=70% width=70%/>
+<img src="/posts_res/Good-Project-To-Learn/thinking.png" height=60% width=60%/>
 
 
 ### TO Learn
 
+- [CMake入门实战](https://www.hahack.com/codes/cmake/)
 - [google-research/bert](https://github.com/google-research/bert)
 - [brightmart/albert_zh](https://github.com/brightmart/albert_zh)
 - [facebookresearch/dlrm](https://github.com/facebookresearch/dlrm)
