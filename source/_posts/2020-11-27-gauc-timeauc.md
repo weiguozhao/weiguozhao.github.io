@@ -165,7 +165,64 @@ class Solution:
   - 计算逆序数累加和(模型预测错误的数量)
   - 1.0 - 逆序数累加和 / pair总数
 
+其实在真正计算逆序率的时候，是根据肯德尔相关系数来计算的。
 
+```python
+import numpy as np
+from scipy.stats._stats import _kendall_dis
+
+def inverse_ratio(x, y):
+  """
+  x = y_true, duration
+  y = y_pred, prob_dur
+  """
+  n = len(x)
+  tot = n * (n - 1) // 2 
+
+  perm = np.argsort(y)  # sort on y and convert y to dense ranks
+  x, y = x[perm], y[perm]
+  y = np.r_[True, y[1:] != y[:-1]].cumsum(dtype=np.intp)
+
+  # stable sort on x and convert x to dense ranks
+  perm = np.argsort(x, kind='mergesort')
+  x, y = x[perm], y[perm]
+  x = np.r_[True, x[1:] != x[:-1]].cumsum(dtype=np.intp)
+
+  dis = _kendall_dis(x, y)
+
+  obs = np.r_[True, (x[1:] != x[:-1]) | (y[1:] != y[:-1]), True]
+  cnt = np.diff(np.nonzero(obs)[0]).astype('int64', copy=False)
+
+  ntie = (cnt * (cnt - 1) // 2).sum()  # joint ties
+  xtie = count_rank_tie(x)     # ties in x, stats
+  ytie = count_rank_tie(y)     # ties in y, stats
+
+  if xtie == tot or ytie == tot:
+    return np.nan
+
+  # Note that tot = con + dis + (xtie - ntie) + (ytie - ntie) + ntie
+  #               = con + dis + xtie + ytie - ntie
+  # con_minus_dis = tot - xtie - ytie + ntie - 2 * dis
+  # tau = con_minus_dis / np.sqrt(tot - xtie) / np.sqrt(tot - ytie)
+
+  # Limit range to fix computational errors
+  # tau = min(1., max(-1., tau))
+
+  con = tot - dis - xtie - ytie + ntie
+
+  inv_ratio = dis / (con + dis)
+
+  if con + dis == 0:
+    inv_ratio = np.nan 
+    # tau = np.nan
+
+  return inv_ratio
+
+def count_rank_tie(ranks):
+  cnt = np.bincount(ranks).astype('int64', copy=False)
+  cnt = cnt[cnt > 1]
+  return (cnt * (cnt - 1) // 2).sum()
+```
 
 同样的也可以计算GroupTimeAUC
 
