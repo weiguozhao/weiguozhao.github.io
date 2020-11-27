@@ -11,6 +11,7 @@ categories: 算法常识
 ---
 
 > [学习排序 Learning to Rank：从 pointwise 和 pairwise 到 listwise，经典模型与优缺点](https://blog.csdn.net/lipengcn/article/details/80373744)
+> [推荐系统中的排序学习](https://lumingdong.cn/learning-to-rank-in-recommendation-system.html#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99)
 
 Ranking 是信息检索领域的基本问题，也是搜索引擎背后的重要组成模块。本文将对结合机器学习的 ranking 技术 -- Learning2Rank 做个系统整理，包括 pointwise、pairwise、listwise 三大类型，它们的经典模型，解决了什么问题，仍存在什么缺陷。本文主要参考刘铁岩老师的《Learning to Rank for Information Retrieval》和李航老师的《Learning to rank for information retrieval and natural language processing》。
 
