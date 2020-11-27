@@ -11,6 +11,8 @@ date: 2020-09-18 19:42:32
 categories: 机器学习
 ---
 
+视频教程： [Transformer-李宏毅老师](https://www.bilibili.com/video/BV1J441137V6?from=search&seid=8405063910540254578)
+
 > 转自： [10分钟带你深入理解Transformer原理及实现](https://zhuanlan.zhihu.com/p/80986272)
 
 

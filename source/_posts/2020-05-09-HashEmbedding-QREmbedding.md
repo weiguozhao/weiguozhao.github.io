@@ -64,7 +64,7 @@ Hash Embedding可以看作是普通word embedding和通过随机hash函数得到
 
 1. 原始index分别做除法(地板除)、取余得到：`j = index // m`，`k = index % m`
 2. j从整除Embedding Table中获得 embedding vector `vj`
-3. k从整除Embedding Table中获得 embedding vector `vk`
+3. k从取余Embedding Table中获得 embedding vector `vk`
 4. 将 `vj` 和 `vk` 进行element-wise reduce合并，可以是加、乘……
 
 
