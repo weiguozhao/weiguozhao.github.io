@@ -1,14 +1,24 @@
 #!/usr/bin/env bash
 
-echo "start deploy..."
-hexo clean && hexo g && hexo d
-echo "end deoply..."
-
 message="$1"
 if [ -z "${message}" ]; then
     echo "usage: $0 [push message]"
     exit 1
 fi
+
+
+echo "start deploy..."
+# hexo clean
+# hexo g
+hexo d -g
+deploy_ans=$?
+echo "end deoply..."
+
+if [[ ${deploy_ans} -ne 0 ]]; then
+    echo "### deoply faild!"
+    exit 1
+fi
+
 
 branch=`git symbolic-ref --short -q HEAD`
 if [[ $branch -eq "hexo" ]]; then
