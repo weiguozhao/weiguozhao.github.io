@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/github-logo.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/github-logo.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":true,"show_result":true,"style":"default"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="目录 1.原始牛顿法 2.阻尼牛顿法 3.拟牛顿条件 4.DFP算法 5.BFGS算法 6.L-BFGS算法 考虑如下无约束的极小化问题min_x f(x)其中 $ x=(x_1, x_2, …, x_n)^T \in R^n $，由于本文不对收敛性进行讨论，因此对目标函数 $ f: R^n \rightarrow R $做一个较苛刻的假设。 这里假定$ f $为凸函数，且二阶连续可微，此外记极小">
+<meta name="keywords" content="优化算法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="牛顿法&amp;拟牛顿法">
+<meta property="og:url" content="https://weiguozhao.github.io/2018/06/03/newstonmethod/index.html">
+<meta property="og:site_name" content="Weiguo&#39;s Station">
+<meta property="og:description" content="目录 1.原始牛顿法 2.阻尼牛顿法 3.拟牛顿条件 4.DFP算法 5.BFGS算法 6.L-BFGS算法 考虑如下无约束的极小化问题min_x f(x)其中 $ x=(x_1, x_2, …, x_n)^T \in R^n $，由于本文不对收敛性进行讨论，因此对目标函数 $ f: R^n \rightarrow R $做一个较苛刻的假设。 这里假定$ f $为凸函数，且二阶连续可微，此外记极小">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-03-22T10:53:44.471Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="牛顿法&amp;拟牛顿法">
+<meta name="twitter:description" content="目录 1.原始牛顿法 2.阻尼牛顿法 3.拟牛顿条件 4.DFP算法 5.BFGS算法 6.L-BFGS算法 考虑如下无约束的极小化问题min_x f(x)其中 $ x=(x_1, x_2, …, x_n)^T \in R^n $，由于本文不对收敛性进行讨论，因此对目标函数 $ f: R^n \rightarrow R $做一个较苛刻的假设。 这里假定$ f $为凸函数，且二阶连续可微，此外记极小">
+  <link rel="canonical" href="https://weiguozhao.github.io/2018/06/03/newstonmethod/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>牛顿法&拟牛顿法 | Weiguo's Station</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?ff6106e096f9eb6ace966de311be4b1a";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Weiguo's Station</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>博客首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>文章归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类专栏</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>各种标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>站点搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+  <a href="https://github.com/weiguozhao" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weiguozhao.github.io/2018/06/03/newstonmethod/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="WeiguoZHAO">
+      <meta itemprop="description" content="Welcome to my blog~">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Weiguo's Station">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">牛顿法&拟牛顿法
+
+          
+        </h1>
+
+        <div class="post-meta">
+        
+          
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2018-06-03 12:10:00" itemprop="dateCreated datePublished" datetime="2018-06-03T12:10:00+08:00">2018-06-03</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-22 18:53:44" itemprop="dateModified" datetime="2021-03-22T18:53:44+08:00">2021-03-22</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>目录</p><ul>
+<li>1.原始牛顿法</li>
+<li>2.阻尼牛顿法</li>
+<li>3.拟牛顿条件</li>
+<li>4.DFP算法</li>
+<li>5.BFGS算法</li>
+<li>6.L-BFGS算法</li>
+</ul><hr><p>考虑如下无约束的极小化问题</p><script type="math/tex; mode=display">min_x f(x)</script><p>其中 $ x=(x_1, x_2, …, x_n)^T \in R^n $，由于本文不对收敛性进行讨论，因此对目标函数 $ f: R^n \rightarrow R $做一个较苛刻的假设。
+这里假定$ f $为凸函数，且二阶连续可微，此外记极小化问题的解为 $ x^{\ast} $ .</p><a id="more"></a>
+
+
+
+
+<hr>
+<h3 id="1-原始牛顿法"><a href="#1-原始牛顿法" class="headerlink" title="1.原始牛顿法"></a>1.原始牛顿法</h3><p>牛顿法的基本思想是：<strong>在现有极小点估计值的附近对 $ f(x) $ 做二阶泰勒展开，进而找到极小点的下一个估计值。</strong></p>
+<p>为简单起见，首先考虑$ n=1 $的情况，设$ x_k $ 为当前的极小点估计值，则</p>
+<script type="math/tex; mode=display">\phi (x) = f(x_k) + f'(x_k)(x-x_k) + \frac{1}{2}f''(x_k) (x-x_k)^2</script><p>表示$ f(x) $ 在 $ x_k $附近的二阶泰勒展开式（略去了关于$ x-x_k $ 的高阶项）。由于求的是最值，由极值必要条件可知，$ \phi(x) $应该满足</p>
+<script type="math/tex; mode=display">\phi ' (x) = 0 \quad \Rightarrow \quad f'(x_k) + f^{''}(x_k) (x - x_k) = 0</script><p>从而求得：</p>
+<p>\[
+x = x_k - \frac{f’(x_k)}{f^{‘’}(x_k)}
+\]</p>
+<p>于是，若给定初始值$ x_0 $，则可以构造如下的迭代公式：</p>
+<script type="math/tex; mode=display">x_{k+1} = x_k - \frac{f'(x_k)}{f^{''}(x_k)}, \quad k=0,1,...</script><p>产生序列$ \lbrace x_k \rbrace $来逼近 $ f(x) $的极小点，在一定条件下，$ \lbrace x_k \rbrace $可以收敛到$ f(x) $的极小点。</p>
+<p><br></p>
+<p>对于 $ n&gt;1 $的情形，二阶泰勒展开式可以做推广，此时：</p>
+<script type="math/tex; mode=display">\phi(X) = f(X_k) + \nabla f(X_k) \cdot (X - X_k) + \frac{1}{2} \cdot (X - X_k)^T \nabla^2 f(X_k) \cdot (X - X_k)</script><p>其中$ \nabla f $ 为 $ f $的梯度向量，$ \nabla^2 f $为 $ f $的海森矩阵（Hessian matrix），其定义分别为：</p>
+<script type="math/tex; mode=display">\nabla f = \left[ \begin{matrix} \frac{\partial f}{\partial x_1} \\\ \frac{\partial f}{\partial x_2} \\\ \cdots \\\ \frac{\partial f}{\partial x_n}  \end{matrix} \right]</script><script type="math/tex; mode=display">
+\nabla^2 f = 
+\left[
+\begin{matrix} 
+\frac{\partial^2 f}{\partial x_1^2} & \frac{\partial^2 f}{\partial x_1 \partial x_2} &  \cdots & \frac{\partial^2 f}{\partial x_1 \partial x_n} \\\
+\frac{\partial^2 f}{\partial x_2 \partial x_1} & \frac{\partial^2 f}{\partial x^2_2} &  \cdots & \frac{\partial^2 f}{\partial x_2 \partial x_n} \\\
+ &  &  \ddots &  \\\
+\frac{\partial^2 f}{\partial x_n \partial x_1} & \frac{\partial^2 f}{\partial x_n \partial x_2} &  \cdots & \frac{\partial^2 f}{\partial x_n^2} \\\
+\end{matrix}
+\right]</script><p>注意，$ \nabla f $ 和 $ \nabla^2 f $ 中的元素均为关于$ x $ 的函数，以下分别将其简记为$g$和$H$，特别地，若$f$的混合偏导数可交换次序，则海森矩阵$H$为对称矩阵。
+而$ \nabla f(X_k) $ 和 $ \nabla^2 f(X_k) $则表示将$X$取为$X_k$后得到的实值向量和矩阵，以下分别将其简记为$ g_k $和$H_k$（这里字母$g$表示$gradient$，$H$表示$Hessian$）。</p>
+<p>同样地，由于是求极小点，极值必要条件要求它为$ \phi (X)$的驻点，即</p>
+<script type="math/tex; mode=display">\nabla \phi (X) = 0 \quad \Rightarrow \quad g_k + H_k \cdot (x - x_k) = 0</script><p>进一步，若矩阵$ H_k $非奇异，则可解得</p>
+<script type="math/tex; mode=display">X = X_k - H_k^{-1} \cdot g_k</script><p>于是，给定初始值$ X_0 $，则同样可以构造出迭代格式</p>
+<script type="math/tex; mode=display">X_{k+1} = X_k - H_k^{-1} \cdot g_k, \quad k=0,1,2...</script><p>这就是原始的牛顿迭代法，其迭代格式中的搜索方向$ d_k = - H_k^{-1} \cdot  g_k $称为<strong>牛顿方向</strong>，下面给出牛顿法的完整算法描述。</p>
+<blockquote>
+<ol>
+<li>给定初值$ x_0 $和精度阈值$ \epsilon $，并令$ k=0$；</li>
+<li>计算$ g_k $和$ H_k $；</li>
+<li>若$ || gk || &lt; \epsilon $，则停止迭代；否则确定搜索方向$ d_k = -H_k^{-1} \cdot g_k $；</li>
+<li>计算新的迭代点 $ x_{k+1} = x_k + d_k $；</li>
+<li>令$ k = k+1 $，转至第2步。 </li>
+</ol>
+</blockquote>
+<p>原始牛顿法由于迭代公式中没有步长因子，而是定步长迭代，对于非二次型目标函数，有时会使函数值上升，即出现$ f(x_{k+1} &gt; f(x_k) $的情况，
+这表明原始牛顿法不能保证函数值稳定地下降，在严重的情况下甚至可能造成迭代点列$ \lbrace x_k \rbrace $的发散而导致计算失败。</p>
+<hr>
+<h3 id="2-阻尼牛顿法"><a href="#2-阻尼牛顿法" class="headerlink" title="2.阻尼牛顿法"></a>2.阻尼牛顿法</h3><p>为消除原始牛顿法中的弊端，提出了“阻尼牛顿法”，阻尼牛顿法每次迭代的方向仍采用 $ d_k $，但每次迭代需沿此方向做一维搜索(line search)，寻求最优的步长因子$ \lambda_k $，即</p>
+<script type="math/tex; mode=display">\lambda_k = \arg\min_{\lambda \in R} f(x_k + \lambda d_k) \tag{*}</script><p>下面给出一个阻尼牛顿法的完整算法描述：</p>
+<p>&gt;</p>
+<ol>
+<li>给定初值$ x_0 $和精度阈值$ \epsilon $，并令$ k=0$；</li>
+<li>计算$ g_k $和$ H_k $；</li>
+<li>若$ || gk || &lt; \epsilon $，则停止迭代；否则确定搜索方向$ d_k = -H_k^{-1} \cdot g_k $；</li>
+<li>利用$(*)$式得到步长$ \lambda_k $，并令 $ x_{k+1} = x_k + \lambda_k d_k $；</li>
+<li>令$ k = k+1 $，转至第2步。 </li>
+</ol>
+<p><strong>小结</strong></p>
+<p>牛顿法是梯度(下降)发的进一步发展，梯度法利用目标函数的一阶偏导数信息，以负梯度方向作为搜索方向，只考虑目标函数在迭代点的局部性质；
+而牛顿法不仅使用目标函数的一阶偏导数，还进一步利用了目标函数的二阶偏导数，这样就考虑了梯度变化的趋势，因而能更全面地确定合适的搜索方向以加快收敛。</p>
+<p>但是牛顿法主要存在以下两个缺点：</p>
+<ol>
+<li>对目标函数有较严格的要求，函数必须具有连续的一、二阶偏导数，海森矩阵必须正定；</li>
+<li>计算相当复杂，除需计算梯度以外，还需计算二阶偏导数矩阵和它的逆矩阵。计算量、存储量均很大，且均以维数$ n $的平方比增加，当$n$很大时这个问题尤为突出。</li>
+</ol>
+<hr>
+<h3 id="3-拟牛顿条件"><a href="#3-拟牛顿条件" class="headerlink" title="3.拟牛顿条件"></a>3.拟牛顿条件</h3><p>上面说到了牛顿法的两个缺点，为了客服这两个问题，人们提出了拟牛顿法，这个方法的基本思想是：<strong>不用二阶偏导数而构造出可以近似海森矩阵（或海森矩阵的逆）的正定对称阵，在“拟牛顿”的条件下优化目标函数。</strong></p>
+<p>不同的构造方法就产生了不同的拟牛顿法，都是对牛顿法中用来计算搜索方向的海森矩阵（或海森矩阵的逆）作了近似计算罢了。</p>
+<p>下面先推到拟牛顿条件，或者叫拟牛顿方程、割线条件，它是用来提供理论指导，指出了用来近似的矩阵应该满足的条件。</p>
+<p>为了明确起见，下文中用$ B $ 表示对海森矩阵$H$本身的近似，而用$D$表示对海森矩阵的逆$ H^{-1} $的近似，即 $ B \approx H, D \approx H^{-1} $。</p>
+<p><br></p>
+<p>假设经过 $ k+1 $ 次迭代后得到 $ x<em>{k+1} $，此时将目标函数 $ f(x) $ 在 $ x</em>{k+1} $附近作泰勒展开，取二阶近似，得到：</p>
+<script type="math/tex; mode=display">f(x) \approx f(x_{k+1} + \nabla f(x_{k+1}) \cdot (x - x_{k+1}) + \frac{1}{2} \cdot (x - x_{k+1}^T \cdot \nabla^2 f(x_{k+1}) \cdot (x - x_{k+1}) \tag{**}</script><p>在$ (**) $式两边同时作用一个梯度算子 $ \nabla $， 可得</p>
+<script type="math/tex; mode=display">\nabla f(x) \approx \nabla f(x_{k+1}) + H_{k+1} \cdot (x - x_{k+1}) \tag{***}</script><p>在$ (<em>*</em>) $式中取$ x = x_k$，并整理可得：</p>
+<script type="math/tex; mode=display">g_{k+1} - g_k = H_{k+1} \cdot ( x_{k+1} - x_k )</script><p>引入新的记号：</p>
+<script type="math/tex; mode=display">s_k = x_{k+1} - x_k, \quad y_k = g_{k+1} - g_k</script><p>则上式可以重新表示为：</p>
+<script type="math/tex; mode=display">y_k \approx H_{k+1} \cdot s_k \qquad \Longleftrightarrow \qquad s_k \approx H_{k+1}^{-1} \cdot y_k</script><p>这就是所谓的<strong>拟牛顿条件</strong>，它对迭代过程中的海森矩阵$ H<em>{k+1}$作约束，因此，对$ H</em>{k+1} $做近似的$B<em>{k+1}$，以及对$ H</em>{k+1}^{-1} $做近似的$  D_{k+1}$ 可以将</p>
+<script type="math/tex; mode=display">y_k = B_{k+1} \cdot s_k \qquad \Longleftrightarrow \qquad s_k = D_{k+1} \cdot y_k</script><p>作为指导。</p>
+<hr>
+<h3 id="4-DFP算法"><a href="#4-DFP算法" class="headerlink" title="4.DFP算法"></a>4.DFP算法</h3><p>该算法的核心是：<strong>通过迭代的方法，对$ H_{k+1}^{-1}$做近似，迭代格式为：</strong></p>
+<script type="math/tex; mode=display">D_{k+1} = D_k + \Delta D_k, \quad k=0,1,2...</script><p>其中$ D_0$通常取为单位矩阵$I$，因此，关键是每一步的校正矩阵$ \Delta D_k$如何构造。</p>
+<p>这里采用“待定法”，即首先将$\Delta D_k$待定成某种形式，然后结合拟牛顿条件来推到。这里我们将$ \Delta D_k $ 待定为：</p>
+<script type="math/tex; mode=display">\Delta D_k = \alpha u u^T + \beta v v^T</script><p>其中$ \alpha, \beta$为待定系数，$ u, v \in R^n $为待定向量，从形式上来看，这种待定公式至少保证了矩阵$ \Delta D_k $的对称性（因为$uu^T$和$vv^T$都是对称矩阵）</p>
+<script type="math/tex; mode=display">
+\begin{cases}
+D_{k+1} = D_k + \Delta D_k \\
+\Delta D_k = \alpha u u^T + \beta v v^T \\
+s_k = D_{k+1} \cdot y_k \\
+\end{cases}
+\Longleftrightarrow
+s_k = D_k y_k + \alpha u u^T y_k + \beta v v^T y_k</script><p>调整上面的结论：</p>
+<script type="math/tex; mode=display">
+\begin{equation}
+\begin{aligned}
+s_k
+& = D_k y_k + u (\alpha u^T y_k) + v(\beta v^T y_k) \\
+& = D_k y_k + (\alpha u^T y_k) u + (\beta v^T y_k) v
+\end{aligned}
+\end{equation}
+\tag{+}</script><p>括号中的$\alpha u^T y_k$和$\beta v^T y_k$是两个数，既然是数，我们不妨作如下简单赋值：</p>
+<script type="math/tex; mode=display">\alpha u^T y_k = 1, \qquad \beta v^T y_k = -1  \tag{++}</script><p>即</p>
+<script type="math/tex; mode=display">\alpha = \frac{1}{u^T y_k}, \qquad \beta = - \frac{1}{v^T y_k}</script><p>将$ (++) $式代入 $ (+) $，得到：</p>
+<script type="math/tex; mode=display">u - v = s_k - D_k y_k</script><p>要使上式成立，不妨就直接取</p>
+<script type="math/tex; mode=display">u = s_k, \qquad v = D_k y_k</script><p>再将$(21)$代入$(19)$，便得</p>
+<script type="math/tex; mode=display">\alpha = \frac{1}{s_k^T y_k}, \qquad \beta = - \frac{1}{(D_k y_k)^T y_k} = - \frac{1}{y_k^T D_k y_k}</script><p>其中第二个等式用到了$D_k$的对称性。</p>
+<p>至此，我们已经可以将校正矩阵$ \Delta D_k $构造出来了，</p>
+<script type="math/tex; mode=display">\Delta D_k = \frac{s_k s_k^T}{s_k^T y_k} - \frac{D_k y_k y_k^T D_k}{y_k^T D_k y_k}</script><p>综上，我们给出DFP算法的一个完整算法描述：</p>
+<blockquote>
+<ol>
+<li>给定初值$x_0$和精度阈值$\epsilon$，并令$ D_0=I, \quad k=0$，</li>
+<li>确定搜索方向$ d_k = - D_k \cdot g_k $，</li>
+<li>利用$(*)$式得到步长$\lambda_k$，令$ s_k = \lambda_k d_k, \quad x_{k+1}=x_k + s_k $，</li>
+<li>若$ || g_{k+1} || &lt; \epsilon$，则算法结束，</li>
+<li>计算 $ y_k = g_{k+1} - g_k $，</li>
+<li>计算$ D_{k+1} = D_k + \Delta D_k = D_k + \frac{s_k s_k^T}{s_k^T y_k} - \frac{D_k y_k y_k^T D_k}{y_k^T D_k y_k} $，</li>
+<li>令$ k = k+1$，转至第2步。 </li>
+</ol>
+</blockquote>
+<hr>
+<h3 id="5-BFGS算法"><a href="#5-BFGS算法" class="headerlink" title="5.BFGS算法"></a>5.BFGS算法</h3><p>与DFP算法相比，BFGS算法性能更佳，目前它已成为求解无约束非线性优化问题最常用的方法之一。
+BFGS算法已有较完善的局部收敛理论，对其全局收敛性的研究也取得了重要成果。</p>
+<p>BFGS算法中核心公式的推到和DFP算法完全类似，只是互换了其中$s_k$和$y_k$的位置。
+需要注意的是，BFGS算法是直接逼近海森矩阵，即$ B_k \approx H_k$，仍采用迭代方法，设迭代格式为：</p>
+<script type="math/tex; mode=display">B_{k+1} = B_k + \Delta B_k, \qquad k=0,1,2...</script><p>其中的 $ B_0 $也常取为单位矩阵$I$，因此，关键是每一步的校正矩阵$\Delta B_k$如何构造。同样，将其待定为：</p>
+<script type="math/tex; mode=display">\Delta B_k = \alpha u u^T + \beta v v^T</script><p>类比DFP算法，可得</p>
+<script type="math/tex; mode=display">y_k = B_k s_k + (\alpha u^T s_k)u + (\beta v^T s_k) v</script><p>通过令 $ \alpha u^T s_k = 1,\qquad \beta v^T s_k = -1 $，以及 $ u = y_k, \qquad v = B_k s_k $，可以算得：</p>
+<script type="math/tex; mode=display">\alpha = \frac{1}{y_k^T s_k}, \qquad \beta = - \frac{1}{s_k^T B_k s_k}</script><p>综上，便得到了如下校正矩阵$ \Delta B_k $的公式：</p>
+<script type="math/tex; mode=display">\Delta B_k = \frac{y_k y_k^T}{y_k^T s_k} - \frac{B_k s_k s_k^T B_k}{s_k^T B_k s_k}</script><p>先讲把矩阵$ \Delta B_k $ 和 $ \Delta D_k $拿出来对比一下，是不是除了将$D$换成$B$外，其他只是将$s_k$和$y_k$互调了一下位置呢？</p>
+<p>最后，我们给出BFGS算法的一个完整算法描述：</p>
+<blockquote>
+<ol>
+<li>给定初值$x_0$和精度阈值$\epsilon$，并令$ B_0=I, \quad k=0$，</li>
+<li>确定搜索方向$ d_k = - B_k^{-1} \cdot g_k $，</li>
+<li>利用$(*)$式得到步长$\lambda_k$，令$ s_k = \lambda_k d_k, \quad x_{k+1}=x_k + s_k $，</li>
+<li>若$ || g_{k+1} || &lt; \epsilon$，则算法结束，</li>
+<li>计算 $ y_k = g_{k+1} - g_k $，</li>
+<li>计算$ B_{k+1} = B_k + \Delta B_k = B_k + \frac{y_k y_k^T}{y_k^T s_k} - \frac{B_k s_k s_k^T B_k}{s_k^T B_k s_k} $，</li>
+<li>令$ k = k+1$，转至第2步。 </li>
+</ol>
+</blockquote>
+<p>上面算法中的第2步通常是通过求解线性代数方程组$ B_k d_k = -g_k $来进行，然而更一般的做法是通过对第6步中的递推关系，
+应用$Sherman-Morrison$公式，直接给出$B_{k+1}^{-1}$和$B_k^{-1}$之间的关系：</p>
+<script type="math/tex; mode=display">B_{k+1}^{-1} = \left( I - \frac{s_k y_k^T}{y_k^T s_k} \right) B_k^{-1} \left( I - \frac{y_k s_k^T}{y_k^T s_k} \right) + \frac{s_k s_k^T}{y_k^T s_k}</script><p>利用上式，我们很容易将上述BFGS算法进行改进，为了避免出现矩阵求逆符号，我们统一将$B_i^{-1}$换用$D_i$（这样做仅仅只是符号上看起来舒服起见）。
+这样，整个算法中不再需要求解线性代数方程组，由矩阵-向量运算就可以完成了。</p>
+<p>改进后的BFGS算法如下：</p>
+<blockquote>
+<ol>
+<li>给定初值$x_0$和精度阈值$\epsilon$，并令$ D_0=I, \quad k=0$，</li>
+<li>确定搜索方向$ d_k = - D_k \cdot g_k $，</li>
+<li>利用$(*)$式得到步长$\lambda_k$，令$ s_k = \lambda_k d_k, \quad x_{k+1}=x_k + s_k $，</li>
+<li>若$ || g_{k+1} || &lt; \epsilon$，则算法结束，</li>
+<li>计算 $ y_k = g_{k+1} - g_k $，</li>
+<li>计算$ D_{k+1} = \left( I - \frac{s_k y_k^T}{y_k^T s_k} \right) D_k \left( I - \frac{y_k s_k^T}{y_k^T s_k} \right) + \frac{s_k s_k^T}{y_k^T s_k} $，</li>
+<li>令$ k = k+1$，转至第2步。 </li>
+</ol>
+</blockquote>
+<p>至此，关于DFP算法和BFGS算法的介绍就完成了。</p>
+<p>最后再补充一下一维搜索(line search)的问题，在之前几个算法描述中，为简单起见，均采用了$(*)$时来计算步长$ \lambda_k $，其实这是一种精确搜索；
+实际应用中，还有像Wolfe型搜索、Armijo搜索以及满足Goldstein条件的非精确搜索。这里我们以Wolfe搜索为例，简单介绍。</p>
+<p>设$ \tilde{\beta} \in (0, \frac{1}{2}), \beta \in (\tilde{\beta}, 1)$，所谓的Wolfe搜索是指$ \lambda_k $满足如下<strong>Wolfe条件</strong></p>
+<script type="math/tex; mode=display">
+\begin{cases}
+f(x_k + \lambda_k d_k) \qquad \leq f(x_k) + \tilde{\beta} \lambda_k d_k^T g_k; \\
+d_k^T g(x_k + \lambda_k d_k) \geq \beta d_k^T g_k
+\end{cases}</script><p>带非精确搜索的拟牛顿法的研究是从1976年Powell的工作开始的，他证明了带Wolfe搜索的BFGS算法的全局收敛性和超线性收敛性。</p>
+<hr>
+<h3 id="6-L-BFGS算法"><a href="#6-L-BFGS算法" class="headerlink" title="6.L-BFGS算法"></a>6.L-BFGS算法</h3><p>在BFGS算法中，需要用到一个$NxN$的矩阵$D_k$，当 N 很大时，存储这个矩阵将变得很耗计算机资源，考虑 N 为 10万 的情形，且 用double型（8字节）来存储$D_k$，需要多大的内存呢？来计算一下：</p>
+<script type="math/tex; mode=display">\frac{N阶矩阵的字节数}{1GB的字节数} \qquad = \qquad \frac{10^5 \times 10^5 \times 8}{2^{10} \times 2^{10} \times 2^{10}} \qquad = \qquad 74.5(GB)</script><p>即使考虑到矩阵$D_k$的对称性，内存还可以降一半，但是这对于一般的服务器仍然是难以承受的。况且我们还只是假定了 N=10W 的情况，在实际机器学习问题中，这只能算是中小规模。</p>
+<p>L-BFGS(Limited-memory BFGS)算法就是通过对BFGS算法进行改造，从而减少其迭代过程中所需内存开销的算法。
+它对BFGS算法进行了近似，其基本思想是：<strong>不再存储完整的矩阵$D_k$，而是存储计算过程中的向量序列${s_i}，{y_i}$，需要矩阵$D_k$时，利用向量序列${s_i}，{y_i}$的计算来代替。</strong>
+而且，向量序列${s_i}，{y_i}$也不是所有的都存，而是固定存最新的$m$个（参数$m$可由用户根据机器的内存自行指定），每次计算$D_k$时，只利用最新的$m$个${s_i}$和$m$个${y_i}$，
+显然，这样我们将存储由原来的$O(n^2)$降到了$O(mN)$。</p>
+<p><br></p>
+<p>接下来，讨论L-BFGS算法的具体实现过程，我们的出发点是改进的BFGS算法中的第6步中的迭代式：</p>
+<script type="math/tex; mode=display">D_{k+1} = \left( I - \frac{s_k y_k^T}{y_k^T s_k} \right) D_k \left( I - \frac{y_k s_k^T}{y_k^T s_k} \right) + \frac{s_k s_k^T}{y_k^T s_k}</script><p>若记$ \rho_k = \frac{1}{y_k^T s_k}，V_k = I - \rho_k y_k s_k^T $，则上式可写成</p>
+<script type="math/tex; mode=display">D_{k+1} = V_k^T D_k V_k + \rho_k s_k s_k^T \tag{6.*}</script><p>如果给定初始矩阵$D_0$（通常为正定的对角矩阵，如$D_0 = I$），则可利用$(6.*)$式，依次可得：</p>
+<script type="math/tex; mode=display">
+\begin{equation}
+\begin{aligned}
+D_1 &= V_0^T D_0 V_0 + \rho_0 s_0 s_0^T; \\
+D_2 &= V_1^T D_1 V_1 + \rho_1 s_1 s_1^T \\
+&= v_1^T (V_0^T D_0 V_0 + \rho_0 s_0 s_0^T) V_1 + \rho_1 s_1 s_1^T \\
+&= V_1^T V_0^T D_0 V_0 V_1 + V_1^T \rho_0 s_0 s_0^T V_1 + \rho_1 s_1 s_1^T \\
+D_3 &= V_2^T D_2 V_2 + \rho_2 s_2 s_2^T \\
+&= V_2^T (V_1^T V_0^T D_0 V_0 V_1 + V_1^T \rho_0 s_0 s_0^T V_1 + \rho_1 s_1 s_1^T) V_2 + \rho_2 s_2 s_2^T \\
+&= v_2^T V_1^T V_0^T D_0 V_0 V_1 V_2 + V_2^T V_1^T \rho_0 s_0 s_0^T V_1 V_2 + V_2^T \rho_1 s_1 s_1^T V_2 + \rho_2 s_2 s_2^T \\
+\cdots
+\end{aligned}
+\end{equation}</script><p>一般地，我们有：</p>
+<script type="math/tex; mode=display">
+\begin{equation}
+\begin{aligned}
+D_{k+1} = 
+&\ (V_k^T V_{k-1}^T \cdots V_1^T V_0^T) D_0 (V_0 V_1 \cdots V_{k-1} V_k) \\
+&+ (V_k^T V_{k-1}^T \cdots V_2^T V_1^T) (\rho_0 s_0 s_0^T) (V_1 V_2 \cdots V_{k-1} V_k) \\
+&+ (V_k^T V_{k-1}^T \cdots V_3^T V_2^T) (\rho_1 s_1 s_1^T) (V_2 V_3 \cdots V_{k-1} V_k) \\
+&+ \cdots \\
+&+ (V_k^T V_{k-1}^T) (\rho_{k-2} s_{k-2} s_{k-2}^T) (V_{k-1} V_k) \\
+&+ V_k^T (\rho_{k-1} s_{k-1} s_{k-1}^T) V_k \\
+&+ \rho_k s_k s_k^T
+\end{aligned}
+\end{equation} \tag{6.**}</script><p>由上式可以看到，计算$D_{k+1}$需要用到$ \lbrace s_i, y_i \rbrace_{i=0}^k $，因此，若从$ s_0, y_0 $开始连续存储 $ m $ 组的话，只能存储到$ s_{m-1}, y_{m-1} $，
+亦即只能依次计算 $ D_1, D_2, \cdots $，直到$ D_m $，那$ D_{m+1}, D_{m+2} $该如何计算呢？</p>
+<p>自然地，如果一定要丢弃一些向量，那么肯定优先考虑那些最早生成的向量，具体来说，计算$D_{m+1}$时，我们保存$ \lbrace s_i, y_i \rbrace_{i=1}^m $，丢掉$ \lbrace s_0, y_0 \rbrace;$ 
+计算$ D_{m+2} $时，我们保存$ \lbrace s_i, y_i\rbrace_{i=2}^{m+1} $，丢掉了$ \lbrace s_i, y_i \rbrace_{i=0}^1; \cdots $</p>
+<p>但是舍弃掉一些向量后，就只能近似计算了，当$k+1 &gt; m$时，仿照$(6.**)$式，可以构造近似计算公式：</p>
+<script type="math/tex; mode=display">
+\begin{equation}
+\begin{aligned}
+D_{k+1} = 
+&\ (V_k^T V_{k-1}^T \cdots V_{k-m+2}^T V_{k-m+1}^T) D_0 (V_{k-m+1} V_{k-m+2} \cdots V_{k-1} V_k) \\
+&+ (V_k^T V_{k-1}^T \cdots V_{k-m+3}^T V_{k-m+2}^T) (\rho_0 s_0 s_0^T) (V_{k-m+2} V_{k-m+3} \cdots V_{k-1} V_k) \\
+&+ (V_k^T V_{k-1}^T \cdots V_{k-m+4}^T V_{k-m+3}^T) (\rho_1 s_1 s_1^T) (V_{k-m+3} V_{k-m+4} \cdots V_{k-1} V_k) \\
+&+ \cdots \\
+&+ (V_k^T V_{k-1}^T) (\rho_{k-2} s_{k-2} s_{k-2}^T) (V_{k-1} V_k) \\
+&+ V_k^T (\rho_{k-1} s_{k-1} s_{k-1}^T) V_k \\
+&+ \rho_k s_k s_k^T
+\end{aligned}
+\end{equation} \tag{6.***}</script><p>$ (6.**) $ 和 $ (6.***) $ 被称为$ special BFGS matrices $，若引入 $ \hat{m} = min\lbrace k, m-1 \rbrace $，则还可以将两式合并成</p>
+<script type="math/tex; mode=display">
+\begin{equation}
+\begin{aligned}
+D_{k+1} = 
+&\ (V_k^T V_{k-1}^T \cdots V_{k-\hat{m}+1}^T V_{k-\hat{m}}^T) D_0 (V_{k-\hat{m}} V_{k-\hat{m}+1} \cdots V_{k-1} V_k) \\
+&+ (V_k^T V_{k-1}^T \cdots V_{k-\hat{m}+2}^T V_{k-\hat{m+1}}^T) (\rho_0 s_0 s_0^T) (V_{k-\hat{m}+1} V_{k-\hat{m}+2} \cdots V_{k-1} V_k) \\
+&+ (V_k^T V_{k-1}^T \cdots V_{k-\hat{m}+3}^T V_{k-\hat{m+2}}^T) (\rho_1 s_1 s_1^T) (V_{k-\hat{m}+2} V_{k-\hat{m}+3} \cdots V_{k-1} V_k) \\
+&+ \cdots \\
+&+ (V_k^T V_{k-1}^T) (\rho_{k-2} s_{k-2} s_{k-2}^T) (V_{k-1} V_k) \\
+&+ V_k^T (\rho_{k-1} s_{k-1} s_{k-1}^T) V_k \\
+&+ \rho_{k} s_{k} s_{k}^T
+\end{aligned}
+\end{equation}</script><p>事实上，由BFGS算法流程易知，$D_k$的作用仅用来计算$ D_k g_k $ 获取搜索方向，因此，若能利用上式设计出一种计算$ D_k g_k $的快速算法，则大功告成。</p>
+<blockquote>
+<p><strong>($D_k \cdot g_k$的快速算法)</strong></p>
+<p>Step 1 初始化</p>
+<script type="math/tex; mode=display">
+\delta = 
+\begin{cases}
+0, \qquad k \leq m \\
+k-m, \qquad k > m
+\end{cases};
+\qquad
+L = 
+\begin{cases}
+k, \qquad k \leq m \\
+m, \qquad k > m
+\end{cases};
+\qquad
+q_L = g_k</script><p>Step 2 后向循环</p>
+<script type="math/tex; mode=display">
+FOR \quad i=L-1, L-2, \cdots, 1, 0 \quad DO \\
+\{ \\
+\qquad j=i+\delta; \\
+\qquad \alpha_i = \rho_j s_j^T q_{i+1}; // \alpha_i 需要保存下来，前向循环要用！！ \\
+\qquad q_i = q_{i+1} - \alpha_i y_j \\
+\}</script><p>Step 3 前向循环</p>
+<script type="math/tex; mode=display">
+r_0 = D_0 \cdot q_0; \\
+FOR \quad i=0,1,\cdots,L-2,L-1 \quad DO \\
+\{ \\
+\qquad j = i+\delta; \\
+\qquad \beta_j = \rho_j y_j^T r_i; \\
+\qquad r_{i+1} = r_i + (\alpha_i - \beta_i) s_j \\
+\}</script></blockquote>
+<p>最后算出的$r_L$即为$H_k \cdot g_k $的值。</p>
+<hr>
+<p>&gt;
+<a href="https://blog.csdn.net/itplus/article/details/21896453" target="_blank" rel="noopener">牛顿法与拟牛顿法学习笔记</a></p>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/优化算法/" rel="tag"># 优化算法</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2018/05/23/backpropagation/" rel="next" title="反向传播 BP & BPTT">
+                  <i class="fa fa-chevron-left"></i> 反向传播 BP & BPTT
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2018/06/18/smote/" rel="prev" title="SMOTE过采样技术">
+                  SMOTE过采样技术 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    
+  <div class="comments" id="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC80MTI1Mi8xNzgwMA"></div>
+  </div>
+  
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/avatar.jpg"
+      alt="WeiguoZHAO">
+  <p class="site-author-name" itemprop="name">WeiguoZHAO</p>
+  <div class="site-description motion-element" itemprop="description">Welcome to my blog~</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">47</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/weiguozhao" title="GitHub &rarr; https://github.com/weiguozhao" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:aszhaoweiguo@gmail.com" title="E-Mail &rarr; mailto:aszhaoweiguo@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      大牛们
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://colah.github.io/" title="http://colah.github.io/" rel="noopener" target="_blank">colah's blog</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/wzhe06/Reco-papers" title="https://github.com/wzhe06/Reco-papers" rel="noopener" target="_blank">王喆的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/ljpzzz/machinelearning" title="https://github.com/ljpzzz/machinelearning" rel="noopener" target="_blank">刘建平的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://tech.meituan.com/" title="https://tech.meituan.com/" rel="noopener" target="_blank">美团技术团队</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-原始牛顿法"><span class="nav-text">1.原始牛顿法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-阻尼牛顿法"><span class="nav-text">2.阻尼牛顿法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-拟牛顿条件"><span class="nav-text">3.拟牛顿条件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-DFP算法"><span class="nav-text">4.DFP算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-BFGS算法"><span class="nav-text">5.BFGS算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-L-BFGS算法"><span class="nav-text">6.L-BFGS算法</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">WeiguoZHAO</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+      <div class="reading-progress-bar"></div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+<script>
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
+
+</body>
+</html>

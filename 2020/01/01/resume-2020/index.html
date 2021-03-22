@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/github-logo.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/github-logo.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":true,"show_result":true,"style":"default"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="目录 沉浸式视频排序 新闻Push推荐排序 简历在老地方1. 沉浸式视频排序沉浸式视频(背景是黑色的)具有自动播放、自动下滑的特点，而且沉浸式视频的视频长度跨度很大，短则10s+，长则2h+。如何合理的划分正样本和负样本是特征、模型优化的前提！原始正负样本比例大概 5:1。">
+<meta name="keywords" content="Machine Learning,Recommender Systems">
+<meta property="og:type" content="article">
+<meta property="og:title" content="resume-2020">
+<meta property="og:url" content="https://weiguozhao.github.io/2020/01/01/resume-2020/index.html">
+<meta property="og:site_name" content="Weiguo&#39;s Station">
+<meta property="og:description" content="目录 沉浸式视频排序 新闻Push推荐排序 简历在老地方1. 沉浸式视频排序沉浸式视频(背景是黑色的)具有自动播放、自动下滑的特点，而且沉浸式视频的视频长度跨度很大，短则10s+，长则2h+。如何合理的划分正样本和负样本是特征、模型优化的前提！原始正负样本比例大概 5:1。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-03-22T10:53:44.477Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="resume-2020">
+<meta name="twitter:description" content="目录 沉浸式视频排序 新闻Push推荐排序 简历在老地方1. 沉浸式视频排序沉浸式视频(背景是黑色的)具有自动播放、自动下滑的特点，而且沉浸式视频的视频长度跨度很大，短则10s+，长则2h+。如何合理的划分正样本和负样本是特征、模型优化的前提！原始正负样本比例大概 5:1。">
+  <link rel="canonical" href="https://weiguozhao.github.io/2020/01/01/resume-2020/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>resume-2020 | Weiguo's Station</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?ff6106e096f9eb6ace966de311be4b1a";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Weiguo's Station</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>博客首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>文章归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类专栏</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>各种标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>站点搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+  <a href="https://github.com/weiguozhao" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weiguozhao.github.io/2020/01/01/resume-2020/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="WeiguoZHAO">
+      <meta itemprop="description" content="Welcome to my blog~">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Weiguo's Station">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">resume-2020
+
+          
+        </h1>
+
+        <div class="post-meta">
+        
+          
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2020-01-01 16:46:32" itemprop="dateCreated datePublished" datetime="2020-01-01T16:46:32+08:00">2020-01-01</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-22 18:53:44" itemprop="dateModified" datetime="2021-03-22T18:53:44+08:00">2021-03-22</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/个人小结/" itemprop="url" rel="index"><span itemprop="name">个人小结</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>目录</p><ul>
+<li>沉浸式视频排序</li>
+<li>新闻Push推荐排序</li>
+</ul><p><strong>简历在老地方</strong></p><h3 id="1-沉浸式视频排序"><a href="#1-沉浸式视频排序" class="headerlink" title="1. 沉浸式视频排序"></a>1. 沉浸式视频排序</h3><p>沉浸式视频(背景是黑色的)具有自动播放、自动下滑的特点，而且沉浸式视频的视频长度跨度很大，短则10s+，长则2h+。</p><p>如何合理的划分正样本和负样本是特征、模型优化的前提！原始正负样本比例大概 5:1。</p><a id="more"></a>
+
+
+
+
+<p>主要有以下操作：</p>
+<ol>
+<li>根据正样本的停留时长dwell、正样本的视频长度video_length，设计一个公式动态计算完成率阈值finish_ratio_threshold，然后将 finish_ratio &lt; finish_ratio_threshold的正样本进行丢弃；(也尝试过将正样本转化成负样本，效果不好)；</li>
+<li>考虑到沉浸式视频是一个相对独立的场景，因此衡量用户的短期兴趣是十分有必要的，因此将用户最近click的docid、最近view的docid加入到训练中，用以充当用户的短期兴趣；</li>
+<li>其他的特征进行统计候选值的个数，例如只在oppo平台上进行实验，U_OS的候选值只有android，所以这个特征没什么用</li>
+<li>FM模型/DNN(full-connect)模型，用embedding矩阵代表系数的思想</li>
+</ol>
+<h3 id="2-新闻Push推荐排序"><a href="#2-新闻Push推荐排序" class="headerlink" title="2. 新闻Push推荐排序"></a>2. 新闻Push推荐排序</h3><p>编辑推送每天候选用于排序的文章只有200～300篇文章，机器推送数量会比较多一些。
+同时编辑推送的文章直接用于排序，没有召回阶段，机器推送的文章是通过用户的tag标签进行召回的。</p>
+<p>因此在排序的过程中要加入一些提高相关性的操作：</p>
+<ol>
+<li>原始训练数据正负比例 1:6，对负样本进行欠采样到正负比例 1:3</li>
+<li>在训练过程中参考DSSM中，伪造一些负样本加入到训练中（原理下面解释）</li>
+<li>添加match特征，例：matchprofile U_CT D_CT A_CT，意思是将U_CT和D_CT中的值取交集，以新的facet A_CT加入到训练中</li>
+<li>同时使用信息流数据进行warmup(可以认为使用信息流模型的参数来完成初始化Push模型)</li>
+</ol>
+<p><strong>伪造负样本的原理</strong></p>
+<ul>
+<li>前提假设：<ul>
+<li>历史将推荐给用户的Push文章都是模型认为和用户强相关的文章。</li>
+</ul>
+</li>
+<li>原理解释：<ul>
+<li>数据中存在着正样本和负样本，但是这些样本都是和用户强相关的，都是模型认为用户感兴趣的，但是却返回了不同的行为。</li>
+<li>此时用这样的数据训练模型很难学习到哪些是和用户相关的、哪些是和用户不相关的，所以需要伪造一些和用户不相关的样本数据加入到训练中。</li>
+</ul>
+</li>
+<li>实现原理：<ul>
+<li>训练过程中，存在几个数据结构：<ul>
+<li>LRUCache：统计正样本中的文章出现的次数</li>
+<li>sample_table：根据LRUCache中统计的文章出现次数，参考word2vec的采样表计算方式计算采样表</li>
+</ul>
+</li>
+<li>流程<ul>
+<li>1.训练数据流中来到一个正样本 (userId, docId, label=1.0)</li>
+<li>2.LRUCache中docId出现的次数加一</li>
+<li>3.每隔60秒根据LRUCache中的值重新计算一次采样表</li>
+<li>4.从采样表中随机采样docIdFake，组装伪造负样本 (userId, docIdFake, label=0.0)</li>
+<li>5.将伪造负样本加入到训练中</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-总结"><a href="#3-总结" class="headerlink" title="3. 总结"></a>3. 总结</h3><ol>
+<li><strong>跳槽找工作刷题很重要，要熟练掌握基本的数据结构和算法</strong>，所以不能停止刷LeetCode</li>
+<li>对自己做的项目要深入，讲给别人听的时候，要让别人觉得确实如此</li>
+<li>对于自己使用的一些技术，要知道其来源和适用场景</li>
+<li>对数据的规模，调整等要清楚，对模型的实现细节，整个流程要搞明白，知道不同的模型适用什么样的场景</li>
+<li>一些常用的调参手段、案例要能讲清楚，评估指标，计算方式要掌握</li>
+<li>对GBDT、XGboost的工业级训练、Serve最好能有了解，以及树模型的优缺点，输出特征重要性、原理等</li>
+<li>深入了解Python、C++</li>
+</ol>
+<hr>
+<p>以上就是本人 2020年，也是人生中第一次社招的经验总结。完结，撒花！</p>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2019/10/12/tensorflow-embedding笔记/" rel="next" title="TensorFlow-Embedding笔记">
+                  <i class="fa fa-chevron-left"></i> TensorFlow-Embedding笔记
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2020/01/04/机器学习中的损失函数/" rel="prev" title="机器学习中的损失函数">
+                  机器学习中的损失函数 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/avatar.jpg"
+      alt="WeiguoZHAO">
+  <p class="site-author-name" itemprop="name">WeiguoZHAO</p>
+  <div class="site-description motion-element" itemprop="description">Welcome to my blog~</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">47</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/weiguozhao" title="GitHub &rarr; https://github.com/weiguozhao" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:aszhaoweiguo@gmail.com" title="E-Mail &rarr; mailto:aszhaoweiguo@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      大牛们
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://colah.github.io/" title="http://colah.github.io/" rel="noopener" target="_blank">colah's blog</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/wzhe06/Reco-papers" title="https://github.com/wzhe06/Reco-papers" rel="noopener" target="_blank">王喆的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/ljpzzz/machinelearning" title="https://github.com/ljpzzz/machinelearning" rel="noopener" target="_blank">刘建平的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://tech.meituan.com/" title="https://tech.meituan.com/" rel="noopener" target="_blank">美团技术团队</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-沉浸式视频排序"><span class="nav-text">1. 沉浸式视频排序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-新闻Push推荐排序"><span class="nav-text">2. 新闻Push推荐排序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-总结"><span class="nav-text">3. 总结</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">WeiguoZHAO</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+      <div class="reading-progress-bar"></div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+
+</body>
+</html>

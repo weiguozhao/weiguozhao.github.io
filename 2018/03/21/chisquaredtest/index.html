@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/github-logo.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/github-logo.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":true,"show_result":true,"style":"default"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="卡方检验 - Chi-Squared Test 目录 定义 统计机器学习中的应用 举例 特点 1. 定义卡方检验（Chi-Squared Test）是一种统计量的分布在零假设成立时近似服从卡方分布（$\chi^2$分布）的假设检验。在没有其他的限定条件或说明时，卡方检验一般指代的是皮尔森卡方检验。在卡方检验的一般运用中，研究人员将观察量的值划分成若干互斥的分类，并且使用一套理论（或零假设）尝试去">
+<meta name="keywords" content="特征选择">
+<meta property="og:type" content="article">
+<meta property="og:title" content="卡方检验">
+<meta property="og:url" content="https://weiguozhao.github.io/2018/03/21/chisquaredtest/index.html">
+<meta property="og:site_name" content="Weiguo&#39;s Station">
+<meta property="og:description" content="卡方检验 - Chi-Squared Test 目录 定义 统计机器学习中的应用 举例 特点 1. 定义卡方检验（Chi-Squared Test）是一种统计量的分布在零假设成立时近似服从卡方分布（$\chi^2$分布）的假设检验。在没有其他的限定条件或说明时，卡方检验一般指代的是皮尔森卡方检验。在卡方检验的一般运用中，研究人员将观察量的值划分成若干互斥的分类，并且使用一套理论（或零假设）尝试去">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-03-21-chisquaredtest/3-1.png">
+<meta property="og:updated_time" content="2021-03-22T10:53:44.467Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="卡方检验">
+<meta name="twitter:description" content="卡方检验 - Chi-Squared Test 目录 定义 统计机器学习中的应用 举例 特点 1. 定义卡方检验（Chi-Squared Test）是一种统计量的分布在零假设成立时近似服从卡方分布（$\chi^2$分布）的假设检验。在没有其他的限定条件或说明时，卡方检验一般指代的是皮尔森卡方检验。在卡方检验的一般运用中，研究人员将观察量的值划分成若干互斥的分类，并且使用一套理论（或零假设）尝试去">
+<meta name="twitter:image" content="https://weiguozhao.github.io/posts_res/2018-03-21-chisquaredtest/3-1.png">
+  <link rel="canonical" href="https://weiguozhao.github.io/2018/03/21/chisquaredtest/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>卡方检验 | Weiguo's Station</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?ff6106e096f9eb6ace966de311be4b1a";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Weiguo's Station</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>博客首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>文章归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类专栏</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>各种标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>站点搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+  <a href="https://github.com/weiguozhao" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weiguozhao.github.io/2018/03/21/chisquaredtest/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="WeiguoZHAO">
+      <meta itemprop="description" content="Welcome to my blog~">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Weiguo's Station">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">卡方检验
+
+          
+        </h1>
+
+        <div class="post-meta">
+        
+          
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2018-03-21 12:10:00" itemprop="dateCreated datePublished" datetime="2018-03-21T12:10:00+08:00">2018-03-21</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-22 18:53:44" itemprop="dateModified" datetime="2021-03-22T18:53:44+08:00">2021-03-22</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/基础知识/" itemprop="url" rel="index"><span itemprop="name">基础知识</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="卡方检验-Chi-Squared-Test"><a href="#卡方检验-Chi-Squared-Test" class="headerlink" title=" 卡方检验 - Chi-Squared Test "></a><center> 卡方检验 - Chi-Squared Test </center></h2><p>目录</p><ul>
+<li>定义</li>
+<li>统计机器学习中的应用</li>
+<li>举例</li>
+<li>特点</li>
+</ul><hr><h3 id="1-定义"><a href="#1-定义" class="headerlink" title="1. 定义"></a>1. 定义</h3><p>卡方检验（Chi-Squared Test）是一种统计量的分布在零假设成立时近似服从卡方分布（$\chi^2$分布）的假设检验。在没有其他的限定条件或说明时，卡方检验一般指代的是皮尔森卡方检验。在卡方检验的一般运用中，研究人员将观察量的值划分成若干互斥的分类，并且使用一套理论（或零假设）尝试去说明观察量的值落入不同分类的概率分布的模型。而卡方检验的目的就在于去衡量这个假设对观察结果所反映的程度。</p><a id="more"></a>
+
+
+
+<hr>
+<h3 id="2-统计机器学习中的应用"><a href="#2-统计机器学习中的应用" class="headerlink" title="2. 统计机器学习中的应用"></a>2. 统计机器学习中的应用</h3><p>卡方检验最基本的思想就是通过观察实际值与理论值的偏差来确定理论的正确与否。
+具体做的时候常常先假设两个变量确实是独立的（“原假设”），然后观察实际值（观察值）与理论值（指“如果两者确实独立”的情况下应该有的值）的偏差程度，
+如果偏差足够小，我们就认为误差是很自然的样本误差，是测量手段不够精确导致或者偶然发生的，两者确确实实是独立的，此时就接受原假设；
+如果偏差大到一定程度，使得这样的误差不太可能是偶然产生或者测量不精确所致，我们就认为两者实际上是相关的，即否定原假设，而接受备择假设。</p>
+<p>那么用什么来衡量偏差程度呢？假设理论值为$E$（数学期望），实际值为$x$，如果仅仅使用所有样本的观察值与理论值的差值$x-E$之和</p>
+<script type="math/tex; mode=display">
+\sum_{i=1}^n (x_i - E)</script><p>来衡量，单个的观察值还好说，当有多个观察值$x_1,x_2,x_3$的时候，很可能$x_1-E，x_2-E，x_3-E$的值有正有负，因而互相抵消，使得最终的结果看上好像偏差为0，但实际上每个都有偏差，而且都还不小！
+此时很直接的想法便是使用方差代替均值，这样就解决了正负抵消的问题，即使用</p>
+<script type="math/tex; mode=display">
+\sum_{i=1}^n (x_i - E)^2</script><p>这时又引来了新的问题，对于$500$的均值来说，相差5其实是很小的（相差1%），而对20的均值来说，5相当于25%的差异，这是使用方差也无法体现的。
+因此应该考虑改进上面的式子，让均值的大小不影响我们对差异程度的判断。改进的式子如下：</p>
+<script type="math/tex; mode=display">
+\sum_{i=1}^n \frac{(x_i - E)^2}{E}</script><p>上面这个式子已经相当好了。实际上这个式子就是卡方检验使用的差值衡量公式。
+当提供了数个样本的观察值$x_1, x_2, …, x_i, …, x_n$之后，代入到$式(3)$中就可以求得卡方值，用这个值与事先设定的阈值比较，如果大于阈值（即偏差很大），就认为原假设不成立，反之则认为原假设成立。</p>
+<h3 id="3-举例"><a href="#3-举例" class="headerlink" title="3. 举例"></a>3. 举例</h3><p>在文本分类问题的特征选择阶段，我们主要关心一个词word（一个随机变量）与一个类别Ci（另一个随机变量）之间是否相互独立？
+如果独立，就可以说词word对类别Ci完全没有表征作用，即我们根本无法根据word出现与否来判断一篇文档是否属于Ci这个分类。
+但与最普通的卡方检验不同，我们不需要设定阈值，因为很难说词word和类别Ci关联到什么程度才算是有表征作用，我们只想借用这个方法来选出一些最相关的即可。</p>
+<p>我们越倾向于认为原假设的反面情况是正确的，一般都使用”词word与类别Ci不相关“来做原假设。选择的过程也变成了为每个词计算它与类别Ci的卡方值，从大到小排个序（此时开方值越大越相关），取前k个就可以。</p>
+<p>比如说现在有N篇文档，其中有M篇是关于体育的，我们想考察一个词“篮球”与类别“体育”之间的相关性。我们有四个观察值可以使用：</p>
+<ol>
+<li>包含“篮球”且属于“体育”类别的文档数，命名为A</li>
+<li>包含“篮球”但不属于“体育”类别的文档数，命名为B</li>
+<li>不包含“篮球”但却属于“体育”类别的文档数，命名为C</li>
+<li>既不包含“篮球”也不属于“体育”类别的文档数，命名为D</li>
+</ol>
+<p><img src="/posts_res/2018-03-21-chisquaredtest/3-1.png" alt="table"></p>
+<p>下面我们需要根据上面数据估算上面的ABCD四个值，根据估算值计算卡方值</p>
+<p>对于A的估计值（上文说的是理论值）：</p>
+<script type="math/tex; mode=display">
+A+B+C+D=N</script><p>A+C的意思其实就是说“属于体育类的文章数量”，因此，它就等于M，同时，B+D就等于N-M。</p>
+<p>好，那么理论值是什么呢？以包含“篮球”且属于“体育”类别的文档数为例。如果原假设是成立的，即“篮球”和体育类文章没什么关联性，那么在所有的文章中，“篮球”这个词都应该是等概率出现，而不管文章是不是体育类的。
+这个概率具体是多少，我们并不知道，但他应该体现在观察结果中（就好比抛硬币的概率是二分之一，可以通过观察多次抛的结果来大致确定），因此我们可以说这个概率接近</p>
+<script type="math/tex; mode=display">
+\frac{A+B}{N}</script><p>（因为A+B是包含“篮球”的文章数，除以总文档数就是“篮球”出现的概率，当然，这里认为在一篇文章中出现即可，而不管出现了几次）而属于体育类的文章数为A+C，在这些个文档中，
+应该有$E_{11} = (A+C)\frac{A+B}{N}$篇包含“篮球”这个词（数量乘以概率），实际上是“体育类”中有A篇包含篮球这个词。</p>
+<p>此时使用$ 式(3) $对这种情况的差值就可以计算出来：</p>
+<script type="math/tex; mode=display">
+D_{11} = \frac{(A-E_{11})^2}{E_{11}}</script><p>同样，我们还可以计算剩下三种情况的差值$D_{12},D_{21},D_{22}$。有了所有观察值的差值，就可以计算“篮球”与“体育”类文章的卡方值</p>
+<script type="math/tex; mode=display">
+\chi^2(篮球，体育) = D_{11}+D_{12}+D_{21}+D_{22} = \frac{N(AD-BC)^2}{(A+C)(A+B)(B+D)(C+D)}</script><p>因此，计算卡方值的一般公式的形式为：</p>
+<script type="math/tex; mode=display">
+\chi^2(t，c) = \frac{N(AD-BC)^2}{(A+C)(A+B)(B+D)(C+D)}</script><p>接下来我们就可以计算其他词如“排球”，“产品”，“银行”等等与体育类别的卡方值，然后根据大小来排序，选择我们需要的最大的数个词汇作为特征项就可以了。</p>
+<hr>
+<h3 id="4-特点"><a href="#4-特点" class="headerlink" title="4. 特点"></a>4. 特点</h3><p>针对英文纯文本的实验结果表明：
+作为特征选择方法时，卡方检验和信息增益的效果最佳（相同的分类算法，使用不同的特征选择算法来得到比较结果）；
+文档频率方法的性能同前两者大体相当，术语强度方法性能一般；
+互信息方法的性能最差。</p>
+<p>但卡方检验也并非就十全十美了。回头想想A和B的值是怎么得出来的，它统计文档中是否出现词word，却不管word在该文档中出现了几次，这会使得他对低频词有所偏袒（因为它夸大了低频词的作用）。
+甚至会出现有些情况，一个词在一类文章的每篇文档中都只出现了一次，其开方值却大过了在该类文章99%的文档中出现了10次的词，其实后面的词才是更具代表性的，但只因为它出现的文档数比前面的词少了“1”，特征选择的时候就可能筛掉后面的词而保留了前者。
+这就是开方检验著名的“低频词缺陷“。因此开方检验也经常同其他因素如词频综合考虑来扬长避短。</p>
+<hr>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><blockquote>
+<p><a href="https://zh.wikipedia.org/wiki/%E5%8D%A1%E6%96%B9%E6%A3%80%E9%AA%8C" target="_blank" rel="noopener">卡方检验</a></p>
+<p><a href="https://www.jianshu.com/p/b670b2a23187" target="_blank" rel="noopener">特征选择之Chi卡方检验</a></p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/特征选择/" rel="tag"># 特征选择</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2018/03/20/taylorseries/" rel="next" title="泰勒级数">
+                  <i class="fa fa-chevron-left"></i> 泰勒级数
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2018/03/24/regularization/" rel="prev" title="机器学习中的正则化">
+                  机器学习中的正则化 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    
+  <div class="comments" id="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC80MTI1Mi8xNzgwMA"></div>
+  </div>
+  
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/avatar.jpg"
+      alt="WeiguoZHAO">
+  <p class="site-author-name" itemprop="name">WeiguoZHAO</p>
+  <div class="site-description motion-element" itemprop="description">Welcome to my blog~</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">47</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/weiguozhao" title="GitHub &rarr; https://github.com/weiguozhao" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:aszhaoweiguo@gmail.com" title="E-Mail &rarr; mailto:aszhaoweiguo@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      大牛们
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://colah.github.io/" title="http://colah.github.io/" rel="noopener" target="_blank">colah's blog</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/wzhe06/Reco-papers" title="https://github.com/wzhe06/Reco-papers" rel="noopener" target="_blank">王喆的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/ljpzzz/machinelearning" title="https://github.com/ljpzzz/machinelearning" rel="noopener" target="_blank">刘建平的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://tech.meituan.com/" title="https://tech.meituan.com/" rel="noopener" target="_blank">美团技术团队</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#卡方检验-Chi-Squared-Test"><span class="nav-text"> 卡方检验 - Chi-Squared Test </span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-定义"><span class="nav-text">1. 定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-统计机器学习中的应用"><span class="nav-text">2. 统计机器学习中的应用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-举例"><span class="nav-text">3. 举例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-特点"><span class="nav-text">4. 特点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-text">参考</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">WeiguoZHAO</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+      <div class="reading-progress-bar"></div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+<script>
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
+
+</body>
+</html>

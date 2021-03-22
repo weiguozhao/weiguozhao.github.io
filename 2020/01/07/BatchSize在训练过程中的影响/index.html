@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/github-logo.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/github-logo.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":true,"show_result":true,"style":"default"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="先看两个问题： 深度学习中batch size的大小对训练过程的影响是什么样的？ 有些时候不可避免地要用超大batch，比如人脸识别，可能每个batch要有几万甚至几十万张人脸图像，训练过程中超大batch有什么优缺点，如何尽可能地避免超大batch带来的负面影响？">
+<meta name="keywords" content="Tricks">
+<meta property="og:type" content="article">
+<meta property="og:title" content="BatchSize在训练过程中的影响">
+<meta property="og:url" content="https://weiguozhao.github.io/2020/01/07/BatchSize在训练过程中的影响/index.html">
+<meta property="og:site_name" content="Weiguo&#39;s Station">
+<meta property="og:description" content="先看两个问题： 深度学习中batch size的大小对训练过程的影响是什么样的？ 有些时候不可避免地要用超大batch，比如人脸识别，可能每个batch要有几万甚至几十万张人脸图像，训练过程中超大batch有什么优缺点，如何尽可能地避免超大batch带来的负面影响？">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-03-22T10:53:44.478Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="BatchSize在训练过程中的影响">
+<meta name="twitter:description" content="先看两个问题： 深度学习中batch size的大小对训练过程的影响是什么样的？ 有些时候不可避免地要用超大batch，比如人脸识别，可能每个batch要有几万甚至几十万张人脸图像，训练过程中超大batch有什么优缺点，如何尽可能地避免超大batch带来的负面影响？">
+  <link rel="canonical" href="https://weiguozhao.github.io/2020/01/07/BatchSize在训练过程中的影响/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>BatchSize在训练过程中的影响 | Weiguo's Station</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?ff6106e096f9eb6ace966de311be4b1a";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Weiguo's Station</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>博客首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>文章归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类专栏</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>各种标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>站点搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+  <a href="https://github.com/weiguozhao" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weiguozhao.github.io/2020/01/07/BatchSize在训练过程中的影响/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="WeiguoZHAO">
+      <meta itemprop="description" content="Welcome to my blog~">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Weiguo's Station">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">BatchSize在训练过程中的影响
+
+          
+        </h1>
+
+        <div class="post-meta">
+        
+          
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2020-01-07 20:36:33" itemprop="dateCreated datePublished" datetime="2020-01-07T20:36:33+08:00">2020-01-07</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-22 18:53:44" itemprop="dateModified" datetime="2021-03-22T18:53:44+08:00">2021-03-22</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/深度学习/" itemprop="url" rel="index"><span itemprop="name">深度学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>先看两个问题：</p><ol>
+<li>深度学习中batch size的大小对训练过程的影响是什么样的？</li>
+<li>有些时候不可避免地要用超大batch，比如人脸识别，可能每个batch要有几万甚至几十万张人脸图像，训练过程中超大batch有什么优缺点，如何尽可能地避免超大batch带来的负面影响？</li>
+</ol><a id="more"></a>
+
+<hr>
+<p><strong>不考虑Batch Normalization</strong></p>
+<h3 id="1-面试版回答"><a href="#1-面试版回答" class="headerlink" title="1. 面试版回答"></a>1. 面试版回答</h3><ul>
+<li><p>Solution1: </p>
+<ul>
+<li><p>不考虑bn的情况下，<code>batch size</code>的大小决定了深度学习训练过程中的完成每个<code>epoch</code>所需的时间和每次迭代<code>(iteration)</code>之间梯度的平滑程度。<code>batch size</code>只能说影响完成每个<code>epoch</code>所需要的时间，决定也算不上吧。根本原因还是CPU，GPU算力吧。瓶颈如果在CPU，例如随机数据增强，<code>batch size</code>越大有时候计算的越慢。</p>
+</li>
+<li><p>对于一个大小为<code>N</code>的训练集，如果每个epoch中mini-batch的采样方法采用最常规的N个样本每个都采样一次，设mini-batch大小为<code>b</code>，那么每个epoch所需的迭代次数(正向+反向)为 <code>N/b</code>, 因此完成每个epoch所需的时间大致也随着迭代次数的增加而增加。</p>
+</li>
+<li><p>由于目前主流深度学习框架处理mini-batch的反向传播时，默认都是先将每个mini-batch中每个instance得到的loss平均化之后再反求梯度，也就是说每次反向传播的梯度是对mini-batch中每个instance的梯度平均之后的结果，所以<code>b</code>的大小决定了相邻迭代之间的梯度平滑程度，<code>b</code>太小，相邻mini-batch间的差异相对过大，那么相邻两次迭代的梯度震荡情况会比较严重，不利于收敛；<code>b</code>越大，相邻mini-batch间的差异相对越小，虽然梯度震荡情况会比较小，一定程度上利于模型收敛，但如果b极端大，相邻mini-batch间的差异过小，相邻两个mini-batch的梯度没有区别了，整个训练过程就是沿着一个方向蹭蹭蹭往下走，很容易陷入到局部最小值出不来。</p>
+</li>
+<li><p><strong>总结下来：</strong></p>
+<ul>
+<li>batch size过小，花费时间多，同时梯度震荡严重，不利于收敛；batch size过大，不同batch的梯度方向没有任何变化，容易陷入局部极小值。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><p>Solution2(个人猜想，未证实)</p>
+<ul>
+<li>如果硬件资源允许，想要追求训练速度使用超大batch，可以采用一次正向+多次反向的方法，避免模型陷入局部最小值。即使用超大epoch做正向传播，在反向传播的时候，分批次做多次反向转播，比如将一个<code>batch size</code>为64的batch，一次正向传播得到结果，instance级别求loss（先不平均），得到64个loss结果；反向传播的过程中，分四次进行反向传播，每次取16个instance的loss求平均，然后进行反向传播，这样可以做到在节约一定的训练时间，利用起硬件资源的优势的情况下，避免模型训练陷入局部最小值。</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-通俗版回答"><a href="#2-通俗版回答" class="headerlink" title="2. 通俗版回答"></a>2. 通俗版回答</h3><p>把第一个问题简化为一个小时候经常玩的游戏：</p>
+<ul>
+<li>深度学习训练过程：贴鼻子</li>
+<li>训练样本：负责指挥的小朋友们(观察角度各不一样)</li>
+<li>模型：负责贴的小朋友</li>
+<li>模型衡量指标：最终贴的位置和真实位置之间的距离大小</li>
+</ul>
+<p>由于每个小朋友站的位置各不一样，所以他们对鼻子位置的观察也各不一样(训练样本的差异性)。这时候假设小明是负责贴鼻子的小朋友，小朋友A、B、C、D、E是负责指挥的同学(A, B站在图的右边，C，D，E站在左边)，这时候小明如果采用：</p>
+<ol>
+<li>每次随机询问一个同学，那么很容易出现，先询问到了A，A说向左2cm，再问C，C说向右5cm，然后B，B说向左4cm，D说向右3cm，这样每次指挥的差异都比较大，结果调过来调过去，没什么进步。</li>
+<li>每次随机询问两个同学，每次取询问的意见的平均，比如先问到了(A, C)，A说向左2cm，C说向右5cm，那就取个均值，向右1.5cm。然后再问（B, D），这样的话减少了极端情况（前后两次迭代差异巨大）这种情况的发生，能更好更快的完成游戏。</li>
+<li>每次全问一遍，然后取均值，这样每次移动的方向都是所有人决定的均值，这样的话，最后就是哪边的小朋友多最终结果就被很快的拉向哪边了。(梯度方向不变，限于极小值)</li>
+</ol>
+<h3 id="3-科学版回答"><a href="#3-科学版回答" class="headerlink" title="3. 科学版回答"></a>3. 科学版回答</h3><p><strong>使用MINST进行实验。详细实验代码、流程、结果等见参考</strong></p>
+<blockquote>
+<p>由于现在绝大多数的框架在进行mini-batch的反向传播的时候，默认都是将batch中每个instance的loss平均化之后在进行反向传播，所以相对大一点的batch size能够防止loss震荡的情况发生。从这两张图中可以看出batch size越小，相邻iter之间的loss震荡就越厉害，相应的，反传回去的梯度的变化也就越大，也就越不利于收敛。同时很有意思的一个现象，batch size为1的时候，loss到后期会发生爆炸，这主要是lr=0.02设置太大，所以某个异常值的出现会严重扰动到训练过程。这也是为什么对于较小的batchsize，要设置小lr的原因之一，避免异常值对结果造成的扰巨大扰动。而对于较大的batchsize，要设置大一点的lr的原因则是大batch每次迭代的梯度方向相对固定，大lr可以加速其收敛过程。</p>
+</blockquote>
+<hr>
+<blockquote>
+<p><a href="https://zhuanlan.zhihu.com/p/86529347" target="_blank" rel="noopener">深度学习 | Batch Size大小对训练过程的影响</a></p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/Tricks/" rel="tag"># Tricks</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2020/01/05/分布式TensorFlow模式/" rel="next" title="分布式TensorFlow模式">
+                  <i class="fa fa-chevron-left"></i> 分布式TensorFlow模式
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2020/01/08/科学上网搭建方法/" rel="prev" title="科学上网搭建方法">
+                  科学上网搭建方法 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/avatar.jpg"
+      alt="WeiguoZHAO">
+  <p class="site-author-name" itemprop="name">WeiguoZHAO</p>
+  <div class="site-description motion-element" itemprop="description">Welcome to my blog~</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">47</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/weiguozhao" title="GitHub &rarr; https://github.com/weiguozhao" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:aszhaoweiguo@gmail.com" title="E-Mail &rarr; mailto:aszhaoweiguo@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      大牛们
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://colah.github.io/" title="http://colah.github.io/" rel="noopener" target="_blank">colah's blog</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/wzhe06/Reco-papers" title="https://github.com/wzhe06/Reco-papers" rel="noopener" target="_blank">王喆的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/ljpzzz/machinelearning" title="https://github.com/ljpzzz/machinelearning" rel="noopener" target="_blank">刘建平的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://tech.meituan.com/" title="https://tech.meituan.com/" rel="noopener" target="_blank">美团技术团队</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-面试版回答"><span class="nav-text">1. 面试版回答</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-通俗版回答"><span class="nav-text">2. 通俗版回答</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-科学版回答"><span class="nav-text">3. 科学版回答</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">WeiguoZHAO</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+      <div class="reading-progress-bar"></div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+
+</body>
+</html>

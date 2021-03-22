@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/github-logo.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/github-logo.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":true,"show_result":true,"style":"default"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="Google Play 用的深度神经网络推荐系统，主要思路是将 Memorization(Wide Model) 和 Generalization(Deep Model) 取长补短相结合。1. Overview of System先来看一下推荐系统的整体架构，由两个部分组成，检索系统(或者说候选生成系统） 和 排序系统(排序网络)。首先，用 检索(retrieval) 的方法对大数据集进行初步筛选">
+<meta name="keywords" content="模型算法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Wide-Deep Learning for Recommender Systems笔记">
+<meta property="og:url" content="https://weiguozhao.github.io/2019/10/08/Wide-Deep-Learning-for-Recommender-Systems笔记/index.html">
+<meta property="og:site_name" content="Weiguo&#39;s Station">
+<meta property="og:description" content="Google Play 用的深度神经网络推荐系统，主要思路是将 Memorization(Wide Model) 和 Generalization(Deep Model) 取长补短相结合。1. Overview of System先来看一下推荐系统的整体架构，由两个部分组成，检索系统(或者说候选生成系统） 和 排序系统(排序网络)。首先，用 检索(retrieval) 的方法对大数据集进行初步筛选">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2019-10-08-Wide-Deep-Learning-for-Recommender-Systems笔记/1.jpg">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2019-10-08-Wide-Deep-Learning-for-Recommender-Systems笔记/2.jpg">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2019-10-08-Wide-Deep-Learning-for-Recommender-Systems笔记/3.jpg">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2019-10-08-Wide-Deep-Learning-for-Recommender-Systems笔记/4.jpg">
+<meta property="og:updated_time" content="2021-03-22T10:53:44.477Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Wide-Deep Learning for Recommender Systems笔记">
+<meta name="twitter:description" content="Google Play 用的深度神经网络推荐系统，主要思路是将 Memorization(Wide Model) 和 Generalization(Deep Model) 取长补短相结合。1. Overview of System先来看一下推荐系统的整体架构，由两个部分组成，检索系统(或者说候选生成系统） 和 排序系统(排序网络)。首先，用 检索(retrieval) 的方法对大数据集进行初步筛选">
+<meta name="twitter:image" content="https://weiguozhao.github.io/posts_res/2019-10-08-Wide-Deep-Learning-for-Recommender-Systems笔记/1.jpg">
+  <link rel="canonical" href="https://weiguozhao.github.io/2019/10/08/Wide-Deep-Learning-for-Recommender-Systems笔记/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>Wide-Deep Learning for Recommender Systems笔记 | Weiguo's Station</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?ff6106e096f9eb6ace966de311be4b1a";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Weiguo's Station</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>博客首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>文章归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类专栏</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>各种标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>站点搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+  <a href="https://github.com/weiguozhao" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weiguozhao.github.io/2019/10/08/Wide-Deep-Learning-for-Recommender-Systems笔记/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="WeiguoZHAO">
+      <meta itemprop="description" content="Welcome to my blog~">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Weiguo's Station">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">Wide-Deep Learning for Recommender Systems笔记
+
+          
+        </h1>
+
+        <div class="post-meta">
+        
+          
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2019-10-08 20:23:11" itemprop="dateCreated datePublished" datetime="2019-10-08T20:23:11+08:00">2019-10-08</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-22 18:53:44" itemprop="dateModified" datetime="2021-03-22T18:53:44+08:00">2021-03-22</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/推荐系统/" itemprop="url" rel="index"><span itemprop="name">推荐系统</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Google Play 用的深度神经网络推荐系统，主要思路是将 Memorization(Wide Model) 和 Generalization(Deep Model) 取长补短相结合。</p><h3 id="1-Overview-of-System"><a href="#1-Overview-of-System" class="headerlink" title="1. Overview of System"></a>1. Overview of System</h3><p><img src="/posts_res/2019-10-08-Wide-Deep-Learning-for-Recommender-Systems笔记/1.jpg"></p><p>先来看一下推荐系统的整体架构，由两个部分组成，<strong>检索系统(或者说候选生成系统）</strong> 和 <strong>排序系统(排序网络)</strong>。首先，用 <strong>检索(retrieval)</strong> 的方法对大数据集进行初步筛选，返回最匹配 query 的一部分物品列表，这里的检索通常会结合采用 <strong>机器学习模型(machine-learned models)</strong> 和 <strong>人工定义规则(human-defined rules)</strong> 两种方法。从大规模样本中召回最佳候选集之后，再使用 <strong>排序系统</strong> 对每个物品进行算分、排序，分数 $P(y|x)$，$y$ 是用户采取的行动(比如说下载行为)，$x$ 是特征，包括</p><a id="more"></a>
+
+
+<ul>
+<li>User features<ul>
+<li>e.g., country, language, demographics</li>
+</ul>
+</li>
+<li>Contextual features<ul>
+<li>e.g., device, hour of the day, day of the week</li>
+</ul>
+</li>
+<li>Impression features<ul>
+<li>e.g., app age, historical statistics of an app</li>
+</ul>
+</li>
+</ul>
+<p>WDL 就是用在排序系统中。</p>
+<h3 id="2-Wide-and-Deep-Learning"><a href="#2-Wide-and-Deep-Learning" class="headerlink" title="2. Wide and Deep Learning"></a>2. Wide and Deep Learning</h3><p>人脑就是一个不断记忆（memorization）并且归纳（generalization）的过程，而这篇论文的思想，就是将宽线性模型（Wide Model，用于记忆，下图左侧）和深度神经网络模型（Deep Model，用于归纳，下图右侧）结合，汲取各自优势形成了 <code>Wide &amp; Deep</code> 模型用于推荐排序（下图中间）。</p>
+<p><img src="/posts_res/2019-10-08-Wide-Deep-Learning-for-Recommender-Systems笔记/2.jpg"></p>
+<h4 id="2-1-Wide-Model"><a href="#2-1-Wide-Model" class="headerlink" title="2.1 Wide Model"></a>2.1 Wide Model</h4><blockquote>
+<p><strong>Memorization</strong> can be loosely defined as learning the frequent co-occurrence of items or features and exploiting the correlation available in the historical data.</p>
+</blockquote>
+<p>要理解的概念是 <strong>Memorization</strong>，主要是学习特征的共性或者说相关性，产生的推荐是和已经有用户行为的物品直接相关的物品。</p>
+<p>用的模型是 <strong>逻辑回归(logistic regression, LR)</strong>，LR 的优点就是简单(simple)、容易规模化(scalable)、可解释性强(interpretable)。
+LR 的特征往往是二值且稀疏的(binary and sparse)，这里同样采用 one-hot 编码，如 <code>“user_installed_app=netflix”</code>，如果用户安装了 Netflix，这个特征的值为 1，否则为 0。</p>
+<p>为了达到 Memorization，我们对稀疏的特征采取特征交叉 (cross-product transformation)，
+比如说 AND(user_installed_app=netflix, impression_app=pandora”) 这个特征，只有 Netflix 和 Pandora 两个条件都达到了，值才为 1，
+这类 feature 解释了共现(co-occurrence) 和 target label 之间的关系。
+一个 cross-product transformation 的局限在于，对于在训练集里没有出现过的 query-item pair，它不能进行泛化(Generalization)</p>
+<p>到此，总结一下，wide模型的输入是用户安装应用(installation)和为用户展示（impression）的应用间的向量积（叉乘），模型通常训练 one-hot 编码后的二值特征，这种操作不会归纳出训练集中未出现的特征对。</p>
+<p><strong>Linear model</strong></p>
+<script type="math/tex; mode=display">
+y = w^T x + b</script><p>$x = [ x_1, x_2, \cdots, x_d ]$ 是包含了 <code>d</code>个特征的向量，$w = [ w_1, w_2, \cdots, w_d]$ 是模型参数，<code>b</code> 是偏置。
+特征包括了原始的输入特征以及 cross-product transformation 特征，cross-product transformation 的式子如下：</p>
+<script type="math/tex; mode=display">
+\phi_k(x) = \prod_{i=1}^d x^{c_{ki}}_i</script><p>$c_{kj}$是一个布尔变量，如果第 $i$ 个特征是第 $k$ 个 transformation $\phi_k$ 的一部分，那么值就为 1，否则为 0，作用：</p>
+<blockquote>
+<p>This captures the interactions between the binary features, and adds nonlinearity to the generalized linear model.</p>
+</blockquote>
+<h3 id="2-2-Deep-Model"><a href="#2-2-Deep-Model" class="headerlink" title="2.2 Deep Model"></a>2.2 Deep Model</h3><blockquote>
+<p><strong>Generalization</strong> is based on transitivity of correlation and explores new feature combinations that have never or rarely occurred in the past.</p>
+</blockquote>
+<p>要理解的概念是 <strong>Generalization</strong>，可以理解为相关性的传递(transitivity)，会学习新的特征组合，来提高推荐物品的多样性，或者说提供泛化能力(Generalization)</p>
+<p>泛化往往是通过学习低维稠密特征 (low-dimensional dense embeddings) 来探索过去从未或很少出现的新的特征组合来实现的，
+通常的 embedding-based model 有 <strong>Factorization Machines(FM)</strong> 和 <strong>Deep Neural Networks(DNN)</strong>。
+特殊兴趣或者小众爱好的用户，query-item matrix 非常稀疏，很难学习；然而 dense embedding 的方法还是可以得到对所有 query-item pair 非零的预测，这就会导致 over-fiting，推荐不怎么相关的物品。
+这点和 LR 正好互补，因为 LR 只能记住很少的特征组合。</p>
+<p>为了达到 <strong>Generalization</strong>，我们会引入新的小颗粒特征，如类别特征（安装了视频类应用，展示的是音乐类应用，等等，AND(user_installed_category=video, impression_category=music)，这些高维稀疏的类别特征（如人口学特征和设备类别）映射为低纬稠密的向量后，与其他连续特征（用户年龄、应用安装数等）拼接在一起，输入 MLP 中，最后输入逻辑输出单元。</p>
+<p>一开始嵌入向量(embedding vectors)被随机初始化，然后训练过程中通过最小化损失函数来优化模型。每一个隐层(hidden-layer)做这样的计算：</p>
+<script type="math/tex; mode=display">
+a^{(l+1)} = f(W^{(l)} a^{(l)} + b^{(l)})</script><p>$f$ 是激活函数(通常用 <code>ReLU</code>)，<code>l</code>是层数。</p>
+<p>总结一下，基于 embedding 的深度模型的输入是 <strong>类别特征(产生embedding) + 连续特征</strong>。</p>
+<h3 id="2-3-Joint-Training"><a href="#2-3-Joint-Training" class="headerlink" title="2.3 Joint Training"></a>2.3 Joint Training</h3><p>对两个模型的输出算 log odds ratio 然后加权求和，作为预测。</p>
+<p><strong>Joint Training vs Ensemble</strong></p>
+<ul>
+<li>Joint Training 同时训练 wide &amp; deep 模型，优化的参数包括两个模型各自的参数以及 <code>weights of sum</code></li>
+<li>Ensemble 中的模型是分别独立训练的，互不干扰，只有在预测时才会联系在一起</li>
+</ul>
+<p><img src="/posts_res/2019-10-08-Wide-Deep-Learning-for-Recommender-Systems笔记/3.jpg"></p>
+<p>用 <code>mini-batch stochastic optimization</code> 来进行训练，可以看下这篇论文<a href="https://www.cs.cmu.edu/~muli/file/minibatch_sgd.pdf" target="_blank" rel="noopener">Efficient Mini-batch Training for Stochastic Optimization</a>。</p>
+<p>在论文提到的实验中，训练时 Wide Model 部分用了 <a href="https://pdfs.semanticscholar.org/7bdf/20d18b5a9411d729a0736c6a3a9a4b52bf4f.pdf" target="_blank" rel="noopener">Follow-the-regularized-learder(FTRL)</a>+ L1 正则，
+Deep Model 用了 <a href="http://www.jmlr.org/papers/volume12/duchi11a/duchi11a.pdf" target="_blank" rel="noopener">AdaGrad</a>，对于逻辑回归，模型预测如下：</p>
+<script type="math/tex; mode=display">
+P(Y=1 | x ) = \sigma ( w^T_{wide}[ x, \phi(x) ] + w^T_{deep} a^{(l_f)} + b )</script><p>其中 $Y$非0即1，$\sigma$是sigmoid函数， $\phi(x)$ 是 $x$ 的交叉特征(cross product transformations)，$b$ 是偏置项。$w_{wide}$是wide部分的权重，$w_{deep}$ 是应用在最终 $a^{(l_f)}$上的权重。</p>
+<h3 id="2-4-System-Implementation"><a href="#2-4-System-Implementation" class="headerlink" title="2.4 System Implementation"></a>2.4 System Implementation</h3><p>整个pipline如下图所示：</p>
+<p><img src="/posts_res/2019-10-08-Wide-Deep-Learning-for-Recommender-Systems笔记/4.jpg"></p>
+<h4 id="2-4-1-Data-Generation"><a href="#2-4-1-Data-Generation" class="headerlink" title="2.4.1 Data Generation"></a>2.4.1 Data Generation</h4><ul>
+<li>Label: 标准是 app acquisition，用户下载为 1，否则为 0</li>
+<li>Vocabularies: 将类别特征(categorical features)映射为整型的 id，连续的实值先用累计分布函数CDF归一化到[0, 1]，再划档离散化。</li>
+</ul>
+<blockquote>
+<p>Continuous real-valued features are normalized to [0, 1] by mapping a feature value x to its cumulative distribution function P(X ≤ x), divided into nq quantiles. The normalized value is i−1nq−1for values in the i-th quantiles.</p>
+</blockquote>
+<h4 id="2-4-2-Model-Training"><a href="#2-4-2-Model-Training" class="headerlink" title="2.4.2 Model Training"></a>2.4.2 Model Training</h4><p>训练数据有 500 billion examples，输入层(Input layer) 会同时产生稀疏(sparse)的和稠密(dense)的特征，具体的 Model 上面已经讨论过了。
+需要注意的是，当新的训练数据来临的时候，我们用的是<code>热启动(warm-starting)</code>方式，也就是从之前的模型中读取 <code>embeddings</code> 以及 <code>linear model weights</code> 来初始化一个新模型，而不是全部推倒重新训练。</p>
+<h4 id="2-4-3-Model-Serving"><a href="#2-4-3-Model-Serving" class="headerlink" title="2.4.3 Model Serving"></a>2.4.3 Model Serving</h4><p>当模型训练并且优化好之后，我们将它载入服务器，对每一个 request，排序系统从检索系统接收候选列表以及用户特征，来为每一个 app 算分排序，
+分数就是前向传播的值(forward inference)啦，可以并行训练提高 performance。</p>
+<hr>
+<blockquote>
+<ol>
+<li><a href="http://www.shuang0420.com/2017/03/13/%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%20-%20Wide%20and%20Deep%20Learning%20for%20Recommender%20Systems/" target="_blank" rel="noopener">论文笔记 - Wide and Deep Learning for Recommender Systems</a></li>
+<li><a href="http://blog.csdn.net/dinosoft/article/details/52581368" target="_blank" rel="noopener">《Wide &amp; Deep Learning for Recommender Systems 》笔记</a></li>
+<li><a href="https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx7ba47eadabd9ddde&amp;redirect_uri=http://www.gitbook.cn/weixin/m/callback/login&amp;response_type=code&amp;scope=snsapi_userinfo&amp;state=http://gitbook.cn/m/mazi/article/58a6de96f919c2152af25d1f&amp;connect_redirect=1#wechat_redirect" target="_blank" rel="noopener">深度学习第二课：个性化推荐</a></li>
+</ol>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/模型算法/" rel="tag"># 模型算法</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2019/10/07/Neural-Factorization-Machines-for-Sparse-Predictive-Analytics笔记/" rel="next" title="Neural Factorization Machines for Sparse Predictive Analytics笔记">
+                  <i class="fa fa-chevron-left"></i> Neural Factorization Machines for Sparse Predictive Analytics笔记
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2019/10/12/tensorflow-embedding笔记/" rel="prev" title="TensorFlow-Embedding笔记">
+                  TensorFlow-Embedding笔记 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/avatar.jpg"
+      alt="WeiguoZHAO">
+  <p class="site-author-name" itemprop="name">WeiguoZHAO</p>
+  <div class="site-description motion-element" itemprop="description">Welcome to my blog~</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">47</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/weiguozhao" title="GitHub &rarr; https://github.com/weiguozhao" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:aszhaoweiguo@gmail.com" title="E-Mail &rarr; mailto:aszhaoweiguo@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      大牛们
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://colah.github.io/" title="http://colah.github.io/" rel="noopener" target="_blank">colah's blog</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/wzhe06/Reco-papers" title="https://github.com/wzhe06/Reco-papers" rel="noopener" target="_blank">王喆的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/ljpzzz/machinelearning" title="https://github.com/ljpzzz/machinelearning" rel="noopener" target="_blank">刘建平的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://tech.meituan.com/" title="https://tech.meituan.com/" rel="noopener" target="_blank">美团技术团队</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Overview-of-System"><span class="nav-text">1. Overview of System</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Wide-and-Deep-Learning"><span class="nav-text">2. Wide and Deep Learning</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-Wide-Model"><span class="nav-text">2.1 Wide Model</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-Deep-Model"><span class="nav-text">2.2 Deep Model</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-Joint-Training"><span class="nav-text">2.3 Joint Training</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-System-Implementation"><span class="nav-text">2.4 System Implementation</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4-1-Data-Generation"><span class="nav-text">2.4.1 Data Generation</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4-2-Model-Training"><span class="nav-text">2.4.2 Model Training</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4-3-Model-Serving"><span class="nav-text">2.4.3 Model Serving</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">WeiguoZHAO</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+      <div class="reading-progress-bar"></div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+
+</body>
+</html>

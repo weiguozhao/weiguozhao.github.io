@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/github-logo.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/github-logo.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":true,"show_result":true,"style":"default"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="转自: SSH远程执行任务 SSH 是 Linux 下进行远程连接的基本工具，但是如果仅仅用它来登录那可是太浪费啦！ SSH 命令可是完成远程操作的神器啊，借助它我们可以把很多的远程操作自动化掉！ 下面就对 SSH 的远程操作功能进行一个小小的总结。1. 远程执行命令">
+<meta name="keywords" content="小工具,Shell,SSH">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SSH远程执行任务">
+<meta property="og:url" content="https://weiguozhao.github.io/2020/05/18/SSH远程执行任务/index.html">
+<meta property="og:site_name" content="Weiguo&#39;s Station">
+<meta property="og:description" content="转自: SSH远程执行任务 SSH 是 Linux 下进行远程连接的基本工具，但是如果仅仅用它来登录那可是太浪费啦！ SSH 命令可是完成远程操作的神器啊，借助它我们可以把很多的远程操作自动化掉！ 下面就对 SSH 的远程操作功能进行一个小小的总结。1. 远程执行命令">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-05-18-SSH远程执行任务/1.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-05-18-SSH远程执行任务/2.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-05-18-SSH远程执行任务/3.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-05-18-SSH远程执行任务/4.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-05-18-SSH远程执行任务/5.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-05-18-SSH远程执行任务/6.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-05-18-SSH远程执行任务/7.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-05-18-SSH远程执行任务/8.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-05-18-SSH远程执行任务/9.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-05-18-SSH远程执行任务/10.png">
+<meta property="og:updated_time" content="2021-03-22T10:53:44.481Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="SSH远程执行任务">
+<meta name="twitter:description" content="转自: SSH远程执行任务 SSH 是 Linux 下进行远程连接的基本工具，但是如果仅仅用它来登录那可是太浪费啦！ SSH 命令可是完成远程操作的神器啊，借助它我们可以把很多的远程操作自动化掉！ 下面就对 SSH 的远程操作功能进行一个小小的总结。1. 远程执行命令">
+<meta name="twitter:image" content="https://weiguozhao.github.io/posts_res/2020-05-18-SSH远程执行任务/1.png">
+  <link rel="canonical" href="https://weiguozhao.github.io/2020/05/18/SSH远程执行任务/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>SSH远程执行任务 | Weiguo's Station</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?ff6106e096f9eb6ace966de311be4b1a";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Weiguo's Station</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>博客首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>文章归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类专栏</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>各种标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>站点搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+  <a href="https://github.com/weiguozhao" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weiguozhao.github.io/2020/05/18/SSH远程执行任务/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="WeiguoZHAO">
+      <meta itemprop="description" content="Welcome to my blog~">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Weiguo's Station">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">SSH远程执行任务
+
+          
+        </h1>
+
+        <div class="post-meta">
+        
+          
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2020-05-18 16:04:31" itemprop="dateCreated datePublished" datetime="2020-05-18T16:04:31+08:00">2020-05-18</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-22 18:53:44" itemprop="dateModified" datetime="2021-03-22T18:53:44+08:00">2021-03-22</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/小工具/" itemprop="url" rel="index"><span itemprop="name">小工具</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>转自: <a href="https://www.cnblogs.com/sparkdev/p/6842805.html" target="_blank" rel="noopener">SSH远程执行任务</a></p>
+</blockquote><p>SSH 是 Linux 下进行远程连接的基本工具，但是如果仅仅用它来登录那可是太浪费啦！
+SSH 命令可是完成远程操作的神器啊，借助它我们可以把很多的远程操作自动化掉！
+下面就对 SSH 的远程操作功能进行一个小小的总结。</p><h3 id="1-远程执行命令"><a href="#1-远程执行命令" class="headerlink" title="1. 远程执行命令"></a>1. 远程执行命令</h3><a id="more"></a>
+
+<p>如果我们要查看一下某台主机的磁盘使用情况，是不是必须要登录到目标主机上才能执行 <code>df</code> 命令呢？
+当然不是的，我们可以使用 ssh 命令在远程的主机上执行 <code>df</code> 命令，然后直接把结果显示出来。
+整个过程就像是在本地执行了一条命令一样：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> ssh nick@xxx.xxx.xxx.xxx <span class="string">"df -h"</span></span></span><br></pre></td></tr></table></figure>
+<p>那么如何一次执行多条命令呢？其实也很简单，使用分号把不同的命令隔起来就可以了。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> ssh nick@xxx.xxx.xxx.xxx <span class="string">"pwd; cat hello.txt"</span></span></span><br></pre></td></tr></table></figure>
+<p>第一条命令返回的结果： /home/nick</p>
+<p>这说明用这种方式执行命令时的当前目录就是登陆用户的家目录。第二条命令返回 hello.txt 文件的内容。
+注意，当命令多于一个时最好用引号括起来，否则在有的系统中除了第一个命令，其它都是在本地执行的。</p>
+<h3 id="2-执行需要交互的命令"><a href="#2-执行需要交互的命令" class="headerlink" title="2. 执行需要交互的命令"></a>2. 执行需要交互的命令</h3><p>有时候我们需要远程执行一些有交互操作的命令。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> ssh nick@xxx.xxx.xxx.xxx <span class="string">"sudo ls /root"</span></span></span><br><span class="line"><span class="meta">$</span><span class="bash"> ssh nick@xxx.xxx.xxx.xxx <span class="string">"top"</span></span></span><br></pre></td></tr></table></figure>
+<p><img src="/posts_res/2020-05-18-SSH远程执行任务/1.png" alt="img"></p>
+<p>这两条命令虽然提示的失败原因不同，但它们有一个共同点：都需要与用户交互(需要 TTY)。所以它们失败的原因也是相同的：
+默认情况下，当你执行不带命令的 ssh 连接时，会为你分配一个 TTY。因为此时你应该是想要运行一个 shell 会话。
+但是当你通过 ssh 在远程主机上执行命令时，并不会为这个远程会话分配 TTY。此时 ssh 会立即退出远程主机，
+所以需要交互的命令也随之结束。好在我们可以通过 <code>-t</code> 参数显式的告诉 ssh，我们需要一个 TTY 远程 shell 进行交互！
+添加 <code>-t</code> 参数后，ssh 会保持登录状态，直到你退出需要交互的命令。</p>
+<p> <code>-t</code> 参数的官方解释：
+“Force pseudo-terminal allocation.  This can be used to execute arbitrary screen-based programs on a remote machine, which can be very useful, e.g. when implementing menu services.  Multiple -t options force tty allocation, even if ssh has no local tty.”</p>
+<p>更强悍的是我们居然可以指定多个 -t 参数！</p>
+<h3 id="3-执行多行的命令"><a href="#3-执行多行的命令" class="headerlink" title="3. 执行多行的命令"></a>3. 执行多行的命令</h3><p>有时候我们可能需要随手写几行简单的逻辑，这也没有问题，ssh 能轻松搞定！</p>
+<p><img src="/posts_res/2020-05-18-SSH远程执行任务/2.png" alt="img"></p>
+<p>你可以用单引号或双引号开头，然后写上几行命令，最后再用相同的引号来结束。
+那么如果需要在命令中使用引号该怎么办？其实针对类似的情况有一条比较通用的规则，
+就是混合使用单双引号。这条规则在这里也是适用的：</p>
+<p><img src="/posts_res/2020-05-18-SSH远程执行任务/3.png" alt="img"></p>
+<p>当我们在命令中引用了变量时会怎么样呢？</p>
+<p><img src="/posts_res/2020-05-18-SSH远程执行任务/4.png" alt="img"></p>
+<p>请注意上图中的最后一行，并没有输出我们期望的 nick。
+这里多少有些诡异，因为如果变量没有被解释的话，输出的应该是 <code>$name</code> 才对。但是这里却什么都没有输出。
+对于引用变量的写法，可以通过下面的方式保证变量被正确解释：</p>
+<p><img src="/posts_res/2020-05-18-SSH远程执行任务/5.png" alt="img"></p>
+<p>注意，我们在上图的命令中为 bash 指定了 <code>-c</code> 参数。</p>
+<h3 id="4-远程执行脚本"><a href="#4-远程执行脚本" class="headerlink" title="4. 远程执行脚本"></a>4. 远程执行脚本</h3><p>对于要完成一些复杂功能的场景，如果是仅仅能执行几个命令的话，简直是弱爆了。
+我们可能需要写长篇累牍的 shell 脚本去完成某项使命！
+此时 SSH 依然是不辱使命的好帮手。</p>
+<h4 id="4-1-执行本地的脚本"><a href="#4-1-执行本地的脚本" class="headerlink" title="4.1 执行本地的脚本"></a>4.1 执行本地的脚本</h4><p>我们在本地创建一个脚本文件 test.sh，内容为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ls</span><br><span class="line">pwd</span><br></pre></td></tr></table></figure>
+<p>然后运行下面的命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> ssh nick@xxx.xxx.xxx.xxx &lt; test.sh</span></span><br></pre></td></tr></table></figure>
+<p><img src="/posts_res/2020-05-18-SSH远程执行任务/6.png" alt="img"></p>
+<p>通过重定向 stdin，本地的脚本 test.sh 在远程服务器上被执行。
+接下来我们我期望能为脚本 test.sh 传递一个参数，为了验证传入的参数，在 test.sh 文件的末尾添加两行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="variable">$0</span></span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$1</span></span><br></pre></td></tr></table></figure>
+<p>然后尝试执行下面的命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> ssh nick@xxx.xxx.xxx.xxx &lt; test.sh helloworld</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> ssh nick@xxx.xxx.xxx.xxx &lt; <span class="string">"test.sh helloworld"</span></span></span><br></pre></td></tr></table></figure>
+<p>下图显示了执行的结果：</p>
+<p><img src="/posts_res/2020-05-18-SSH远程执行任务/7.png" alt="img"></p>
+<p>看来上面的方法都无法为脚本传递参数。
+要想在这种情况下(远程执行本地的脚本)执行带有参数的脚本，需要为 bash 指定 <code>-s</code> 参数：</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ssh nick@xxx<span class="selector-class">.xxx</span><span class="selector-class">.xxx</span><span class="selector-class">.xxx</span> <span class="string">'bash -s'</span> &lt; test<span class="selector-class">.sh</span> helloworld</span><br></pre></td></tr></table></figure>
+<p><img src="/posts_res/2020-05-18-SSH远程执行任务/8.png" alt="img"></p>
+<p>在上图的最后两行，输出的是 “bash” 和 “helloworld” 分别对应 <code>$0</code> 和 <code>$1</code>。</p>
+<h4 id="4-2-执行远程服务器上的脚本"><a href="#4-2-执行远程服务器上的脚本" class="headerlink" title="4.2 执行远程服务器上的脚本"></a>4.2 执行远程服务器上的脚本</h4><p>除了执行本地的脚本，还有一种情况是脚本文件存放在远程服务器上，而我们需要远程的执行它！
+此时在远程服务器上用户 nick 的家目录中有一个脚本 test.sh。文件的内容如下：</p>
+<figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ls</span></span><br><span class="line"><span class="keyword">pwd</span></span><br></pre></td></tr></table></figure>
+<p>执行下面的命令：</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ssh nick@xxx<span class="selector-class">.xxx</span><span class="selector-class">.xxx</span><span class="selector-class">.xxx</span> <span class="string">"/home/nick/test.sh"</span></span><br></pre></td></tr></table></figure>
+<p><img src="/posts_res/2020-05-18-SSH远程执行任务/9.png" alt="img"></p>
+<p>注意，<strong>此时需要指定脚本的绝对路径！</strong></p>
+<p>下面我们也尝试为脚本传递参数。在远程主机上的 test.sh 文件的末尾添加两行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="variable">$0</span></span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$1</span></span><br></pre></td></tr></table></figure>
+<p>然后尝试执行下面的命令：</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ssh nick@xxx<span class="selector-class">.xxx</span><span class="selector-class">.xxx</span><span class="selector-class">.xxx</span> /home/nick/test<span class="selector-class">.sh</span> helloworld</span><br></pre></td></tr></table></figure>
+<p><img src="/posts_res/2020-05-18-SSH远程执行任务/10.png" alt="img"></p>
+<p>最后两行 “/home/nick/test.sh” 和 “helloworld” 分别对应 <code>$0</code> 和 <code>$1</code>。</p>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/小工具/" rel="tag"># 小工具</a>
+            
+              <a href="/tags/Shell/" rel="tag"># Shell</a>
+            
+              <a href="/tags/SSH/" rel="tag"># SSH</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2020/05/17/Python终端调试/" rel="next" title="Python终端调试">
+                  <i class="fa fa-chevron-left"></i> Python终端调试
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2020/05/21/肯德尔Rank相关系数/" rel="prev" title="肯德尔Rank相关系数(Kendall rank correlation coefficient)">
+                  肯德尔Rank相关系数(Kendall rank correlation coefficient) <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/avatar.jpg"
+      alt="WeiguoZHAO">
+  <p class="site-author-name" itemprop="name">WeiguoZHAO</p>
+  <div class="site-description motion-element" itemprop="description">Welcome to my blog~</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">47</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/weiguozhao" title="GitHub &rarr; https://github.com/weiguozhao" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:aszhaoweiguo@gmail.com" title="E-Mail &rarr; mailto:aszhaoweiguo@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      大牛们
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://colah.github.io/" title="http://colah.github.io/" rel="noopener" target="_blank">colah's blog</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/wzhe06/Reco-papers" title="https://github.com/wzhe06/Reco-papers" rel="noopener" target="_blank">王喆的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/ljpzzz/machinelearning" title="https://github.com/ljpzzz/machinelearning" rel="noopener" target="_blank">刘建平的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://tech.meituan.com/" title="https://tech.meituan.com/" rel="noopener" target="_blank">美团技术团队</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-远程执行命令"><span class="nav-text">1. 远程执行命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-执行需要交互的命令"><span class="nav-text">2. 执行需要交互的命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-执行多行的命令"><span class="nav-text">3. 执行多行的命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-远程执行脚本"><span class="nav-text">4. 远程执行脚本</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-执行本地的脚本"><span class="nav-text">4.1 执行本地的脚本</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-执行远程服务器上的脚本"><span class="nav-text">4.2 执行远程服务器上的脚本</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">WeiguoZHAO</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+      <div class="reading-progress-bar"></div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+
+</body>
+</html>

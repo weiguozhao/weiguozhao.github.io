@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/github-logo.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/github-logo.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":true,"show_result":true,"style":"default"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="支持向量机 - SVM（Support Vector Machines）Part 1支持向量机 - SVM（Support Vector Machines）Part 1 线性可分支持向量机学习算法 - 最大间隔法 线性可分支持向量机的对偶算法 支持向量机 - SVM（Support Vector Machines）Part 2">
+<meta name="keywords" content="模型算法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Support Vector Machines - Part 1">
+<meta property="og:url" content="https://weiguozhao.github.io/2018/03/28/svm-1/index.html">
+<meta property="og:site_name" content="Weiguo&#39;s Station">
+<meta property="og:description" content="支持向量机 - SVM（Support Vector Machines）Part 1支持向量机 - SVM（Support Vector Machines）Part 1 线性可分支持向量机学习算法 - 最大间隔法 线性可分支持向量机的对偶算法 支持向量机 - SVM（Support Vector Machines）Part 2">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-03-28-svm/1-supportvector.png">
+<meta property="og:updated_time" content="2021-03-22T10:53:44.467Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Support Vector Machines - Part 1">
+<meta name="twitter:description" content="支持向量机 - SVM（Support Vector Machines）Part 1支持向量机 - SVM（Support Vector Machines）Part 1 线性可分支持向量机学习算法 - 最大间隔法 线性可分支持向量机的对偶算法 支持向量机 - SVM（Support Vector Machines）Part 2">
+<meta name="twitter:image" content="https://weiguozhao.github.io/posts_res/2018-03-28-svm/1-supportvector.png">
+  <link rel="canonical" href="https://weiguozhao.github.io/2018/03/28/svm-1/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>Support Vector Machines - Part 1 | Weiguo's Station</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?ff6106e096f9eb6ace966de311be4b1a";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Weiguo's Station</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>博客首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>文章归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类专栏</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>各种标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>站点搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+  <a href="https://github.com/weiguozhao" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weiguozhao.github.io/2018/03/28/svm-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="WeiguoZHAO">
+      <meta itemprop="description" content="Welcome to my blog~">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Weiguo's Station">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">Support Vector Machines - Part 1
+
+          
+        </h1>
+
+        <div class="post-meta">
+        
+          
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2018-03-28 22:11:00" itemprop="dateCreated datePublished" datetime="2018-03-28T22:11:00+08:00">2018-03-28</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-22 18:53:44" itemprop="dateModified" datetime="2021-03-22T18:53:44+08:00">2021-03-22</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="支持向量机-SVM（Support-Vector-Machines）Part-1"><a href="#支持向量机-SVM（Support-Vector-Machines）Part-1" class="headerlink" title="支持向量机 - SVM（Support Vector Machines）Part 1"></a><center>支持向量机 - SVM（Support Vector Machines）Part 1</center></h2><p><a href="/2018/03/svm-1/">支持向量机 - SVM（Support Vector Machines）Part 1</a></p><ul>
+<li>线性可分支持向量机学习算法 - 最大间隔法</li>
+<li>线性可分支持向量机的对偶算法</li>
+</ul><p><a href="/2018/03/svm-2/">支持向量机 - SVM（Support Vector Machines）Part 2</a></p><a id="more"></a>
+
+
+<ul>
+<li>线性支持向量机</li>
+<li>核函数及非线性支持向量机</li>
+<li>常用的核函数及其特点</li>
+</ul>
+<p><a href="/2018/03/svm-3/">支持向量机 - SVM（Support Vector Machines）Part 3</a></p>
+<ul>
+<li>序列最小最优化(SMO)算法</li>
+</ul>
+<p><a href="/2018/03/svm-4/">支持向量机 - SVM（Support Vector Machines）Part 4</a></p>
+<ul>
+<li>支持向量回归 - SVR</li>
+</ul>
+<h4 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h4><ul>
+<li>基本概念</li>
+<li>线性可分支持向量机学习算法 - 最大间隔法</li>
+<li>线性可分支持向量机的对偶算法</li>
+<li>特点</li>
+</ul>
+<hr>
+<h3 id="1-基本概念"><a href="#1-基本概念" class="headerlink" title="1. 基本概念"></a>1. 基本概念</h3><p>定义函数间隔(用$\hat{\gamma}$表示)为：</p>
+<script type="math/tex; mode=display">
+\hat{\gamma} = y(w x + b) = yf(x)</script><p>超平面$(w,b)$关于训练数据集$T$中所有样本点$ (x_i, y_i) $的函数间隔最小值，即为超平面$ (w,b) $关于训练数据集$T$的函数间隔：</p>
+<script type="math/tex; mode=display">
+\hat{\gamma} = min \hat{\gamma_i}, \quad i=1,2,...,n</script><p>其中$n$表示样本点数量。<strong>[问题：将$w$和$b$成比例改变为$\lambda w$和$\lambda b$，函数间隔的值也会变化为原来的$\lambda$倍]</strong>，因此自然地引出几何间隔的概念。</p>
+<hr>
+<p>定义几何间隔(用$\gamma$表示)为：</p>
+<script type="math/tex; mode=display">
+\gamma = \frac{y(wx+b)}{||w||} = \frac{yf(x)}{||w||} \\</script><p>其中$||w||$为$w$的$L_2$范数。 </p>
+<p>由上可知，</p>
+<script type="math/tex; mode=display">
+\gamma = \frac{\hat{\gamma}}{||w||}</script><p>即，几何间隔等于函数间隔与$w$二阶范数的商。</p>
+<hr>
+<p>回到原始的问题中，我们需要最大间隔(几何间隔)分离超平面，即：</p>
+<script type="math/tex; mode=display">
+\mathop{\max_{w,b}} \quad \gamma</script><script type="math/tex; mode=display">
+s.t. \quad y_i(\frac{w}{||w||}x_i+\frac{b}{||w||}) \geq \gamma, \quad i=1,2,...,n</script><p>考虑几何间隔和函数间隔的关系，可以将上面的问题改写成：</p>
+<script type="math/tex; mode=display">
+\mathop{\max_{w,b}} \quad \frac{\hat{\gamma}}{||w||}</script><script type="math/tex; mode=display">
+s.t. \quad y_i(w \cdot x_i+ b) \geq \hat{\gamma}, \quad i=1,2,...,n</script><p>由于函数间隔$ \hat{\gamma} $的取值并不影响最优化问题的解<strong>[可以认为函数间隔通过$\lambda$放缩后变为1，这样最优化问题中含有一个常数因子]</strong>，
+这样令函数间隔$\hat{\gamma}=1$代入上面的最优化问题，同时，$ \max \frac{\hat{\lambda}}{||w||} $、$ \max \frac{1}{|| \lambda w ||} $与$ \min \frac{1}{2} ||w||^2 $是等价的。
+所以上述最优化问题最终可以归结为以下最优化问题：</p>
+<script type="math/tex; mode=display">
+\mathop{\min_{w,b}} \frac{1}{2}||w||^2</script><script type="math/tex; mode=display">
+s.t. \quad y_i(w \cdot x_i + b) - 1 \geq 0, \quad i=1,2,...,n</script><p>现在目标函数和约束条件都是连续可微的凸函数，所以可以通过<a href="/2018/03/lagrange/">拉格朗日对偶性</a>，通过求解与对偶问题等价的对偶问题得到原始问题的最优解，
+这样的优点：一、对偶问题往往更容易求解；二、自然的引入核函数，推广到非线性分类问题。</p>
+<h3 id="2-线性可分支持向量机学习算法-最大间隔法"><a href="#2-线性可分支持向量机学习算法-最大间隔法" class="headerlink" title="2. 线性可分支持向量机学习算法 - 最大间隔法"></a>2. 线性可分支持向量机学习算法 - 最大间隔法</h3><p>输入：线性可分训练数据集$T=\lbrace(x_1,y_1),(x_2,y_2),…,(x_n,y_n)\rbrace $，其中$ x_i \in \chi=R^n, y_i \in \mathcal{y} = \lbrace -1, +1 \rbrace, i=1,2,…,n$</p>
+<p>输出：最大间隔分离超平面和分类决策函数</p>
+<p>（1）构造并求解约束最优化问题</p>
+<script type="math/tex; mode=display">
+\mathop{\min_{w,b}} \frac{1}{2} ||w||^2</script><script type="math/tex; mode=display">
+s.t. \quad y_i(w \cdot x_i +b) -1 \geq 0, \quad i=1,2,..,n</script><p>求的最优解$ w^{\ast},b^{\ast} $。</p>
+<p>（2）由此得到分离超平面：</p>
+<script type="math/tex; mode=display">
+w^{\ast} \cdot x + b^{\ast} = 0</script><p>分类决策函数</p>
+<script type="math/tex; mode=display">
+f(x) =  sign(w^{\ast} \cdot x + b^{\ast})</script><hr>
+<h3 id="3-线性可分支持向量机的对偶算法"><a href="#3-线性可分支持向量机的对偶算法" class="headerlink" title="3. 线性可分支持向量机的对偶算法"></a>3. 线性可分支持向量机的对偶算法</h3><p>首先由最优化问题$式(9) \sim 式(10)$，构建拉格朗日函数，引入拉格朗日乘子$ \alpha_i \geq 0, i=1,2,…,n $</p>
+<script type="math/tex; mode=display">
+L(w,b,\alpha) = \frac{1}{2} ||w||^2 - \sum_{i=1}^n \alpha_i y_i (w \cdot x_i + b) + \sum_{i=i}^n \alpha_i</script><p>其中$ \alpha = (\alpha_1, \alpha_2, …, \alpha_n)^T $。</p>
+<p>根据拉格朗日对偶性，原始问题：</p>
+<script type="math/tex; mode=display">
+\mathop{\min_{w,b} \max_\alpha} L(w,b,\alpha)</script><p><strong>[这个地方有点绕，注意内部的极大后等价与原约束问题，理解拉格朗日对偶性]</strong></p>
+<p>对偶问题：</p>
+<script type="math/tex; mode=display">
+\mathop{\max_\alpha \min_{w,b}} L(w,b,\alpha)</script><h4 id="求解对偶问题"><a href="#求解对偶问题" class="headerlink" title="求解对偶问题"></a>求解对偶问题</h4><p>（1）求 $ \min_{w,b} L(w,b,\alpha)$</p>
+<p>插播二范数的求导公式如下：</p>
+<script type="math/tex; mode=display">
+\frac{\partial(|| w ||^2)}{\partial x} = \frac{\partial(w^T w)}{\partial x} = 2w \\
+\frac{\partial(y^Tx)}{\partial x} = y \\
+\frac{\partial(x^TAx)}{\partial x} = (A+A^T)x</script><p>将拉格朗日函数$L(w,b,\alpha)$分别对$w,b$求偏导数并令其等于0.</p>
+<script type="math/tex; mode=display">
+\nabla_w L(w,b,\alpha) = w - \sum_{i=1}^n \alpha_i y_i x_i = 0</script><script type="math/tex; mode=display">
+\nabla_b L(w,b,\alpha) = - \sum_{i=1}^n \alpha_i y_i = 0</script><p>得</p>
+<script type="math/tex; mode=display">
+w = \sum_{i=1}^n \alpha_i y_i x_i</script><script type="math/tex; mode=display">
+\sum_{i=1}^n \alpha_i y_i = 0</script><p>将式(21)代入拉格朗日函数(15)，并利用式(22)，即得</p>
+<script type="math/tex; mode=display">
+\begin{equation}
+\begin{aligned}
+L(w,b,\alpha) 
+& = \frac{1}{2} ||w||^2 - \sum_{i=1}^n \alpha_iy_i(w x_i+b) + \sum_{i=1}^n \alpha_i \\
+& = \frac{1}{2} w^Tw - \sum_{i=1}^n \alpha_iy_iwx_i - \sum_{i=1}^n \alpha_i y_i b + \sum_{i=1}^n \alpha_i \\
+& = \frac{1}{2} w^T \sum_{i=1}^n  \alpha_i y_ix_i - \sum_{i=1}^n \alpha_iy_iwx_i - \sum_{i=1}^n \alpha_iy_ib + \sum_{i=1}^n \alpha_i \\
+& = \frac{1}{2} w^T \sum_{i=1}^n \alpha_i y_ix_i - w^T \sum_{i=1}^n \alpha_iy_ix_i - \sum_{i=1}^n \alpha_i y_ib + \sum_{i=1}^n \alpha_i \\
+& = -\frac{1}{2} w^T \sum_{i=1}^n \alpha_i y_i x_i - \sum_{i=1}^n \alpha_i y_i b + \sum_{i=1}^n \alpha_i \\
+& = -\frac{1}{2} w^T \sum_{i=1}^n \alpha_i y_i x_i - b \sum_{i=1}^n \alpha_i y_i + \sum_{i=1}^n \alpha_i \\
+& = -\frac{1}{2} (\sum_{i=1}^n \alpha_i y_i x_i)^T \sum_{i=1}^n \alpha_i y_i x_i - b \sum_{i=1}^n \alpha_i y_i + \sum_{i=1}^n \alpha_i \\
+& = -\frac{1}{2} \sum_{i=1}^n \alpha_i y_i (x_i)^T \sum_{i=1}^n \alpha_i y_i x_i - b \sum_{i=1}^n \alpha_i y_i + \sum_{i=1}^n \alpha_i \\
+& = -\frac{1}{2} \sum_{i=1}^n \sum_{j=1}^n \alpha_i y_i (x_i)^T \alpha_j y_j x_j - b \sum_{i=1}^n \alpha_i y_i + \sum_{i=1}^n \alpha_i \\
+& = -\frac{1}{2} \sum_{i=1}^n \sum_{j=1}^n \alpha_i \alpha_j y_i y_j  x_i^T x_j - b \sum_{i=1}^n \alpha_i y_i + \sum_{i=1}^n \alpha_i \\
+& = - \frac{1}{2} \sum_{i=1}^n \sum_{j=1}^n \alpha_i \alpha_j y_i y_j  x_i^T x_j + \sum_{i=1}^n \alpha_i
+\end{aligned}
+\end{equation}</script><p>倒数第5步推导倒数第4步利用了线性代数的转置运算，由于$\alpha_i$和$y_i$都是实数，因此转置后与自身一样。
+倒数第4步到倒数第3步使用了$ (a+b+c+…)(a+b+c+…)=aa+ab+ac+ba+bb+bc+… $的乘法运算规则。</p>
+<p>即：</p>
+<script type="math/tex; mode=display">
+\mathop{\min_{w,b}}L(w,b,\alpha) = - \frac{1}{2} \sum_{i=1}^n \sum_{j=1}^n \alpha_i \alpha_j y_i y_j  x_i^T x_j + \sum_{i=1}^n \alpha_i</script><p>（2）求$ \min_{w,b} l(w,b,\alpha) $对$\alpha$的极大，即是对偶问题：</p>
+<script type="math/tex; mode=display">
+\mathop{\max_\alpha} - \frac{1}{2} \sum_{i=1}^n \sum_{j=1}^n \alpha_i \alpha_j y_i y_j  x_i^T x_j + \sum_{i=1}^n \alpha_i</script><script type="math/tex; mode=display">
+s.t. \quad \sum_{i=1}^n \alpha_i y_i = 0</script><script type="math/tex; mode=display">
+\quad \quad \alpha_i \geq 0, \quad i=1,2,..,n</script><p>将式(25)的目标函数由求极大转化为求极小，就得到下面与之等价的对偶最优化问题：</p>
+<script type="math/tex; mode=display">
+\mathop{\min_\alpha} \frac{1}{2} \sum_{i=1}^n \sum_{j=1}^n \alpha_i \alpha_j y_i y_j  x_i^T x_j - \sum_{i=1}^n \alpha_i</script><script type="math/tex; mode=display">
+s.t. \quad \sum_{i=1}^n \alpha_i y_i = 0</script><script type="math/tex; mode=display">
+\quad \quad \alpha_i \geq 0, \quad i=1,2,..,n</script><p>$式(28) \sim 式(30)$要解决的是在参数$( \alpha_1, \alpha_2, …, \alpha_n )^T$上求极值的问题，我们需要利用序列最小最优化(SMO)算法解决。
+限于篇幅及知识递进程度，具体SMO算法在<a href="/2018/03/svm-3/">Support Vector Machines - Part 3</a>详细描述。</p>
+<p>（3）求参数$w^{\ast}, b^{\ast}$</p>
+<p>这样假设已经求出了$ \alpha^{\ast}=(\alpha_1^{\ast}, \alpha_2^{\ast}, …, \alpha_n^{\ast})^T $后，从而根据$KKT$条件得：</p>
+<script type="math/tex; mode=display">
+w^{\ast} = \sum_{i=1}^n \alpha_i^{\ast} y_i x_i</script><p>在$y=-1, y=1$的类别中，支持向量处于边界上，根据$KKT$条件$ \alpha_i^{\ast}(y_i(w^{\ast}x_i+b)-1)=0 $，
+至少有一个$\alpha_j^{\ast}&gt;0$[反证法，假设$\alpha^{\ast}=0$，则$w^{\ast}=0$，而$w^{\ast}=0$不是原始最优化问题的解，产生矛盾！]，
+所以，对此$j$有</p>
+<script type="math/tex; mode=display">
+\begin{cases}
+y_j(w^{\ast}x_j+b^{\ast})-1=0 \\
+y_j^2 = 1 
+\end{cases}
+\\ \Downarrow</script><script type="math/tex; mode=display">
+b^{\ast} = y_j - \sum _{i=1}^n \alpha_i^{\ast} y_i (x_i^T \cdot x_j)</script><p>即可求出$w^{\ast},b^{\ast}$，最终得出分离超平面</p>
+<script type="math/tex; mode=display">
+w^{\ast} x + b^{\ast} = 0</script><p>分类决策函数</p>
+<script type="math/tex; mode=display">
+f(x) = sign(w^{\ast}\cdot x + b^{\ast})</script><hr>
+<h3 id="4-特点"><a href="#4-特点" class="headerlink" title="4. 特点"></a>4. 特点</h3><p>SVM 函数间隔(functional margin)为$ \hat{\gamma}=y(wx+b)=yf(x) $，其中的$y$是只取1和-1吗？$y$的唯一作用就是确保函数间隔(functional margin)的非负性？</p>
+<p>（1）二分类问题中，$y$只取两个值，而且这两个值是可以任意取的；</p>
+<p>（2）求解的超平面分开的两侧的函数值的符号是刚好相反的；</p>
+<p>（3）为了问题简单化，取了$y$的值为$1$和$-1$。</p>
+<hr>
+<p>在线性可分情况下，训练数据集的样本点中与分离超平面距离最近的样本点的实例称为支持向量(support vector)，支持向量是使约束条件$ y_i(w\cdot x_i +b) -1=0 $成立的点，如下图$H_1和H_2$上的点。</p>
+<p><img src="/posts_res/2018-03-28-svm/1-supportvector.png" alt="supportvector"></p>
+<p>在决定分离超平面时，只有支持向量起作用，其他样本点并不起作用。如果移动支持向量，将会改变分离超平面，移动其他样本点则无影响。支持向量一般个数较少。</p>
+<hr>
+<p>为什么令函数间隔为1？</p>
+<p>函数间隔可以表征样本被分到某一类的置信度，比如说$y_i=+1$时，如果$f(x_i) = w \cdot x_i +b &gt;0$且很大，说明$(x_i,y_i)$离分类边界很远，我们有理由相信$x_i$是正类。</p>
+<blockquote>
+<p>另外我们知道成比例改变$w,b$，分离超平面不变，几何间隔也不改变</p>
+</blockquote>
+<p>因此可以做变量替换，将最优化问题改变为函数间隔为1。这样，在不影响最优化问题的前提下，改变了最优化函数并简化了计算。</p>
+<hr>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><blockquote>
+<p>July - <a href="https://blog.csdn.net/v_july_v/article/details/7624837" target="_blank" rel="noopener">支持向量机通俗导论</a></p>
+<p>李航 - 《统计学习方法》</p>
+<p><a href="http://whatbeg.com/2017/04/13/svmlearning.html#" target="_blank" rel="noopener">SVM推导过程中的三个疑问</a></p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/模型算法/" rel="tag"># 模型算法</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2018/03/28/svm-3/" rel="next" title="Support Vector Machines - Part 3">
+                  <i class="fa fa-chevron-left"></i> Support Vector Machines - Part 3
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2018/03/28/svm-2/" rel="prev" title="Support Vector Machines - Part 2">
+                  Support Vector Machines - Part 2 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/avatar.jpg"
+      alt="WeiguoZHAO">
+  <p class="site-author-name" itemprop="name">WeiguoZHAO</p>
+  <div class="site-description motion-element" itemprop="description">Welcome to my blog~</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">47</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/weiguozhao" title="GitHub &rarr; https://github.com/weiguozhao" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:aszhaoweiguo@gmail.com" title="E-Mail &rarr; mailto:aszhaoweiguo@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      大牛们
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://colah.github.io/" title="http://colah.github.io/" rel="noopener" target="_blank">colah's blog</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/wzhe06/Reco-papers" title="https://github.com/wzhe06/Reco-papers" rel="noopener" target="_blank">王喆的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/ljpzzz/machinelearning" title="https://github.com/ljpzzz/machinelearning" rel="noopener" target="_blank">刘建平的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://tech.meituan.com/" title="https://tech.meituan.com/" rel="noopener" target="_blank">美团技术团队</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#支持向量机-SVM（Support-Vector-Machines）Part-1"><span class="nav-text">支持向量机 - SVM（Support Vector Machines）Part 1</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#目录"><span class="nav-text">目录</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-基本概念"><span class="nav-text">1. 基本概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-线性可分支持向量机学习算法-最大间隔法"><span class="nav-text">2. 线性可分支持向量机学习算法 - 最大间隔法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-线性可分支持向量机的对偶算法"><span class="nav-text">3. 线性可分支持向量机的对偶算法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#求解对偶问题"><span class="nav-text">求解对偶问题</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-特点"><span class="nav-text">4. 特点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-text">参考</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">WeiguoZHAO</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+      <div class="reading-progress-bar"></div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+
+</body>
+</html>

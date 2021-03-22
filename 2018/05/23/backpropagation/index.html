@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/github-logo.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/github-logo.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":true,"show_result":true,"style":"default"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="目录 反向传播BP 随时间反向传播BPTT 1. 反向传播BP[Calculus on Computational Graphs: Backpropagation，英文原版]、 [详解反向传播算法，中文翻译理解]解释了为什么从上而下计算梯度。一言以蔽之：从下而上会有重复计算，当参数数量太多，时间耗费太严重；从上而下每个节点只计算一次。">
+<meta name="keywords" content="优化算法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="反向传播 BP &amp; BPTT">
+<meta property="og:url" content="https://weiguozhao.github.io/2018/05/23/backpropagation/index.html">
+<meta property="og:site_name" content="Weiguo&#39;s Station">
+<meta property="og:description" content="目录 反向传播BP 随时间反向传播BPTT 1. 反向传播BP[Calculus on Computational Graphs: Backpropagation，英文原版]、 [详解反向传播算法，中文翻译理解]解释了为什么从上而下计算梯度。一言以蔽之：从下而上会有重复计算，当参数数量太多，时间耗费太严重；从上而下每个节点只计算一次。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-05-23-backpropagation/2-1.jpg">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-05-23-backpropagation/2-2.jpg">
+<meta property="og:updated_time" content="2021-03-22T10:53:44.471Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="反向传播 BP &amp; BPTT">
+<meta name="twitter:description" content="目录 反向传播BP 随时间反向传播BPTT 1. 反向传播BP[Calculus on Computational Graphs: Backpropagation，英文原版]、 [详解反向传播算法，中文翻译理解]解释了为什么从上而下计算梯度。一言以蔽之：从下而上会有重复计算，当参数数量太多，时间耗费太严重；从上而下每个节点只计算一次。">
+<meta name="twitter:image" content="https://weiguozhao.github.io/posts_res/2018-05-23-backpropagation/2-1.jpg">
+  <link rel="canonical" href="https://weiguozhao.github.io/2018/05/23/backpropagation/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>反向传播 BP & BPTT | Weiguo's Station</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?ff6106e096f9eb6ace966de311be4b1a";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Weiguo's Station</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>博客首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>文章归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类专栏</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>各种标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>站点搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+  <a href="https://github.com/weiguozhao" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weiguozhao.github.io/2018/05/23/backpropagation/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="WeiguoZHAO">
+      <meta itemprop="description" content="Welcome to my blog~">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Weiguo's Station">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">反向传播 BP & BPTT
+
+          
+        </h1>
+
+        <div class="post-meta">
+        
+          
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2018-05-23 12:10:00" itemprop="dateCreated datePublished" datetime="2018-05-23T12:10:00+08:00">2018-05-23</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-22 18:53:44" itemprop="dateModified" datetime="2021-03-22T18:53:44+08:00">2021-03-22</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/深度学习/" itemprop="url" rel="index"><span itemprop="name">深度学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>目录</p><ul>
+<li>反向传播BP</li>
+<li>随时间反向传播BPTT</li>
+</ul><hr><h3 id="1-反向传播BP"><a href="#1-反向传播BP" class="headerlink" title="1. 反向传播BP"></a>1. 反向传播BP</h3><p><a href="http://colah.github.io/posts/2015-08-Backprop/" target="_blank" rel="noopener">[Calculus on Computational Graphs: Backpropagation，英文原版]</a>、
+<a href="https://zhuanlan.zhihu.com/p/25081671" target="_blank" rel="noopener">[详解反向传播算法，中文翻译理解]</a></p><p>解释了为什么从上而下计算梯度。一言以蔽之：从下而上会有重复计算，当参数数量太多，时间耗费太严重；从上而下每个节点只计算一次。</p><a id="more"></a>
+
+
+
+
+<p><a href="https://www.zhihu.com/question/27239198/answer/89853077" target="_blank" rel="noopener">如何直观地解释 back propagation 算法？</a>中的例子比较清晰的刻画了反向传播的优势。</p>
+<p><a href="https://iamtrask.github.io/2015/07/12/basic-python-network/" target="_blank" rel="noopener">A Neural Network in 11 lines of Python</a>每行代码都有解释。</p>
+<p><a href="http://neuralnetworksanddeeplearning.com/chap2.html" target="_blank" rel="noopener">CHAPTER 2How the backpropagation algorithm works</a>讲的特别详细，
+中文版在<a href="/posts_res/2018-05-23-backpropagation/neural network and deep learning.pdf">这里 - 神经⽹络与深度学习</a>。</p>
+<hr>
+<p><br></p>
+<hr>
+<p><strong>以下部分参考Neural Networks and Deep Learning(神经⽹络与深度学习P37 - P42)</strong></p>
+<p>反向传播的四个方程式：</p>
+<p>\[
+\delta^L = \nabla _a C \odot \sigma’ (z^L) \tag{BP1}
+\]</p>
+<p>\[
+\delta^l = ( (w^{l+1})^T \delta^{l+1} ) \odot \sigma’ (z^l) \tag{BP2}
+\]</p>
+<p>\[
+\frac{\partial C}{\partial b_j^l} = \delta_j^l  \tag{BP3}
+\]</p>
+<p>\[
+\frac{\partial C}{\partial w_{jk}^l} = a_k^{l-1} \delta_j^l  \tag{BP4}
+\]</p>
+<p>证明上面的四个方程式：</p>
+<p><strong>证明BP1</strong></p>
+<p>\[
+\begin{equation}
+\begin{aligned}
+\delta_j^L 
+&amp; = \frac{\partial C}{\partial z_j^L} \\
+&amp; = \frac{\partial C}{\partial a_j^L} \cdot \frac{\partial a_j^L}{\partial z_j^L} \\
+&amp; = \frac{\partial C}{\partial a_j^L} \cdot \sigma’ (z_j^L) \quad (\because a_j^L = \sigma (z_j^L))
+\end{aligned}
+\end{equation}
+\]</p>
+<p><strong>证明BP2</strong></p>
+<script type="math/tex; mode=display">
+\begin{equation*}
+\begin{aligned}
+\because z_k^{l+1} &= \sum_j w_{kj}^{l+1} a_j^l + b_k^{l+1} = \sum_j w_{kj}^{l+1} \cdot \sigma(z_j^l) + b_k^{l+1} \\
+\therefore \frac{\partial z_k^{l+1}}{\partial z_j^l} & = w_{kj}^{l+1} \cdot \sigma' (z_j^l)
+\end{aligned}
+\end{equation*}</script><p>\[
+\begin{equation}
+\begin{aligned}
+\delta_j^l
+&amp; = \frac{\partial C}{\partial z_j^l} \\
+&amp; = \sum_k \frac{\partial C}{\partial z_k^{l+1}} \cdot \frac{\partial z_k^{l+1}}{\partial z_j^l} \\
+&amp; = \sum_k \frac{\partial z_k^{l+1}}{\partial z_k^l} \cdot \delta_k^{l+1} \\
+&amp; = \sum_k w_{kj}^{l+1} \cdot \sigma’ (z_j^l) \cdot \delta_k^{l+1} \\
+&amp; = \sum_k w_{kj}^{l+1} \cdot \delta_k^{l+1} \cdot \sigma’ (z_j^l)
+\end{aligned}
+\end{equation}
+\]</p>
+<p><strong>证明BP3</strong></p>
+<p>\[
+\begin{equation}
+\begin{aligned}
+\frac{\partial C}{\partial b_j^l}
+&amp; = \frac{\partial C}{\partial z_j^l} \cdot \frac{\partial z_j^l}{\partial b_j^l} \\
+&amp; = \frac{\partial C}{\partial z_j^l} \quad (\because z_j^l = \sum_k w_{jk}^l \cdot a_k^{l-1} + b_j^l \therefore \frac{\partial z_j^l}{\partial b_j^l} = 1) \\
+&amp; = \delta_j^l
+\end{aligned}
+\end{equation}
+\]</p>
+<p><strong>证明BP4</strong></p>
+<p>\[
+\begin{equation}
+\begin{aligned}
+\frac{\partial C}{\partial w_{jk}^l}
+&amp; = \frac{\partial C}{\partial z_j^l} \cdot \frac{\partial z_j^l}{\partial w_{jk}^l} \\
+&amp; = \delta_j^l \cdot a_k^{l-1} \quad (\because z_j^l = \sum_k w_{jk}^l \cdot a_k^{l-1} + b_j^l)
+\end{aligned}
+\end{equation}
+\]</p>
+<hr>
+<p><br></p>
+<hr>
+<p><strong>以下摘抄自：</strong><a href="http://deeplearning.stanford.edu/wiki/index.php/%E5%8F%8D%E5%90%91%E4%BC%A0%E5%AF%BC%E7%AE%97%E6%B3%95" target="_blank" rel="noopener">反向传导算法</a></p>
+<p>反向传播算法的思路如下：给定一个样例 \( (x,y) \)，首先进行“前向传导”运算，计算出网络中所有的激活值，包括 \( h_{W,b}(x) \) 的输出值。
+之后，针对第 \( l \) 层的每一个节点 \( i \)，计算出其 “残差” \( \delta^{(l)}_i \)，该残差表明了该节点对最终输出值的残差产生了多少影响。
+对于最终的输出节点，可以直接算出网络产生的激活值与实际值之间的差距，将这个差距定义为 \( \delta^{(n_l)}_i \)（第 \( n_l \) 层表示输出层）。
+对于隐藏单元如何处理呢？基于节点（第 \( l+1 \) 层节点）残差的加权平均值计算 \( \delta^{(l)}_i \)，这些节点以 \( a^{(l)}_i \) 作为输入。
+下面将给出反向传导算法的细节:</p>
+<ul>
+<li>(1) 进行前馈传导计算，利用前向传导公式，得到 \( L_2, L_3, \ldots \) 直到输出层 \( L_{n_l} \) 的激活值。</li>
+<li>(2) 对于第 \( n_l \) 层（输出层）的每个输出单元 \( i \) ，根据以下公式计算残差：
+\[ 
+\delta^{(n_l)}_i 
+= \frac{\partial}{\partial z^{(n_l)}_i} \frac{1}{2} || y - h_{W,b}(x) || ^2
+= - (y_i - a^{(n_l)}_i) \cdot f’(z^{(n_l)}_i)
+\]</li>
+</ul>
+<p><strong>推导过程</strong></p>
+<p>\[
+\begin{equation}
+\begin{aligned}
+\delta^{(n_l)}_i
+&amp; = \frac{\partial}{\partial z^{(n_l)}_i} J(W,b; x,y) \\
+&amp; = \frac{\partial}{\partial z^{(n_l)}_i} \frac{1}{2} ||y - h_{W,b}(x) ||^2 \\
+&amp; = \frac{\partial}{\partial z^{(n_l)}_i} \frac{1}{2} \sum_{j=1}^{S_{n_l}} (y_j - a_j^{(n_l)})^2 \\
+&amp; = \frac{\partial}{\partial z^{(n_l)}_i} \frac{1}{2} \sum_{j=1}^{S_{n_l}} (y_j - f(z_j^{(n_l)}))^2 \\
+&amp; = - (y_i - f(z_i^{(n_l)})) \cdot f’(z^{(n_l)}_i) \\
+&amp; = - (y_i - a^{(n_l)}_i) \cdot f’(z^{(n_l)}_i)
+\end{aligned}
+\end{equation}
+\]</p>
+<ul>
+<li>(3) 对 $ l = n_l - 1, n_l-2, n_l-3, \ldots, 2 $ 的各个层，第 $ l $ 层的第 $i$ 个节点的残差计算方法如下：
+\[
+\delta^{(l)}_i = \left( \sum_{j=1}^{s_{l+1}} W^{(l)}_{ji} \delta^{(l+1)}_j \right) f’(z^{(l)}_i)
+\]</li>
+</ul>
+<p><strong>推导过程</strong></p>
+<script type="math/tex; mode=display">
+\begin{equation*}
+\begin{aligned}
+\delta^{(n_l-1)}_i 
+& = \frac{\partial}{\partial z^{(n_l-1)}_i} J(W,b; x,y) \\
+& = \frac{\partial}{\partial z^{(n_l-1)}_i} \frac{1}{2} ||y - h_{W,b}(x) ||^2 \\
+& = \frac{\partial}{\partial z^{(n_l-1)}_i} \frac{1}{2} \sum_{j=1}^{S_{n_l}}(y_j - a_j^{(n_l)})^2 \\
+& = \frac{1}{2} \sum_{j=1}^{S_{(n_l)}}\frac{\partial}{\partial z^{n_l-1}_i}(y_j - a_j^{(n_l)})^2 \\
+& = \frac{1}{2} \sum_{j=1}^{S_{(n_l)}}\frac{\partial}{\partial z^{n_l-1}_i}(y_j - f(z_j^{(n_l)}))^2 \\
+& = \sum_{j=1}^{S_{n_l}} - (y_j - f(z_j^{(n_l)})) \cdot \frac{\partial}{\partial z_i^{(n_l-1)}}f(z_j^{(n_l)}) \\
+& = \sum_{j=1}^{S_{n_l}} - (y_j - f(z_j^{(n_l)})) \cdot f'(z_j^{(n_l)}) \cdot \frac{\partial z_j^{(n_l)}}{\partial z_i^{(n_l-1)}} \\
+& = \sum_{j=1}^{S_{n_l}} \delta_j^{(n_l)} \cdot \frac{\partial z_j^{(n_l)}}{\partial z_i^{(n_l-1)}} \\
+& = \sum_{j=1}^{S_{n_l}} \left(\delta_j^{(n_l)} \cdot \frac{\partial}{\partial z_i^{(n_l-1)}}\sum_{k=1}^{S_{n_l-1}}f(z_k^{(n_l-1)}) \cdot W_{jk}^{n_l-1} \right) \\
+& = \sum_{j=1}^{S_{n_l}} \delta_j^{(n_l)} \cdot  W_{ji}^{n_l-1} \cdot f'(z_i^{(n_l-1)}) \\
+& = \left( \sum_{j=1}^{S_{n_l}} W_{ji}^{n_l-1} \delta_j^{(n_l)} \right) f'(z_i^{(n_l-1)}) \\
+\end{aligned}
+\end{equation*}</script><p>将上式中的 \( n_l-1 \) 与 \( n_l \) 的关系替换为 \( l \) 与 \( l+1 \) 的关系，就可以得到：</p>
+<script type="math/tex; mode=display">
+\delta^{(l)}_i = \left( \sum_{j=1}^{s_{l+1}} W^{(l)}_{ji} \delta^{(l+1)}_j \right) f'(z^{(l)}_i)</script><p>以上逐次从后向前求导的过程即为“反向传导”的本意所在。</p>
+<ul>
+<li>(4) 计算需要的偏导数，计算方法如下：
+\[
+\begin{aligned}
+\frac{\partial}{\partial W_{ij}^{(l)}} J(W,b; x, y) &amp;= a^{(l)}_j \delta_i^{(l+1)} \\
+\frac{\partial}{\partial b_{i}^{(l)}} J(W,b; x, y) &amp;= \delta_i^{(l+1)}.
+\end{aligned}
+\]</li>
+</ul>
+<p><br></p>
+<p>最后，用矩阵-向量表示法重写以上算法。我们使用 “ \( \bullet \)” 表示向量乘积运算符（在Matlab或Octave里用“.*”表示，也称作阿达马乘积）。
+若 \( a = b \bullet c \)，则 \( a_i = b_i c_i \)。扩展 \( f(\cdot) \) 的定义，使其包含向量运算，于是有 \( f’([z_1, z_2, z_3]) = [f’(z_1), f’(z_2), f’(z_3)] \)。</p>
+<p>那么，反向传播算法可表示为以下几个步骤：</p>
+<ol>
+<li>进行前馈传导计算，利用前向传导公式，得到 \( L_2, L_3, \ldots \) 直到输出层 \( L_{n_l} \) 的激活值。</li>
+<li>对输出层（第 \( n_l \) 层），计算:\[\begin{align} \delta^{(n_l)} = - (y - a^{(n_l)}) \bullet f’(z^{(n_l)}) \end{align}\]</li>
+<li>对于 \( l = n_l-1, n_l-2, n_l-3, \ldots, 2 \) 的各层，计算：\[\begin{align} \delta^{(l)} = \left((W^{(l)})^T \delta^{(l+1)}\right) \bullet f’(z^{(l)}) \end{align} \]</li>
+<li>计算最终需要的偏导数值：<script type="math/tex; mode=display">
+\begin{equation*}
+\begin{aligned}
+\nabla_{W^{(l)}} J(W,b;x,y) &= \delta^{(l+1)} (a^{(l)})^T, \\
+\nabla_{b^{(l)}} J(W,b;x,y) &= \delta^{(l+1)}.
+\end{aligned}
+\end{equation*}</script></li>
+</ol>
+<p><br></p>
+<p><strong>实现中应注意：</strong></p>
+<p>在以上的第2步和第3步中，我们需要为每一个 \( i \) 值计算其 \( f’(z^{(l)}_i) \) 。
+假设 \( f(z) \) 是sigmoid函数，并且我们已经在前向传导运算中得到了 \( a^{(l)}_i \) 。
+那么，使用我们早先推导出的 \( f’(z) \) 表达式，就可以计算得到 \( f’(z^{(l)}_i) = a^{(l)}_i (1- a^{(l)}_i) \)。</p>
+<p>最后，我们将对梯度下降算法做个全面总结。在下面的伪代码中，\( \Delta W^{(l)} \) 是一个与矩阵 \( W^{(l)} \) 维度相同的矩阵，
+\( \Delta b^{(l)} \) 是一个与 \( b^{(l)} \) 维度相同的向量。
+注意这里 “\( \Delta W^{(l)} \) ”是一个矩阵，而不是“\( \Delta \) 与 \( W^{(l)} \) 相乘”。</p>
+<p>下面，我们实现批量梯度下降法中的一次迭代：</p>
+<ul>
+<li>(1) 对于所有 \( l \)，令 \( \Delta W^{(l)} := 0, \Delta b^{(l)} := 0 \) (设置为全零矩阵或全零向量)</li>
+<li>(2) 对于 \( i = 1 \) 到 \( m \)，</li>
+<li>(2.1) 使用反向传播算法计算 \( \nabla_{W^{(l)}} J(W,b;x,y) \) 和 \( \nabla_{b^{(l)}} J(W,b;x,y) \);</li>
+<li>(2.2) 计算 \( \Delta W^{(l)} := \Delta W^{(l)} + \nabla_{W^{(l)}} J(W,b;x,y) \);</li>
+<li>(2.3) 计算 \( \Delta b^{(l)} := \Delta b^{(l)} + \nabla_{b^{(l)}} J(W,b;x,y) \);</li>
+<li>(3) 更新权重参数：
+\[
+\begin{align}
+W^{(l)} &amp;= W^{(l)} - \alpha \left[ \left(\frac{1}{m} \Delta W^{(l)} \right) + \lambda W^{(l)}\right] \\
+b^{(l)} &amp;= b^{(l)} - \alpha \left[\frac{1}{m} \Delta b^{(l)}\right]
+\end{align}
+\]</li>
+</ul>
+<p>现在，可以重复梯度下降法的迭代步骤来减小代价函数 \( J(W,b) \) 的值，进而求解我们的神经网络。</p>
+<hr>
+<h3 id="2-转-随时间反向传播BPTT"><a href="#2-转-随时间反向传播BPTT" class="headerlink" title="2. [转]随时间反向传播BPTT"></a>2. [转]随时间反向传播BPTT</h3><p>转自：<a href="https://github.com/hschen0712/machine-learning-notes/blob/master/Deep-Learning/back-propagation-through-time.ipynb" target="_blank" rel="noopener">hschen0712/machine-learning-notes</a></p>
+<p>RNN（递归神经网络，Recurrent Neural Network）是一种具有长时记忆能力的神经网络模型，被广泛应用于序列标注（Sequence Labeling）问题。
+在序列标注问题中，模型的输入是一段时间序列，记为$ x = \lbrace x_1, x_2, …, x_T \rbrace $，
+我们的目标是为输入序列的每个元素打上标签集合中的对应标签，记为$ y = \lbrace y_1, y_2, …, y_T \rbrace $。</p>
+<p>NLP中的大部分任务（比如分词、实体识别、词性标注）都可以最终归结为序列标注问题。
+这类问题中，输入是语料库中一段由 $T$ 个词（或字）构成的文本 $ x = \lbrace x_1, x_2, …, x_T \rbrace $（其中$x_t$表示文本中的第$t$个词）；
+输出是每个词对应的标签，根据任务的不同标签的形式也各不相同，但本质上都是针对每个词根据它的上下文进行标签的分类。</p>
+<p>一个典型的RNN的结构如下图所示：</p>
+<p><img src="/posts_res/2018-05-23-backpropagation/2-1.jpg" alt="rnn"></p>
+<p>从图中可以看到，一个RNN通常由三层组成，分别是输入层、隐藏层和输出层。
+与一般的神经网络不同的地方是，RNN的隐藏层存在一条有向反馈边，正是这种反馈机制赋予了RNN记忆能力。
+要理解左边的图可能有点难度，我们可以将其展开为右边这种更直观的形式，其中RNN的每个神经元接受当前时刻的输入$x_t$ 以及上一时刻隐单元的输出$h_{t-1}$，
+计算出当前神经元的输入 $s_t$，经过激活函数变换得到输出 $h_t$，并传递给下一时刻的隐单元。
+此外，我们还需要注意到RNN中每个时刻上的神经元的参数都是相同的（类似CNN的权值共享），这么做一方面是减小参数空间，保证泛化能力；
+另一方面是为了赋予RNN记忆能力，将有用信息存储在$W_{in},W_{rec},W_{out}$三个矩阵中。</p>
+<p>由于RNN是一种基于时序数据的神经网络模型，因此传统的BP算法并不适用于该模型的优化，这要求我们提出新的优化算法。
+RNN中最常用的优化算法是随时间反向传播（BackPropagation Through Time，BPTT），下文将叙述BPTT算法的数学推导。</p>
+<h4 id="2-1-符号注解"><a href="#2-1-符号注解" class="headerlink" title="2.1 符号注解"></a>2.1 符号注解</h4><table>
+ <tr>
+  <th>符号</th>
+  <th>注解</th>
+ </tr>
+ <tr>
+  <td>$K$</td>
+  <td>词汇表的大小</td>
+ </tr>
+<tr>
+  <td>$T$</td>
+  <td>句子的长度</td>
+ </tr>
+<tr>
+  <td>$H$</td>
+  <td>隐藏层单元数</td>
+ </tr>
+<tr>
+  <td>$x=\lbrace x_1, x_2, ..., x_T \rbrace $</td>
+  <td>句子的单词序列</td>
+ </tr>
+<tr>
+  <td>$x_t \in R^{K \times 1}$</td>
+  <td>第$t$时刻RNN的输入，one-hot vector</td>
+ </tr>
+<tr>
+  <td>$\hat{y}_t \in R^{K \times 1} $</td>
+  <td>第$t$时刻softmax层的输出，估计每个词出现的概率</td>
+ </tr>
+<tr>
+  <td>$y_t \in R^{K \times 1} $</td>
+  <td>第$t$时刻的label，为每个词出现的概率，one-hot vector</td>
+ </tr>
+<tr>
+  <td>$E_t$</td>
+  <td>第$t$时刻（第$t$个word）的损失函数，定义为交叉熵误差$E_t = - y_t^T log (\hat{y}_t) $</td>
+ </tr>
+<tr>
+  <td>$E$</td>
+  <td>一个句子的损失函数，由各个时刻（即每个word）的损失函数组成,$E=\sum_t^T E_t$（注:由于要推导的是SGD算法，更新梯度是相对于一个训练样例而言的，因此一次只考虑一个句子的误差，而不是整个训练集的误差（对应BGD算法））</td>
+ </tr>
+<tr>
+  <td>$s_t \in R^{H \times 1}$</td>
+  <td>第$t$个时刻RNN隐藏层的输入</td>
+ </tr>
+<tr>
+  <td>$h_t \in R^{H \times 1}$</td>
+  <td>第$t$个时刻RNN隐藏层的输出</td>
+ </tr>
+<tr>
+  <td>$z_t \in R^{K \times 1}$</td>
+  <td>输出层的汇集输入</td>
+ </tr>
+<tr>
+  <td>$\delta^{(t)}_k=\frac{\partial E_t}{\partial s_k}$    </td>
+  <td>第$t$个时刻损失函数$E_t$对第$k$时刻带权输入$s_k$的导数</td>
+ </tr>
+<tr>
+  <td>$r_t=\hat{y}_t-y_t$    </td>
+  <td>残差向量</td>
+ </tr>
+<tr>
+  <td>$W_{in}\in\mathbb{R}^{H\times K}$    </td>
+  <td>从输入层到隐藏层的权值</td>
+ </tr>
+<tr>
+  <td>$W_{rec}\in\mathbb{R}^{H\times H}$    </td>
+  <td>隐藏层上一个时刻到当前时刻的权值</td>
+ </tr>
+<tr>
+  <td>$W_{out}\in\mathbb{R}^{K\times H}$    </td>
+  <td>隐藏层到输出层的权值</td>
+ </tr>
+</table>
+
+<p>上述符号之间的关系:</p>
+<script type="math/tex; mode=display">
+\begin{cases}
+s_t &= W_{rec} h_{t-1} + W_{in} x_t \\
+h_t &= tanh(s_t) \\
+z_t &= W_{out} h_t \\
+\hat{y}_t &= softmax( z_t ) \\
+E_t &= - y_t^T log( \hat{y}_t) \\
+E &= \sum_t^T E_t
+\end{cases}</script><p>这里有必要对上面的一些符号进行进一步解释。</p>
+<ol>
+<li>本文只讨论输入为one-hot vector的情况，这种向量的特点是茫茫0海中的一个1，即只用一个1表示某个单词的出现；其余的0均表示单词不出现。</li>
+<li>RNN要预测的输出是一个one-hot vector，表示下一个时刻各个单词出现的概率。</li>
+<li>由于$y_t$是one-hot vector，不妨假设$y_{t,j} = 1( y_{t,i} =0 ,i \neq j)$，那么当前时刻的交叉熵为 <script type="math/tex">E_t = - y_t^T log(\hat{y}_t) = -log(\hat{y}_{t,j})</script>。也就是说如果 $t$ 出现的是第 $j$ 个词，那么计算交叉熵时候只要看 $\hat{y}_t$ 的第$j$个分量即可。</li>
+<li>由于$x_t$是one-hot向量，假设第$j$个词出现，则$W_{in}x_t$相当于把$W_{in}$的第$j$列选出来，因此这一步是不用进行任何矩阵运算的，直接做下标操作即可。</li>
+</ol>
+<p>BPTT与BP类似，是在时间上反传的梯度下降算法。
+RNN中，我们的目的是求得 $\frac{\partial E}{\partial W_{in}}, \frac{\partial E}{\partial W_{rec}}, \frac{\partial E}{\partial W_{out}}$，
+根据这三个变化率来优化三个参数 $W_{in},W_{rec},W_{out}$。注意到 $\frac{\partial E}{\partial W_{in}} = \sum_t \frac{\partial E_t}{\partial W_{in}}$，
+因此我们只要对每个时刻的损失函数求偏导数再加起来即可。矩阵求导有两种布局方式：分母布局（Denominator Layout）和分子布局（Numerator Layout），关于分子布局和分母布局的区别，请参考文献3。
+如果这里采用分子布局，那么更新梯度时还需要将梯度矩阵进行一次转置，因此出于数学上的方便，后续的矩阵求导都将采用分母布局。</p>
+<p><br></p>
+<h4 id="2-2-计算-frac-partial-E-t-partial-W-out"><a href="#2-2-计算-frac-partial-E-t-partial-W-out" class="headerlink" title="2.2 计算 $\frac{\partial E_t}{\partial W_{out}}$"></a>2.2 计算 $\frac{\partial E_t}{\partial W_{out}}$</h4><p>注意到$E_t$是$W_{out}$的复合函数，参考文献3中Scalar-by-matrix identities一节中关于复合矩阵函数求导法则（右边的是分母布局）： </p>
+<p><img src="/posts_res/2018-05-23-backpropagation/2-2.jpg" alt="matrix"></p>
+<p>我们有：</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+\frac{\partial E_t}{\partial W_{out}(i,j)}
+&= tr \left( \left( \frac{\partial E_t}{\partial z_t} \right)^T \cdot \frac{\partial z_t}{\partial W_{out}(i,j)} \right) \\
+&= tr \left( (\hat{y}_t - y_t)^T \cdot \begin{bmatrix} 0\\ \vdots \\ \frac{\partial z_{t}^{(i)}}{\partial W_{out}(i,j)} \\ \vdots \\ 0 \end{bmatrix} \right) \\
+&= r_t^{(i)} h_t^{(j)}
+\end{aligned}</script><p>其中$r_t^{(i)}=(\hat{y}_t-y_t)^{(i)}$表示残差向量第$i$个分量，$h_t^{(j)}$表示$h_t$的第j个分量。</p>
+<p>上述结果可以改写为：</p>
+<script type="math/tex; mode=display">\frac{\partial E_t}{\partial W_{out}} = r_t \otimes h_t</script><script type="math/tex; mode=display">\frac{\partial E}{\partial W_{out}} = \sum_{t=0}^T r_t\otimes h_t</script><p>其中$\otimes$表示向量外积。</p>
+<p><br></p>
+<h4 id="2-3-计算-frac-partial-E-t-partial-W-rec"><a href="#2-3-计算-frac-partial-E-t-partial-W-rec" class="headerlink" title="2.3 计算$\frac{\partial E_t}{\partial W_{rec}}$"></a>2.3 计算$\frac{\partial E_t}{\partial W_{rec}}$</h4><p>由于$W_{rec}$是各个时刻共享的，所以$t$时刻之前的每个时刻$W_{rec}$的变化都对$E_t$有贡献，反过来求偏导时，也要考虑之前每个时刻$W_{rec}$对$E$的影响。
+我们以$s_k$为中间变量，应用链式法则：</p>
+<script type="math/tex; mode=display">\frac{\partial E_t}{\partial W_{rec}} = \sum_{k=0}^t \frac{\partial s_k}{\partial W_{rec}} \frac{\partial E_t}{\partial s_k}</script><p>但由于$\frac{\partial s_k}{\partial W_{rec}}$（分子向量，分母矩阵）以目前的数学发展水平是没办法求的，
+因此我们要求这个偏导，可以拆解为$E_t$对$W_{rec}(i,j)$的偏导数：</p>
+<script type="math/tex; mode=display">
+\frac{\partial E_t}{\partial W_{rec}(i,j)} 
+= \sum_{k=0}^t tr[(\frac{\partial E_t}{\partial s_k})^T \frac{\partial s_k}{\partial W_{rec}(i,j)}]
+= \sum_{k=0}^t  tr[(\delta_k^{(t)})^T\frac{\partial s_k}{\partial W_{rec}(i,j)}]</script><p>其中，$\delta^{(t)}_k=\frac{\partial E_t}{\partial s_k}$，遵循</p>
+<script type="math/tex; mode=display">s_k\to h_k\to s_{k+1}\to ...\to E_t</script><p>的传递关系。</p>
+<p>应用链式法则有： </p>
+<script type="math/tex; mode=display">
+\delta^{(t)}_k = \frac{\partial h_k}{\partial s_k}\frac{\partial s_{k+1}}{\partial h_k} \frac{\partial E_t}{\partial s_{k+1}}
+= diag(1-h_k\odot h_k)W_{rec}^T\delta^{(t)}_{k+1}=(W_{rec}^T\delta^{(t)}_{k+1})\odot (1-h_k\odot h_k)</script><p>其中，$\odot$表示向量点乘（element-wise product）。注意$E_t$求导时链式法则的顺序，$E_t$是关于$s_k$的符合函数，且求导链上的每个变量都是向量，
+根据参考文献3，这种情况下应用分母布局的链式法则，方向应该是相反的。</p>
+<p>接下来计算$\delta^{(t)}_t$：</p>
+<script type="math/tex; mode=display">
+\delta^{(t)}_t = \frac{\partial E_t}{\partial s_t} = \frac{\partial h_t}{\partial s_t}\frac{\partial z_t}{\partial h_t}\frac{\partial E_t}{\partial z_t}
+= diag(1-h_t\odot h_t)\cdot W_{out}^T\cdot(\hat{y}_t-y_t)=(W_{out}^T(\hat{y}_t-y_t))\odot (1-h_t\odot h_t)</script><p>于是，我们得到了关于$\delta$ 的递推关系式:</p>
+<script type="math/tex; mode=display">
+\begin{cases}
+\delta^{(t)}_t &= (W_{out}^T r_t)\odot (1-h_t\odot h_t) \\ 
+\delta^{(t)}_k &= (W_{rec}^T\delta^{(t)}_{k+1})\odot (1-h_k\odot h_k)
+\end{cases}</script><p>由 $ \delta^{(t)}_t $ 出发，
+我们可以往前推出每一个 $ \delta $ ，
+将 <script type="math/tex">\delta^{(t)}_0,...,\delta^{(t)}_t</script> 
+代入 <script type="math/tex">\frac{\partial E_t}{\partial W_{rec}(i,j)}</script>
+有：</p>
+<script type="math/tex; mode=display">\frac{\partial E_t}{\partial W_{rec}(i,j)} = \sum_{k=0}^t \delta_k^{(t)} h_{k-1}^{(j)}</script><p>将上式写成矩阵形式：</p>
+<script type="math/tex; mode=display">
+\frac{\partial E_t}{\partial W_{rec}} = \sum_{k=0}^t \delta^{(t)}_k \otimes h_{k-1} \\
+\frac{\partial E}{\partial W_{rec}} =\sum_{t=0}^T \sum_{k=0}^t \delta^{(t)}_k \otimes h_{k-1}</script><p>不失严谨性，定义$h_{-1}$为全0的向量。</p>
+<p><br></p>
+<h4 id="2-4-计算-frac-partial-E-t-partial-W-in"><a href="#2-4-计算-frac-partial-E-t-partial-W-in" class="headerlink" title="2.4 计算$\frac{\partial E_t}{\partial W_{in}}$"></a>2.4 计算$\frac{\partial E_t}{\partial W_{in}}$</h4><p>按照上述思路，我们可以得到 </p>
+<script type="math/tex; mode=display">\frac{\partial E_t}{\partial W_{in}} = \sum_{k=0}^t \delta_k \otimes x_{k}</script><p>由于$x_k$是个one-hot vector，假设$x_k(m)=1$，那么我们在更新$W$时只需要更新$W$的第$m$列即可。</p>
+<p><br></p>
+<h4 id="2-5-参数更新"><a href="#2-5-参数更新" class="headerlink" title="2.5 参数更新"></a>2.5 参数更新</h4><p>我们有了$E_t$关于各个参数的偏导数，就可以用梯度下降来更新各参数了:</p>
+<script type="math/tex; mode=display">
+\begin{cases}
+W_{in} &= W_{in} - \lambda \sum_{t=0}^T \sum_{k=0}^t \delta_k \otimes x_{k} \\
+W_{rec}&=W_{rec}-\lambda \sum_{t=0}^T \sum_{k=0}^t \delta_k \otimes h_{k-1} \\
+W_{out}&=W_{out}-\lambda \sum_{t=0}^T r_t \otimes h_t
+\end{cases}</script><p>其中 <script type="math/tex">r_t= \hat{y}_t - y_t</script>，</p>
+<p><script type="math/tex">\delta_t = \frac{\partial E_t}{\partial s_t} = (W_{out}^T r_t) \odot (1 - h_t\odot h_t), \lambda > 0</script> 表示学习率。</p>
+<p><br></p>
+<h4 id="2-6-部分思考"><a href="#2-6-部分思考" class="headerlink" title="2.6 部分思考"></a>2.6 部分思考</h4><ul>
+<li>为什么RNN中要对隐藏层的输出进行一次运算$z_t=W_{out}h_t$，然后再对$z_t$进行一次softmax，而不是直接对$h_t$进行softmax求得概率？为什么要有$W_{out}$这个参数？<ul>
+<li>答：$x_t$是一个$K\times 1$的向量，我们要将它映射到一个$H\times 1$的$h_t$（其中$H$是隐神经元的个数），从$x_t$到$h_t$相当于对词向量做了一次编码；最终我们要得到的是一个$K\times 1$的向量（这里$K$是词汇表大小），表示每个词接下来出现的概率，所以我们需要一个矩阵$K\times H$的$W_{out}$来将$h_t$映射回原来的空间去，这个过程相当于解码。因此，RNN可以理解为一种编解码网络。</li>
+</ul>
+</li>
+<li>$W_{in},W_{rec},W_{out}$三个参数分别有什么意义？<ul>
+<li>答： $W_{in}$将$K\times 1$的one-hot词向量映射到$H\times 1$隐藏层空间，将输入转化为计算机内部可理解可处理的形式，这个过程可以理解为一次编码过程；$W_{rec}$则是隐含层到自身的一个映射，它定义了模型如何结合上文信息，在编码中融入了之前的“记忆”；$W_{in},W_{rec}$结合了当前输入单词和之前的记忆，形成了当前时刻的知识状态。$W_{out}$是隐含层到输出的映射，$z=W_{out}h$是映射后的分数，这个过程相当于一次解码。这个解码后的分数再经过一层softmax转化为概率输出来，我们挑选概率最高的那个作为我们的预测。作为总结， RNN的记忆由两部分构成，一部分是当前的输入，另一部分是之前的记忆。</li>
+</ul>
+</li>
+<li>BPTT和BP的区别在哪？为什么不能用BP算法训练RNN？<ul>
+<li>答：BP算法只考虑了误差的导数在上下层级之间梯度的反向传播；而BPTT则同时包含了梯度在纵向层级间的反向传播和在时间维度上的反向传播，同时在两个方向上进行参数优化。</li>
+</ul>
+</li>
+<li>文中词$x_t$的特征是一个one-hot vector，这里能不能替换为word2vec训练出的词向量？效果和性能如何？<ul>
+<li>答：RNNLM本身自带了训练词向量的过程。由于$x_t$是one-hot向量，假设出现的词的索引为$j$，那么$W_{in}x_t$就是把$W_{in}$的第$j$列$W[:,j]$取出，这个列向量就相当于该词的词向量。实际上用语言模型训练词向量的思想最早可以追溯到03年Bengio的一篇论文《A neural probabilistic language model 》，这篇论文中作者使用一个神经网络模型来训练n-gram模型，顺便学到了词向量。本文出于数学推导以及代码实现上的方便采用了one-hot向量作为输入。实际工程中，词汇表通常都是几百万，内存没办法装下几百万维的稠密矩阵，所以工程上基本上没有用one-hot的，基本都是用词向量。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<p>&gt;</p>
+<ol>
+<li><a href="http://blog.csdn.net/malefactor/article/details/50725480" target="_blank" rel="noopener">使用RNN解决NLP中序列标注问题的通用优化思路</a></li>
+<li><a href="http://www.wildml.com/2015/10/recurrent-neural-networks-tutorial-part-3-backpropagation-through-time-and-vanishing-gradients/" target="_blank" rel="noopener">wildml的rnn tutorial part3</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Matrix_calculus" target="_blank" rel="noopener">Matrix Calculus Wiki</a></li>
+<li><a href>《神经网络与深度学习讲义》 邱锡鹏</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/优化算法/" rel="tag"># 优化算法</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2018/05/20/gradientdescent/" rel="next" title="梯度下降">
+                  <i class="fa fa-chevron-left"></i> 梯度下降
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2018/06/03/newstonmethod/" rel="prev" title="牛顿法&拟牛顿法">
+                  牛顿法&拟牛顿法 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    
+  <div class="comments" id="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC80MTI1Mi8xNzgwMA"></div>
+  </div>
+  
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/avatar.jpg"
+      alt="WeiguoZHAO">
+  <p class="site-author-name" itemprop="name">WeiguoZHAO</p>
+  <div class="site-description motion-element" itemprop="description">Welcome to my blog~</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">47</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/weiguozhao" title="GitHub &rarr; https://github.com/weiguozhao" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:aszhaoweiguo@gmail.com" title="E-Mail &rarr; mailto:aszhaoweiguo@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      大牛们
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://colah.github.io/" title="http://colah.github.io/" rel="noopener" target="_blank">colah's blog</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/wzhe06/Reco-papers" title="https://github.com/wzhe06/Reco-papers" rel="noopener" target="_blank">王喆的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/ljpzzz/machinelearning" title="https://github.com/ljpzzz/machinelearning" rel="noopener" target="_blank">刘建平的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://tech.meituan.com/" title="https://tech.meituan.com/" rel="noopener" target="_blank">美团技术团队</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-反向传播BP"><span class="nav-text">1. 反向传播BP</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-转-随时间反向传播BPTT"><span class="nav-text">2. [转]随时间反向传播BPTT</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-符号注解"><span class="nav-text">2.1 符号注解</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-计算-frac-partial-E-t-partial-W-out"><span class="nav-text">2.2 计算 $\frac{\partial E_t}{\partial W_{out}}$</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-计算-frac-partial-E-t-partial-W-rec"><span class="nav-text">2.3 计算$\frac{\partial E_t}{\partial W_{rec}}$</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4-计算-frac-partial-E-t-partial-W-in"><span class="nav-text">2.4 计算$\frac{\partial E_t}{\partial W_{in}}$</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-5-参数更新"><span class="nav-text">2.5 参数更新</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-6-部分思考"><span class="nav-text">2.6 部分思考</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">WeiguoZHAO</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+      <div class="reading-progress-bar"></div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+<script>
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
+
+</body>
+</html>

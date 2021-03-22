@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/github-logo.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/github-logo.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":true,"show_result":true,"style":"default"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="目录 1.引入 2.卷积神经网络的结构 3.卷积神经网络的正式表达 4.理解卷积 译自：Conv Nets: A Modular Perspective， Understanding Convolutions1.引入在最近几年间，深度神经网络为模式识别领域的很多难题带来了突破性的进展，比如计算机视觉和语音识别领域。这些突破性进展其实都来源于一种特别的神经网络，我们称之为卷积神经网络。">
+<meta name="keywords" content="模型算法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="卷积神经网络CNN初识">
+<meta property="og:url" content="https://weiguozhao.github.io/2018/06/28/cnn1/index.html">
+<meta property="og:site_name" content="Weiguo&#39;s Station">
+<meta property="og:description" content="目录 1.引入 2.卷积神经网络的结构 3.卷积神经网络的正式表达 4.理解卷积 译自：Conv Nets: A Modular Perspective， Understanding Convolutions1.引入在最近几年间，深度神经网络为模式识别领域的很多难题带来了突破性的进展，比如计算机视觉和语音识别领域。这些突破性进展其实都来源于一种特别的神经网络，我们称之为卷积神经网络。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/1-1.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/2-1.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/2-2.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/2-3.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/2-4.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/2-5.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/2-6.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/2-7.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/2-8.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/2-9.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/2-10.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/2-11.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/3-1.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/3-2.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/4-1.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/4-2.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/4-3.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/4-4.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/4-5.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/4-6.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/4-7.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/4-8.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/4-9.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/4-10.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/4-11.gif">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/4-12.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/4-13.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/4-14.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/4-15.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/4-16.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/4-17.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/4-18.png">
+<meta property="og:updated_time" content="2021-03-22T10:53:44.472Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="卷积神经网络CNN初识">
+<meta name="twitter:description" content="目录 1.引入 2.卷积神经网络的结构 3.卷积神经网络的正式表达 4.理解卷积 译自：Conv Nets: A Modular Perspective， Understanding Convolutions1.引入在最近几年间，深度神经网络为模式识别领域的很多难题带来了突破性的进展，比如计算机视觉和语音识别领域。这些突破性进展其实都来源于一种特别的神经网络，我们称之为卷积神经网络。">
+<meta name="twitter:image" content="https://weiguozhao.github.io/posts_res/2018-06-28-cnn1/1-1.png">
+  <link rel="canonical" href="https://weiguozhao.github.io/2018/06/28/cnn1/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>卷积神经网络CNN初识 | Weiguo's Station</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?ff6106e096f9eb6ace966de311be4b1a";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Weiguo's Station</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>博客首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>文章归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类专栏</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>各种标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>站点搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+  <a href="https://github.com/weiguozhao" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weiguozhao.github.io/2018/06/28/cnn1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="WeiguoZHAO">
+      <meta itemprop="description" content="Welcome to my blog~">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Weiguo's Station">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">卷积神经网络CNN初识
+
+          
+        </h1>
+
+        <div class="post-meta">
+        
+          
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2018-06-28 12:10:00" itemprop="dateCreated datePublished" datetime="2018-06-28T12:10:00+08:00">2018-06-28</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-22 18:53:44" itemprop="dateModified" datetime="2021-03-22T18:53:44+08:00">2021-03-22</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/深度学习/" itemprop="url" rel="index"><span itemprop="name">深度学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>目录</p><ul>
+<li>1.引入</li>
+<li>2.卷积神经网络的结构</li>
+<li>3.卷积神经网络的正式表达</li>
+<li>4.理解卷积</li>
+</ul><p>译自：<a href="http://colah.github.io/posts/2014-07-Conv-Nets-Modular/" target="_blank" rel="noopener">Conv Nets: A Modular Perspective</a>，
+<a href="https://colah.github.io/posts/2014-07-Understanding-Convolutions/" target="_blank" rel="noopener">Understanding Convolutions</a></p><hr><h3 id="1-引入"><a href="#1-引入" class="headerlink" title="1.引入"></a>1.引入</h3><p>在最近几年间，深度神经网络为模式识别领域的很多难题带来了突破性的进展，比如计算机视觉和语音识别领域。这些突破性进展其实都来源于一种特别的神经网络，我们称之为卷积神经网络。</p><a id="more"></a>
+
+
+
+
+<p>简单来说，卷积神经网络可以认为是由若干个相同的神经节点构成的网络。卷积神经网络具有大量节点并且具有宏大的模型结构，有时特征向量空间的维度非常庞大－－这些特征向量由来描述一个神经网络的行为。 
+但是因为其具有的重复性，我们需要学习的参数相对来说非常少。</p>
+<p><img src="/posts_res/2018-06-28-cnn1/1-1.png" alt="1-1"></p>
+<p>这种结构上的重复性，也体现在计算机科学和数学领域。例如当我们编写代码时，我们事先声明一个函数，然后反复调用它－－而不是在每一个需要使用的地方重新编写代码。
+这种重复使用，使得我们的程序更加简洁，也避免了错误的发生。相应的，当我们构建一个卷积神经网络时，可以通过学习得到一个神经节点的参数，
+并把以这个节点为模板复制出若干个一致的节点组成网络，这使得整个网络参数的学习非常简便。</p>
+<hr>
+<h3 id="2-卷积神经网络的结构"><a href="#2-卷积神经网络的结构" class="headerlink" title="2.卷积神经网络的结构"></a>2.卷积神经网络的结构</h3><p>假设你现在想用一个神经网络来观察声音的采样信号，并且预测接下来是否会继续出现采样值。或者你也可以用它来对人说话的声音做更多的分析。
+假设我们已经得到了如下图的这样一个声音信号的时间采样序列，采样周期为一个固定值（意味着每个采样点间的时间间隔相同）。</p>
+<p><img src="/posts_res/2018-06-28-cnn1/2-1.png" alt="2-1"></p>
+<p>引入神经网络最简单的方法，就是把所有采样点连接到一个全连接层上，每个采样点对应一个独立的神经节点（下图中神经节点并未画出）</p>
+<p><img src="/posts_res/2018-06-28-cnn1/2-2.png" alt="2-2"></p>
+<p>更加复杂的一种方式，引入了输入层中的一种非常有用的对称性。我们关注数据的多方面特性：一定间隔内声音的频率如何变化？增大还是减小？</p>
+<p>我们关注这些性质在全部时间轴上的变化，例如初始的频率值，中间部分的频率值，数据集末尾的频率值。这些其实都是仅与数据本身有关的特性，
+所以在整个时间轴上分布不会有太大变化，因此我们可以通过观察一小段时间范围内采样结果来观察这些性质。</p>
+<p>因此我们可以构建一组神经节点$A$，在一小段时间间隔内，将输入全部连到一个节点上，由若干个节点覆盖整个采样时间范围。然后再将这样一个神经节点层连接到一个全连接层$F$</p>
+<p><img src="/posts_res/2018-06-28-cnn1/2-3.png" alt="2-3"></p>
+<p>在上面这个例子中，每个节点只覆盖一小段时间间隔（具体来说就是两个采样周期）。这并不是实际应用的情况，通常来说卷积的时间窗会更长一些
+（所谓卷积窗就是每个神经节点覆盖的时间间隔，也可以表达为每个神经节点所连接的输入个数）</p>
+<p>在下图中，我们将窗长增加到了3，然而这也不符合实际应用的情况，只是为了帮助理解卷积窗长度的变化方式。</p>
+<p><img src="/posts_res/2018-06-28-cnn1/2-4.png" alt="2-4"></p>
+<p>卷积层的一个非常好的性质就是它们是可以相互组合的。你可以将一个卷积层的输出作为另一个卷积层的输入。数据流每经历一层卷积，我们就能从中提取出一些高维的更加抽象的特征。</p>
+<p>如下图所示的例子中，我们加入了一组新的神经节点$B$，这些节点构成了位于最顶端的卷积层。</p>
+<p><img src="/posts_res/2018-06-28-cnn1/2-5.png" alt="2-5"></p>
+<p>卷积层之间通常包含有一个池化层，也可以称为最大池化层，这种方法应用的十分广泛。
+通常情况下，宏观来看，我们并不关注某一个特性在时间轴上出现的精确位置。
+比如一个频率变化出现的时间点提前或滞后一点点对实验结果是没有什么影响的。</p>
+<p>最大池化层的作用，就是提取出最大的若干个特征值。通过一个筛选窗，将较大值取出。这一层的输出会告诉我们特征的有效值，但不会包含其在时间轴上的具体信息。</p>
+<p>最大池化层可以看作是一个“拉远”操作，想象你正使用一个相机，当你把镜头拉远，你就可以看到更大范围上的东西。
+最大池化层的作用也类似于此，它使得接下来的卷积层能够使用更大时间间隔上的特征值，也就是说，某一个小间隔上的特征值被提取出来作为相邻几个小间隔的代表。
+由此构成了针对一个相对较大的时间间隔的表达。这使得我们可以省略掉数据在较小范围内的一些变化。</p>
+<p><img src="/posts_res/2018-06-28-cnn1/2-6.png" alt="2-6"></p>
+<p>至此，我们已经介绍了一维的卷积层。其实卷积神经网络也可以应用到高维的情形当中。实际上，最有名的卷积神经网络的应用就是将二维的CNN应用在图像识别当中。</p>
+<p><br></p>
+<p>在此二维的网络中，我们所覆盖的最小单位不再是时间间隔，而是像素点。$A$（即前文提到的神经节点）被用于提取每个像素点的特征。
+例如可以用于提取一幅图像的轮廓。也可以用于检测图像的类别，或者对两种颜色进行比较。</p>
+<p><img src="/posts_res/2018-06-28-cnn1/2-7.png" alt="2-7"></p>
+<p>上图揭示了一层二维神经网络的结构。我们也可以像在一维空间中那样，连接若干层二维神经网络。</p>
+<p><img src="/posts_res/2018-06-28-cnn1/2-8.png" alt="2-8"></p>
+<p>同理在二维神经网络中我们也可以加入池化层。在这种情况下，我们就是提取了某一个或几个像素上的特征值作为一片区域的特征值。
+这样做的最大好处是，处理图像时，我们不再关心某个片段在整幅图像上的具体位置（具体到像素级别），而是可以通过其周围的几个像素上的特征值来观察某一特征。</p>
+<p><img src="/posts_res/2018-06-28-cnn1/2-9.png" alt="2-9"></p>
+<p><br></p>
+<p>有时我们也会用到三维的卷积神经网络，比如视频数据的处理或者立体分析的过程（例如3D扫描）。这种更高维度的网络非常复杂，它们并没有被广泛应用并且很难表现出来。</p>
+<p>上文中，我们提到$A$是一组神经节点。接下来我们具体来看一下到底$A$是什么样的结构。
+在传统的卷积神经网络中，$A$是一系列相互平行的节点，它们接受相同的输入，计算不同的特征值。</p>
+<p>例如在二维网络中，一个神经节点用来获取水平的轮廓，另一个可能用来获取垂直的轮廓，还有一个用来进行红绿颜色的对比。</p>
+<p><img src="/posts_res/2018-06-28-cnn1/2-10.png" alt="2-10"></p>
+<p>在论文<a href="http://arxiv.org/abs/1312.4400" target="_blank" rel="noopener">Network in Network</a>中，作者提出了一种新的”Mlpconv“网络结构。在这种模型中，$A$代表了多层神经节点，
+由最后一层输出其所连接的若干输入的高维特征值。这篇文章提到，此模型可以达到一个非常好的效果，在现有数据的基础上达到了最优的效果。</p>
+<p><img src="/posts_res/2018-06-28-cnn1/2-11.png" alt="2-11"></p>
+<p>这提醒着我们，卷积神经网络已经发展到了一定的阶段，不再是简单的模型能够概括的，我们需要更加深入的思考创新的方向。</p>
+<hr>
+<h3 id="3-卷积神经网络的正式表达"><a href="#3-卷积神经网络的正式表达" class="headerlink" title="3.卷积神经网络的正式表达"></a>3.卷积神经网络的正式表达</h3><p>考虑一维的卷积层，其中输入为$\lbrace x_n \rbrace$，输出为$ \lbrace y_n \rbrace $</p>
+<p><img src="/posts_res/2018-06-28-cnn1/3-1.png" alt="3-1"></p>
+<p>很容易可以用输入表示输出：</p>
+<script type="math/tex; mode=display">y_n = A( x_n, x_{n+1}, \cdots )</script><p>如上图：</p>
+<script type="math/tex; mode=display">
+y_0 = A(x_0, x_1) \\
+y_1 = A(x_1, x_2)</script><p>相似地，如果我们考虑二维的卷积层，其中输入为$\lbrace x<em>{n,m} \rbrace$，输出为$ \lbrace y</em>{n,m} \rbrace $</p>
+<p><img src="/posts_res/2018-06-28-cnn1/3-2.png" alt="3-2"></p>
+<p>同样地，我们可以用输入表示输出：</p>
+<script type="math/tex; mode=display">
+y_{n,m} = A 
+\begin{pmatrix}
+x_{n,m}, & x_{n+1, m}, & \cdots , \\
+x_{n,m+1}, & x_{n+1, m+1}, & \cdots , \\
+ & \cdots &
+\end{pmatrix}</script><p>例如：</p>
+<script type="math/tex; mode=display">
+y_{0,0}=A
+\begin{pmatrix}
+x_{0,0}, & x_{1,0}, \\
+x_{1,0}, & x_{1,1}, \\
+\end{pmatrix}
+y_{1,0}=A
+\begin{pmatrix}
+x_{1,0}, & x_{2,0}, \\
+x_{1,1}, & x_{2,1}, \\
+\end{pmatrix}</script><p>把这些和矩阵方程联合起来，得$A(x)$。</p>
+<script type="math/tex; mode=display">A(x) = \sigma (W x + b)</script><p>实际上，这通常不是考虑卷积神经网络的最佳方法，有一个替代的公式—关于卷积的数学运算，这通常更有帮助。</p>
+<p>卷积运算是一个强大的工具。在数学中，它出现在不同的背景下，从偏微分方程的研究到概率论。卷积在物理科学中非常重要，部分原因是它在偏微分方程中的作用。
+它在计算机图形学和信号处理等许多应用领域也起着重要的作用。对我们来说，卷积会带来很多好处。首先，它将允许我们创建卷积层的更有效的实现，这比单纯的透视图所建议的要有效得多。
+其次，它将从我们的公式中去除很多混乱，目前的公式可能看起来还不混乱，但那只是因为我们还没有进入棘手的情况。
+最后，卷积将为我们提供一个非常不同的角度来解释卷积层。</p>
+<hr>
+<h3 id="4-理解卷积"><a href="#4-理解卷积" class="headerlink" title="4.理解卷积"></a>4.理解卷积</h3><p>上面在没有涉及任何数学知识情况下，我们对卷积神经网络有了初步了解。为了更深入地理解卷积神经网络，我们需要明白，何为卷积？</p>
+<p><strong>球体下落的启示</strong></p>
+<p>试想一下，我们从某一高度释放球让它做自由落体运动，并假设球在地面上只做一维运动（某一条线上）。
+球第一次释放并且在地面上静止后，在静止处上方我们以另一高度让球做第二次下落运动。
+那么，球最后停止的位置和最开始释放处水平距离为c的可能性有多大呢？</p>
+<p>我们把这过程分解一下。第一次下落后，球停止在离释放点$a$单位距离的可能性是$f(a)$, $f$是概率分布。
+球第一次下落并静止后，我们将球拿到静止处上方以另一高度让球第二次下落，球最终停止处与第二次释放处距离是$b$单位距离的可能性是$g(b)$, 如果两次释放高度不同，
+那么$g$和$f$是两个不同的概率分布。</p>
+<p><img src="/posts_res/2018-06-28-cnn1/4-1.png" alt="4-1"></p>
+<p>假设第一次下落球在地面上运动了距离$a$，第二次下落球在地面上运动了距离$b$，而两次下落球在水平面上运动总距离是$c$，则有$a+b=c$，这种情况发生的概率可以简单表示成$f(a) \cdot f(b)$。
+从离散的角度来看这个例子，假设总运动距离$c=3$，第一次滚动距离$a=2$，那么第二次滚动距离$b$必须是$1$，所有概率表示为$f(2)\cdot g(1)$。</p>
+<p><img src="/posts_res/2018-06-28-cnn1/4-2.png" alt="4-2"></p>
+<p>然而，这不是$c=3$的唯一可能，我们也可以让第一次运动$a=1$，第二次运动$b=2$。或者$a=0，b=3 \cdots $ 只要两次运动距离和$c=3$，$a$和$b$有无限种可能的组合。</p>
+<p><img src="/posts_res/2018-06-28-cnn1/4-3.png" alt="4-3"></p>
+<p>上述两种可能各种的概率表示依次是$f(1) \cdot g(2)$和$ f(0) \cdot g(3)$。</p>
+<p>为了得到总运动距离为$c$的所有可能结果，我们不能只考虑距离为$c$一种可能。取而代之，我们考虑把$c$分割成$a$和$b$的所有情况，并将每种情况概率相加。</p>
+<script type="math/tex; mode=display">\cdots f(0) \cdot g(3) + f(1) \cdot g(2) + f(2) \cdot g(1) \cdots</script><p>我们知道对每种$a+b=c$的情况，其概率可表示为$f(a) \cdot g(b)$。因此，我们可以对每种$a+b=c$的情况做概率求和得到总概率为：</p>
+<script type="math/tex; mode=display">\sum_{a+b=c} f(a) \cdot g(b)</script><p>事实上，这就是一个卷积过程！特别地，$f$和$g$的卷积，对$c$的评估定义如下:</p>
+<script type="math/tex; mode=display">(f ∗ g) (c) = \sum_{a+b=c} f(a) \cdot g(b)</script><p>如果用$b=c-a$替换，则有</p>
+<script type="math/tex; mode=display">(f ∗ g) (c) = \sum_a f(a) \cdot g(c−a)</script><p>这正是标准的卷积定义。</p>
+<p>更具体地说，我们可以从球可能停止的位置来思考。球第一次下落后，球停止在中转位置距离为$a$处的概率是$f(a)$,如果球第一次停在了距离$a$处，那么球最终停在距离$c$处的概率是$g(c-a)$</p>
+<p><img src="/posts_res/2018-06-28-cnn1/4-4.png" alt="4-4"></p>
+<p>为了完成卷积，我们考虑所有的中转位置。</p>
+<p><img src="/posts_res/2018-06-28-cnn1/4-5.png" alt="4-5"></p>
+<p><br></p>
+<p><strong>卷积的可视化</strong></p>
+<p>有一个非常好的例子可以帮助我们更好地理解卷积的过程。</p>
+<p>首先，基于对下图的观察。我们假设一个小球运动到距离其初始位置$x$单位的概率为$f(x)$。然后，紧接着我们定义小球从距离其初始位置$x$的点运动到初始位置的概率为 $f(−x)$。</p>
+<p><img src="/posts_res/2018-06-28-cnn1/4-6.png" alt="4-6"></p>
+<p>设想，小球第二次下落后的位置为$c$，并且已知小球第一次下落的过渡位置为$a$，这一概率是多少呢？</p>
+<p><img src="/posts_res/2018-06-28-cnn1/4-7.png" alt="4-7"></p>
+<p>第一次下落后距离为$a$则第二次落到$c$的概率是: $ g( − ( a − c )) = g ( c − a ) $</p>
+<p>我们考虑，已知每次二段下落后距离为$c$的情况下，第一次下落后到达一个过渡位置的概率，即我们之前提到的第一次下落位于$a$的概率$f(a)$。</p>
+<p><img src="/posts_res/2018-06-28-cnn1/4-8.png" alt="4-8"></p>
+<p>对所有的$a$求和，我们就得到了卷积的结果。
+这种表示法使得我们可以在一幅图里面形象地对一个值为$c$的卷积结果进行估计。
+如果我们只关注坐标轴的一侧（因为坐标轴是对称的），当$c$的位置在一侧改变时，我们可以对其卷积的结果进行估计，这有助于我们整体把握卷积的概念。</p>
+<p>具体来说，我们可以看到$c$点的位置与原始位置分布在一条线上时卷积的结果达到峰值。(此时卷积的式子中求和项数达到最大值)</p>
+<p><img src="/posts_res/2018-06-28-cnn1/4-9.png" alt="4-9"></p>
+<p>随着$c$点的位置沿着坐标轴远离，我们可以看到结果中的项数逐渐减少，直到最右端时达到最小。</p>
+<p><img src="/posts_res/2018-06-28-cnn1/4-10.png" alt="4-10"></p>
+<p>当我们把这种思路下的结果用动图表示出来，我们就要可以直观的看到卷积的结果了。
+下图，我们用两个箱型图变现了卷积的过程：</p>
+<p><img src="/posts_res/2018-06-28-cnn1/4-11.gif" alt="4-11"></p>
+<p>从这种角度看待卷积，我们发现CNN的概念变得更加直观。接下来我们一起思考一种非概率的模型。
+卷积操作有时也被应用在音频处理上。比如，我们经常使用两个冲击作为采样函数。
+采样的结果中，在第一个冲击处得到输出，经过一个时延后，在第二个冲击处再次得到一个采样值作为第一次采样结果的延迟输出。</p>
+<p><br></p>
+<p><strong>高维卷积</strong></p>
+<p>卷积可以一般化，我们可以在更高的维度使用它。我们还以球体下落为例，只是现在，球在水平面上的运动是不是一维的，而是二维的。</p>
+<p><img src="/posts_res/2018-06-28-cnn1/4-12.png" alt="4-12"></p>
+<p>卷积过程还是和之前的一样</p>
+<script type="math/tex; mode=display">(f ∗ g) ( c ) = \sum_{a+b=c} f(a) \cdot g(b)</script><p>只是这里的$a，b，c$是向量，更明确地表示是</p>
+<script type="math/tex; mode=display">(f ∗ g)(c_1, c_2) = \sum_{a_1 + b_1 = c_1 \\ a_2 + b_2 = c_2} f ( a_1, a_2) \cdot g(b_1, b_2 )</script><p>或者使用标准定义：</p>
+<script type="math/tex; mode=display">(f ∗ g ) ( c_1, c_2) = \sum{a_1,a_2} f(a_1, a_2) \cdot g(c_1−a_1, c_2−a_2)</script><p>和一维卷积类似，我们可以把二维卷积看成一个函数在另一函数上移动，相乘并相加。</p>
+<p>二维卷积一个常见的应用是图像处理。把图像当做二维函数。许多图像转换方法都是图像函数和一个名为核函数的本地函数卷积的过程。</p>
+<p><img src="/posts_res/2018-06-28-cnn1/4-13.png" alt="4-13"></p>
+<p>核在图像上每个位置点上移动，并计算被其覆盖住的像素点的加权和得到新的像素（核上的像素值是权值）。</p>
+<p>比如，通过一个 3 x 3 宫格来做像素平均能使图像变模糊。此时，核中方格中每个像素点值为1/9</p>
+<p><img src="/posts_res/2018-06-28-cnn1/4-14.png" alt="4-14"></p>
+<p>我们还能探测图像的边界信息。此时核中两个相邻的像素点值为 -1 和 1，其他地方像素值为0。
+也就是说，当核与其覆盖的图像像素相乘时，我们让相邻的像素点值相减。
+如果相邻的像素点类似，那么相减得到值约为0,；然而在垂直于边界方向处，相邻像素点差异很大。</p>
+<p><img src="/posts_res/2018-06-28-cnn1/4-15.png" alt="4-15"></p>
+<p>gimp documentation 中有很多<a href="http://docs.gimp.org/en/plug-in-convmatrix.html" target="_blank" rel="noopener">其他的例子</a>。</p>
+<p><br></p>
+<p><strong>卷积神经网络</strong></p>
+<p>那么，卷积操作和卷积神经网络是如何联系起来的呢？</p>
+<p>首先我们考虑一维卷积神经网络，其中输入为$ \lbrace x_n \rbrace$，输出为$ \lbrace y_n \rbrace $，</p>
+<p><img src="/posts_res/2018-06-28-cnn1/4-16.png" alt="4-16"></p>
+<p>由图可得，输入层与输出层之间的函数关系为：</p>
+<script type="math/tex; mode=display">y_n = A ( x_n, x_{n+1}, \cdots)</script><p>通常来说，$A$表示一个多重的神经网络层。但是为了简便，我们先讨论一重网络的情况。回想一下，神经网络中一个神经节点可以表示成：</p>
+<script type="math/tex; mode=display">\sigma ( w_0 x_0 + w_1 x_1 + w_2 x_2 \cdots + b)</script><p>在这个公式中，$x_0, x_1, \cdots $代表输入；$w_0, w_1, \cdots $代表神经节点与输入之间连接的权重。
+这些权重就是神经网络节点的主要特征，它们决定了神经网络节点的行为。当我们说两个节点一致实际上就是说这两个节点的权重向量完全一致。
+正是这些权重，决定了卷积神经网络可以为我们处理的任务。</p>
+<p>具体来说，我们将整个神经网络层表达成一个式子，而不是分开表示。方法就是使用一个权重矩阵$W$：</p>
+<script type="math/tex; mode=display">y = \sigma ( W x + b )</script><p>由此我们可以得到：</p>
+<script type="math/tex; mode=display">
+y_0 = \sigma ( W_{0,0} x_0 + W_{0,1} x_1 + W_{0,2} x_2 \cdots) \\
+y_1 = \sigma ( W_{1,0} x_0 + W_{1,1} x_1 + W_{1,2} x_2 \cdots)</script><p>参数矩阵的每一行，描述了神经节点如何与输入相连。我们再回到卷积层，因为这一层中的神经节点有时是一致的，相应的，很多权值也会反复在权值矩阵中出现。</p>
+<p><img src="/posts_res/2018-06-28-cnn1/4-17.png" alt="4-17"></p>
+<p>上图描述的这种神经网络可以表达成如下等式：</p>
+<script type="math/tex; mode=display">
+y_0 = \sigma ( W_{0} x_0 + W_{1} x_1 - b) \\
+y_1 = \sigma ( W_{0} x_1 + W_{1} x_2 - b)</script><p>然而，更加普遍的情况是，各个神经节点的表示是不同的（即它们的权值向量是不同的）：</p>
+<script type="math/tex; mode=display">
+W = \left[
+\begin{array}{ccccc} 
+W_{0,0} & W_{0,1} & W_{0,2} & W_{0,3} & ...\\
+W_{1,0} & W_{1,1} & W_{1,2} & W_{1,3} & ...\\
+W_{2,0} & W_{2,1} & W_{2,2} & W_{2,3} & ...\\
+W_{3,0} & W_{3,1} & W_{3,2} & W_{3,3} & ...\\
+...     &   ...   &   ...   &  ...    & ...\\
+\end{array}
+\right]</script><p>上述矩阵所描述的卷积层是和我们之前看的是不同的。大多数情况下，权值会已一个短序列形式重复出现。同时，因为神经节点并不会与所有输入相连，参数矩阵大多是稀疏的。</p>
+<script type="math/tex; mode=display">
+W = \left[
+\begin{array}{ccccc} 
+w_0 & w_1 &  0  &  0  & ...\\
+ 0  & w_0 & w_1 &  0  & ...\\
+ 0  &  0  & w_0 & w_1 & ...\\
+ 0  &  0  &  0  & w_0 & ...\\
+... & ... & ... & ... & ...\\
+\end{array}
+\right]</script><p>与上述矩阵的点乘，其实和卷积一个向量$ \left[ \cdots 0, w_1, w_0, 0 \cdots \right] $是一样的。
+当这个向量（可以理解为一个卷积窗）滑动到输入层的不同位置时，它可以代表相应位置上的神经节点。</p>
+<p><em>那么二维的卷积层又是什么样呢？</em></p>
+<p><img src="/posts_res/2018-06-28-cnn1/4-18.png" alt="4-18"></p>
+<p>上图可以理解为，卷积窗由一个向量变成了一个矩阵，在二维的输入空间滑动，在对应位置表示对应的神经节点。</p>
+<p>回想我们上文提到的，用卷积操作获取一个图片的轮廓，就是通过在每一个像素点上滑动核（即二维卷积窗），由此实现遍历了每一个像素的卷积操作。</p>
+<p><br></p>
+<p><strong>结语</strong></p>
+<p>在这片博文中，我们介绍了很多个数学架构，导致我们忘了我们的目的。在概率论和计算机学中，卷积操作是一个非常有用的工具。然而在神经网络中引入卷积可以带来什么好处呢？</p>
+<ul>
+<li>非常强大的语言来描述网络的连接。<ul>
+<li>到目前为止，我们所处理的示例还不够复杂，无法使这个好处变得清晰，但是复杂的操作可以让我们摆脱大量令人不快的bookkeeping。</li>
+</ul>
+</li>
+<li>卷积运算具有显著的实现优势。<ul>
+<li>许多库提供了高效的卷积例程。此外，虽然卷积看起来是一种$O(n^2)^操作，但使用一些相当深入的数学见解，可以创建^O(nlog(n))^实现。</li>
+</ul>
+</li>
+<li>实际上，在gpu上使用高效的并行卷积实现对于计算机视觉的最新进展是至关重要的。</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/模型算法/" rel="tag"># 模型算法</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2018/06/21/2018-6-21-unbalancedata/" rel="next" title="正负样本不平衡的处理方法">
+                  <i class="fa fa-chevron-left"></i> 正负样本不平衡的处理方法
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2018/07/08/doc2vectutorial/" rel="prev" title="Doc2Vec Tutorial">
+                  Doc2Vec Tutorial <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    
+  <div class="comments" id="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC80MTI1Mi8xNzgwMA"></div>
+  </div>
+  
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/avatar.jpg"
+      alt="WeiguoZHAO">
+  <p class="site-author-name" itemprop="name">WeiguoZHAO</p>
+  <div class="site-description motion-element" itemprop="description">Welcome to my blog~</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">47</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/weiguozhao" title="GitHub &rarr; https://github.com/weiguozhao" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:aszhaoweiguo@gmail.com" title="E-Mail &rarr; mailto:aszhaoweiguo@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      大牛们
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://colah.github.io/" title="http://colah.github.io/" rel="noopener" target="_blank">colah's blog</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/wzhe06/Reco-papers" title="https://github.com/wzhe06/Reco-papers" rel="noopener" target="_blank">王喆的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/ljpzzz/machinelearning" title="https://github.com/ljpzzz/machinelearning" rel="noopener" target="_blank">刘建平的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://tech.meituan.com/" title="https://tech.meituan.com/" rel="noopener" target="_blank">美团技术团队</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-引入"><span class="nav-text">1.引入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-卷积神经网络的结构"><span class="nav-text">2.卷积神经网络的结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-卷积神经网络的正式表达"><span class="nav-text">3.卷积神经网络的正式表达</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-理解卷积"><span class="nav-text">4.理解卷积</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">WeiguoZHAO</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+      <div class="reading-progress-bar"></div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+<script>
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/github-logo.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/github-logo.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":true,"show_result":true,"style":"default"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="转载自python整数、字符串、字节串相互转换-Lixingcong的博客 导航     数字 字符串 字节码     到数字 进制转换 字符转整数 字节串转整数   到字符串 str() 字符串编码解码 decode(‘hex’)   到字节码 数字转字符串 字符串转字节串 🈚">
+<meta name="keywords" content="语言基础">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python整数&amp;字符串&amp;字节串相互转换">
+<meta property="og:url" content="https://weiguozhao.github.io/2020/03/01/Python整数-字符串-字节串相互转换/index.html">
+<meta property="og:site_name" content="Weiguo&#39;s Station">
+<meta property="og:description" content="转载自python整数、字符串、字节串相互转换-Lixingcong的博客 导航     数字 字符串 字节码     到数字 进制转换 字符转整数 字节串转整数   到字符串 str() 字符串编码解码 decode(‘hex’)   到字节码 数字转字符串 字符串转字节串 🈚">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-03-22T10:53:44.478Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Python整数&amp;字符串&amp;字节串相互转换">
+<meta name="twitter:description" content="转载自python整数、字符串、字节串相互转换-Lixingcong的博客 导航     数字 字符串 字节码     到数字 进制转换 字符转整数 字节串转整数   到字符串 str() 字符串编码解码 decode(‘hex’)   到字节码 数字转字符串 字符串转字节串 🈚">
+  <link rel="canonical" href="https://weiguozhao.github.io/2020/03/01/Python整数-字符串-字节串相互转换/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>Python整数&字符串&字节串相互转换 | Weiguo's Station</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?ff6106e096f9eb6ace966de311be4b1a";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Weiguo's Station</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>博客首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>文章归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类专栏</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>各种标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>站点搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+  <a href="https://github.com/weiguozhao" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weiguozhao.github.io/2020/03/01/Python整数-字符串-字节串相互转换/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="WeiguoZHAO">
+      <meta itemprop="description" content="Welcome to my blog~">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Weiguo's Station">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">Python整数&字符串&字节串相互转换
+
+          
+        </h1>
+
+        <div class="post-meta">
+        
+          
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2020-03-01 12:28:13" itemprop="dateCreated datePublished" datetime="2020-03-01T12:28:13+08:00">2020-03-01</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-22 18:53:44" itemprop="dateModified" datetime="2021-03-22T18:53:44+08:00">2021-03-22</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/基础知识/" itemprop="url" rel="index"><span itemprop="name">基础知识</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>转载自<a href="https://lixingcong.github.io/2016/03/06/convert-data-in-python/#%E8%BF%9B%E5%88%B6%E8%BD%AC%E6%8D%A2" target="_blank" rel="noopener">python整数、字符串、字节串相互转换-Lixingcong的博客</a></p>
+</blockquote><p><strong>导航</strong></p><div class="table-container">
+<table>
+<thead>
+<tr>
+<th></th>
+<th>数字</th>
+<th>字符串</th>
+<th>字节码</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>到数字</td>
+<td><a href="#进制转换">进制转换</a></td>
+<td><a href="#字符to整数">字符转整数</a></td>
+<td><a href="#字节串to整数">字节串转整数</a></td>
+</tr>
+<tr>
+<td>到字符串</td>
+<td>str()</td>
+<td><a href="#字节串to字符串">字符串编码解码</a></td>
+<td>decode(‘hex’)</td>
+</tr>
+<tr>
+<td>到字节码</td>
+<td><a href="#整数to字节串">数字转字符串</a></td>
+<td><a href="#字符串to字节串">字符串转字节串</a></td>
+<td>🈚</td>
+</tr>
+</tbody>
+</table>
+</div><a id="more"></a>
+
+
+<p>还有常见的单个字符转换</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>函数</th>
+<th>功能</th>
+<th>记忆口诀</th>
+<th>例子</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>chr</td>
+<td>数字转成对应的ascii字符</td>
+<td>chr长得很像char，因此转成char</td>
+<td><code>chr(65) ==&gt; A</code></td>
+<td>输入参数有效范围为0~255</td>
+</tr>
+<tr>
+<td>ord</td>
+<td>单个字符转对应ascii序号</td>
+<td>d为digit最后一个字母，因此转成数字</td>
+<td><code>ord(&#39;A&#39;) ==&gt; 65</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="进制转换"><a href="#进制转换" class="headerlink" title="进制转换"></a>进制转换</h3><p>10进制转16进制: </p>
+<pre><code>hex(16)  ==&gt;  0x10
+</code></pre><p>16进制转10进制: </p>
+<p>int(STRING,BASE)将字符串STRING转成十进制int，其中STRING的基是base。该函数的第一个参数是字符串</p>
+<pre><code>int(&#39;0x10&#39;, 16)  ==&gt;  16
+</code></pre><p>类似的还有八进制oct()， 二进制bin()</p>
+<p>16进制字符串转成二进制</p>
+<pre><code>hex_str=&#39;00fe&#39;
+bin(int(&#39;1&#39;+hex_str, 16))[3:]  #含有前导0
+# 结果 &#39;0000000011111110&#39;
+bin(int(hex_str, 16))[2:]   #忽略前导0
+# 结果 &#39;11111110&#39;
+</code></pre><p>二进制字符串转成16进制字符串</p>
+<pre><code>bin_str=&#39;0b0111000011001100&#39;
+hex(int(bin_str,2))
+# 结果 &#39;0x70cc&#39;
+</code></pre><h3 id="字符to整数"><a href="#字符to整数" class="headerlink" title="字符to整数"></a>字符to整数</h3><p>10进制字符串: </p>
+<pre><code>int(&#39;10&#39;)  ==&gt;  10
+</code></pre><p>16进制字符串: </p>
+<pre><code>int(&#39;10&#39;, 16)  ==&gt;  16
+# 或者
+int(&#39;0x10&#39;, 16)  ==&gt;  16
+</code></pre><h3 id="字节串to整数"><a href="#字节串to整数" class="headerlink" title="字节串to整数"></a>字节串to整数</h3><p>使用网络数据包常用的struct，兼容C语言的数据结构
+struct中支持的格式如下表</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>C-Type</th>
+<th>Python-Type</th>
+<th>字节数</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>x</td>
+<td>pad byte</td>
+<td>no value</td>
+<td>1</td>
+<td></td>
+</tr>
+<tr>
+<td>c</td>
+<td>char</td>
+<td>string of length 1</td>
+<td>1</td>
+<td></td>
+</tr>
+<tr>
+<td>b</td>
+<td>signed char</td>
+<td>integer</td>
+<td>1</td>
+<td></td>
+</tr>
+<tr>
+<td>B</td>
+<td>unsigned char</td>
+<td>integer</td>
+<td>1</td>
+<td></td>
+</tr>
+<tr>
+<td>?</td>
+<td>_Bool</td>
+<td>bool</td>
+<td>1</td>
+<td></td>
+</tr>
+<tr>
+<td>h</td>
+<td>short</td>
+<td>integer</td>
+<td>2</td>
+<td></td>
+</tr>
+<tr>
+<td>H</td>
+<td>unsigned short</td>
+<td>integer</td>
+<td>2</td>
+<td></td>
+</tr>
+<tr>
+<td>i</td>
+<td>int</td>
+<td>integer</td>
+<td>4</td>
+<td></td>
+</tr>
+<tr>
+<td>I</td>
+<td>unsigned int</td>
+<td>integer or long</td>
+<td>4</td>
+<td></td>
+</tr>
+<tr>
+<td>l</td>
+<td>long</td>
+<td>integer</td>
+<td>4</td>
+<td></td>
+</tr>
+<tr>
+<td>L</td>
+<td>unsigned long</td>
+<td>long</td>
+<td>4</td>
+<td></td>
+</tr>
+<tr>
+<td>q</td>
+<td>long long</td>
+<td>long</td>
+<td>8</td>
+<td>仅支持64bit机器</td>
+</tr>
+<tr>
+<td>Q</td>
+<td>unsigned long long</td>
+<td>long</td>
+<td>8</td>
+<td>仅支持64bit机器</td>
+</tr>
+<tr>
+<td>f</td>
+<td>float</td>
+<td>float</td>
+<td>4</td>
+<td></td>
+</tr>
+<tr>
+<td>d</td>
+<td>double</td>
+<td>float</td>
+<td>8</td>
+<td></td>
+</tr>
+<tr>
+<td>s</td>
+<td>char[]</td>
+<td>string</td>
+<td>1</td>
+<td></td>
+</tr>
+<tr>
+<td>p</td>
+<td>char[]</td>
+<td>string</td>
+<td>1(与机器有关)</td>
+<td>作为指针</td>
+</tr>
+<tr>
+<td>P</td>
+<td>void *</td>
+<td>long</td>
+<td>4</td>
+<td>作为指针</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>对齐方式：放在第一个fmt位置</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>CHARACTER</th>
+<th>BYTE ORDER</th>
+<th>SIZE</th>
+<th>ALIGNMENT</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>@</td>
+<td>native</td>
+<td>native</td>
+<td>native</td>
+</tr>
+<tr>
+<td>=</td>
+<td>native</td>
+<td>standard</td>
+<td>none</td>
+</tr>
+<tr>
+<td>&lt;</td>
+<td>little-endian</td>
+<td>standard</td>
+<td>none</td>
+</tr>
+<tr>
+<td>&gt;</td>
+<td>big-endian</td>
+<td>standard</td>
+<td>none</td>
+</tr>
+<tr>
+<td>!</td>
+<td>network (= big-endian)</td>
+<td>standard</td>
+<td>none</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>转义为short型整数:</p>
+<pre><code>struct.unpack(&#39;&lt;hh&#39;, bytes(b&#39;\x01\x00\x00\x00&#39;))  ==&gt;  (1, 0)
+</code></pre><p>转义为long型整数: </p>
+<pre><code>struct.unpack(&#39;&lt;L&#39;, bytes(b&#39;\x01\x00\x00\x00&#39;))  ==&gt;  (1,)
+</code></pre><h3 id="整数to字节串"><a href="#整数to字节串" class="headerlink" title="整数to字节串"></a>整数to字节串</h3><p>转为两个字节: </p>
+<pre><code>struct.pack(&#39;&lt;HH&#39;, 1,2)  ==&gt;  b&#39;\x01\x00\x02\x00&#39;
+</code></pre><p>转为四个字节: </p>
+<pre><code>struct.pack(&#39;&lt;LL&#39;, 1,2)  ==&gt;  b&#39;\x01\x00\x00\x00\x02\x00\x00\x00&#39;
+</code></pre><h3 id="整数to字符串"><a href="#整数to字符串" class="headerlink" title="整数to字符串"></a>整数to字符串</h3><p>直接用函数</p>
+<pre><code>str(100)
+</code></pre><h3 id="字符串to字节串"><a href="#字符串to字节串" class="headerlink" title="字符串to字节串"></a>字符串to字节串</h3><p><a href="#CPP实现encode">我用c++实现的encode(hex)和decode(hex)</a></p>
+<p><strong>decode和encode区别</strong></p>
+<p>decode函数是重新解码，把CT字符串所显示的69dda8455c7dd425【每隔两个字符】解码成十六进制字符\x69\xdd\xa8\x45\x5c\x7d\xd4\x25</p>
+<pre><code>CT=&#39;69dda8455c7dd425&#39;
+print &quot;%r&quot;%CT.decode(&#39;hex&#39;)
+# 输出结果
+&#39;i\xdd\xa8E\\}\xd4%&#39;
+</code></pre><p>encode函数是重新编码，把CT字符串所显示的69dda8455c7dd425【每个字符】编码成acsii值，ascii值为十六进制显示，占两位。执行下列结果显示36396464613834353563376464343235等价于将CT第一个字符’6’编码为0x36h 第二个字符’9’编码为0x39h</p>
+<pre><code>CT=&#39;69dda8455c7dd425&#39;
+print &quot;%r&quot;%CT.encode(&#39;hex&#39;)
+# 输出结果
+&#39;36396464613834353563376464343235&#39;
+</code></pre><blockquote>
+<p>可以理解为：decode解码，字符串变短一半，encode编码，字符串变为两倍长度</p>
+</blockquote>
+<p>decode(‘ascii’)解码为字符串Unicode格式。输出带有’u’
+encode(‘ascii’)，编码为Unicode格式，其实python默认处理字符串存储就是Unicode，输出结果估计和原来的字符串一样。</p>
+<p>字符串编码为字节码: </p>
+<pre><code>&#39;12abc&#39;.encode(&#39;ascii&#39;)  ==&gt;  b&#39;12abc&#39;
+</code></pre><p>数字或字符数组: </p>
+<pre><code>bytes([1,2, ord(&#39;1&#39;),ord(&#39;2&#39;)])  ==&gt;  b&#39;\x01\x0212&#39;
+</code></pre><p>16进制字符串:</p>
+<pre><code>bytes().fromhex(&#39;010210&#39;)  ==&gt;  b&#39;\x01\x02\x10&#39;
+</code></pre><p>16进制字符串: </p>
+<pre><code>bytes(map(ord, &#39;\x01\x02\x31\x32&#39;))  ==&gt;  b&#39;\x01\x0212&#39;
+</code></pre><p>16进制数组: </p>
+<pre><code>bytes([0x01,0x02,0x31,0x32])  ==&gt;  b&#39;\x01\x0212&#39;
+</code></pre><h3 id="字节串to字符串"><a href="#字节串to字符串" class="headerlink" title="字节串to字符串"></a>字节串to字符串</h3><p>字节码解码为字符串: </p>
+<pre><code>bytes(b&#39;\x31\x32\x61\x62&#39;).decode(&#39;ascii&#39;)  ==&gt;  12ab
+</code></pre><p>字节串转16进制表示,夹带ascii: </p>
+<pre><code>str(bytes(b&#39;\x01\x0212&#39;))[2:-1]  ==&gt;  \x01\x0212
+</code></pre><p>字节串转16进制表示,固定两个字符表示: </p>
+<pre><code>str(binascii.b2a_hex(b&#39;\x01\x0212&#39;))[2:-1]  ==&gt;  01023132
+</code></pre><p>字节串转16进制数组: </p>
+<pre><code>[hex(x) for x in bytes(b&#39;\x01\x0212&#39;)]  ==&gt;  [&#39;0x1&#39;, &#39;0x2&#39;, &#39;0x31&#39;, &#39;0x32&#39;]
+</code></pre><p>问题：什么时候字符串前面加上’r’、’b’、’r’，其实官方文档有写。我认为在Python2中，r和b是等效的。</p>
+<p>The Python 2.x documentation:</p>
+<blockquote>
+<p>A prefix of ‘b’ or ‘B’ is ignored in Python 2; it indicates that the literal should become a bytes literal in Python 3 (e.g. when code is automatically converted with 2to3). A ‘u’ or ‘b’ prefix may be followed by an ‘r’ prefix.
+‘b’字符加在字符串前面，对于python2会被忽略。加上’b’目的仅仅为了兼容python3，让python3以bytes数据类型(0~255)存放这个字符、字符串。</p>
+</blockquote>
+<p>The Python 3.3 documentation states:</p>
+<blockquote>
+<p>Bytes literals are always prefixed with ‘b’ or ‘B’; they produce an instance of the bytes type instead of the str type. They may only contain ASCII characters; bytes with a numeric value of 128 or greater must be expressed with escapes.
+数据类型byte总是以’b’为前缀，该数据类型仅为ascii。</p>
+</blockquote>
+<p>下面是stackflow上面一个回答。我觉得不错，拿出来跟大家分享</p>
+<p>In Python 2.x</p>
+<blockquote>
+<p>Pre-3.0 versions of Python lacked this kind of distinction between text and binary data. Instead, there was:</p>
+<ul>
+<li>unicode = u’…’ literals = sequence of Unicode characters = 3.x str</li>
+<li>str = ‘…’ literals = sequences of confounded bytes/characters
+Usually text, encoded in some unspecified encoding.
+But also used to represent binary data like struct.pack output.</li>
+</ul>
+</blockquote>
+<p>Python 3.x makes a clear distinction between the types:</p>
+<blockquote>
+<ul>
+<li>str = ‘…’ literals = a sequence of Unicode characters (UTF-16 or UTF-32, depending on how Python was compiled)</li>
+<li>bytes = b’…’ literals = a sequence of octets (integers between 0 and 255)</li>
+</ul>
+</blockquote>
+<h3 id="CPP实现encode"><a href="#CPP实现encode" class="headerlink" title="CPP实现encode"></a>CPP实现encode</h3><p>就是做个笔记，毕竟在做题Cryptography时候用c++写字符串的处理很蛋疼！为了防止再次造轮子，记下来。</p>
+<pre><code>#include &lt;cstring&gt; //用到strlen函数
+static unsigned char ByteMap[] = { &#39;0&#39;, &#39;1&#39;, &#39;2&#39;, &#39;3&#39;, &#39;4&#39;, &#39;5&#39;, &#39;6&#39;, &#39;7&#39;, &#39;8&#39;,&#39;9&#39;, &#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;, &#39;e&#39;, &#39;f&#39; };
+
+unsigned char hex_2_dec(unsigned char c){
+    if(c &gt;= &#39;0&#39; &amp;&amp; c &lt;= &#39;9&#39;) return c - &#39;0&#39;;
+    if(c &gt;= &#39;a&#39; &amp;&amp; c &lt;= &#39;f&#39;) return c - &#39;a&#39; + 10;
+}
+
+void str_encode(unsigned char *src, unsigned char *dest, int len_of_src) {
+    // 使用注意：dest_len &gt;= 2*len_src +1，最后一位是存放&#39;\0&#39;。
+    int t1;
+    for (int i = 0; i &lt; len_of_src; ++i) {
+        t1 = (int) src[i];
+        dest[2 * i] = ByteMap[t1 / 16];
+        dest[2 * i + 1] = ByteMap[t1 % 16];
+    }
+    dest[2 * len_of_src] = 0; //必须填充最后一个为&#39;\0&#39;
+}
+
+void str_decode(unsigned char *src,unsigned char *dest){
+    int len_of_src=strlen((char *)src);
+    unsigned char t1;
+    for(int i=1;i&lt;=len_of_src;i+=2){
+        t1=hex_2_dec(src[i-1]);
+        t1= 16*t1 + hex_2_dec(src[i]);
+        dest[i/2]=t1;
+    }
+}
+</code></pre>
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/语言基础/" rel="tag"># 语言基础</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2020/01/21/Deep-Interest-Network/" rel="next" title="Deep Interest Network">
+                  <i class="fa fa-chevron-left"></i> Deep Interest Network
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2020/03/03/深入理解FTRL-Proximal/" rel="prev" title="深入理解FTRL-Proximal">
+                  深入理解FTRL-Proximal <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/avatar.jpg"
+      alt="WeiguoZHAO">
+  <p class="site-author-name" itemprop="name">WeiguoZHAO</p>
+  <div class="site-description motion-element" itemprop="description">Welcome to my blog~</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">47</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/weiguozhao" title="GitHub &rarr; https://github.com/weiguozhao" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:aszhaoweiguo@gmail.com" title="E-Mail &rarr; mailto:aszhaoweiguo@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      大牛们
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://colah.github.io/" title="http://colah.github.io/" rel="noopener" target="_blank">colah's blog</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/wzhe06/Reco-papers" title="https://github.com/wzhe06/Reco-papers" rel="noopener" target="_blank">王喆的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/ljpzzz/machinelearning" title="https://github.com/ljpzzz/machinelearning" rel="noopener" target="_blank">刘建平的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://tech.meituan.com/" title="https://tech.meituan.com/" rel="noopener" target="_blank">美团技术团队</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#进制转换"><span class="nav-text">进制转换</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#字符to整数"><span class="nav-text">字符to整数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#字节串to整数"><span class="nav-text">字节串to整数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#整数to字节串"><span class="nav-text">整数to字节串</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#整数to字符串"><span class="nav-text">整数to字符串</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#字符串to字节串"><span class="nav-text">字符串to字节串</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#字节串to字符串"><span class="nav-text">字节串to字符串</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CPP实现encode"><span class="nav-text">CPP实现encode</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">WeiguoZHAO</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+      <div class="reading-progress-bar"></div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+
+</body>
+</html>

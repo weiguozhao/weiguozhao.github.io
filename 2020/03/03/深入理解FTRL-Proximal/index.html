@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/github-logo.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/github-logo.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":true,"show_result":true,"style":"default"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="1. 前言写这片post的目的是因为最近在实践中需要对不同的优化器进行调整， 突然发现自己对各种优化算法的了解都停留在一个相对比较浅的层面上， 虽然之前自己从各个渠道汇总整理了一份优化算法的总结性post——优化算法整理post, 但是都是浮于表面的总结，并没有沉淀下来成为自己的东西， 因此这篇post主要记录一下自己在看 Ad Click Prediction a View from the T">
+<meta name="keywords" content="优化算法,在线学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入理解FTRL-Proximal">
+<meta property="og:url" content="https://weiguozhao.github.io/2020/03/03/深入理解FTRL-Proximal/index.html">
+<meta property="og:site_name" content="Weiguo&#39;s Station">
+<meta property="og:description" content="1. 前言写这片post的目的是因为最近在实践中需要对不同的优化器进行调整， 突然发现自己对各种优化算法的了解都停留在一个相对比较浅的层面上， 虽然之前自己从各个渠道汇总整理了一份优化算法的总结性post——优化算法整理post, 但是都是浮于表面的总结，并没有沉淀下来成为自己的东西， 因此这篇post主要记录一下自己在看 Ad Click Prediction a View from the T">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-03-03-深入理解FTRL-Proximal/algorithm.png">
+<meta property="og:updated_time" content="2021-03-22T10:53:44.478Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="深入理解FTRL-Proximal">
+<meta name="twitter:description" content="1. 前言写这片post的目的是因为最近在实践中需要对不同的优化器进行调整， 突然发现自己对各种优化算法的了解都停留在一个相对比较浅的层面上， 虽然之前自己从各个渠道汇总整理了一份优化算法的总结性post——优化算法整理post, 但是都是浮于表面的总结，并没有沉淀下来成为自己的东西， 因此这篇post主要记录一下自己在看 Ad Click Prediction a View from the T">
+<meta name="twitter:image" content="https://weiguozhao.github.io/posts_res/2020-03-03-深入理解FTRL-Proximal/algorithm.png">
+  <link rel="canonical" href="https://weiguozhao.github.io/2020/03/03/深入理解FTRL-Proximal/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>深入理解FTRL-Proximal | Weiguo's Station</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?ff6106e096f9eb6ace966de311be4b1a";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Weiguo's Station</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>博客首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>文章归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类专栏</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>各种标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>站点搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+  <a href="https://github.com/weiguozhao" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weiguozhao.github.io/2020/03/03/深入理解FTRL-Proximal/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="WeiguoZHAO">
+      <meta itemprop="description" content="Welcome to my blog~">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Weiguo's Station">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">深入理解FTRL-Proximal
+
+          
+        </h1>
+
+        <div class="post-meta">
+        
+          
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2020-03-03 16:39:00" itemprop="dateCreated datePublished" datetime="2020-03-03T16:39:00+08:00">2020-03-03</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-22 18:53:44" itemprop="dateModified" datetime="2021-03-22T18:53:44+08:00">2021-03-22</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="1-前言"><a href="#1-前言" class="headerlink" title="1. 前言"></a>1. 前言</h3><p>写这片post的目的是因为最近在实践中需要对不同的优化器进行调整，
+突然发现自己对各种优化算法的了解都停留在一个相对比较浅的层面上，
+虽然之前自己从各个渠道汇总整理了一份优化算法的总结性post——<a href="/2019/06/05/Optimization-Method/">优化算法整理post</a>,
+但是都是浮于表面的总结，并没有沉淀下来成为自己的东西，
+因此这篇post主要记录一下自己在看 <a href="https://arxiv.org/pdf/1609.04747.pdf" target="_blank" rel="noopener">Ad Click Prediction a View from the Trenches</a> 这篇论文中得到和不理解的地方。</p><a id="more"></a>
+<h3 id="2-FTRL的背景"><a href="#2-FTRL的背景" class="headerlink" title="2. FTRL的背景"></a>2. FTRL的背景</h3><p>点击率预估问题(CTR)是推荐系统(计算广告)中非常重要的模块，预估一个用户对广告/Item的点击概率，从而提升广告/Item效果。
+LR模型是CTR问题中最经典的模型，而LR模型训练也是无约束最优化问题中经典案例。因此问题最终归约为如何有效优化LR模型；
+同时还需要考虑模型稀疏性，模型稀疏性可能会和训练数据不足、模型复杂度过高相关，也是控制过拟合的有效手段。
+LR模型需要解决问题是：</p>
+<p>样本为正例的概率表示为:</p>
+<script type="math/tex; mode=display">
+\begin{equation*}
+\begin{aligned}
+p_t &= \sigma(w_t \cdot x_t) \\
+\sigma(a) &= \frac{1}{1 + exp(-a)}
+\end{aligned}
+\end{equation*}</script><p>对应的log损失函数为:</p>
+<script type="math/tex; mode=display">
+l(w_t) = -y_t log p_t - (1 - y_t) log(1 - p_t)</script><p>批量GD算法能够保证精度，同时可以加上正则项，L1或者L2正则预防过拟合问题。
+在线GD算法需要能够利用实时产生的正负样本，一定程度上能够优化模型效果。
+在线优化算法需要特殊关注模型<strong>鲁棒性</strong>和<strong>稀疏性</strong>，由于样本是一个一个到来，即使加了L1或者L2正则也无法保证取得稀疏的模型。
+因此在线GD会着重处理模型稀疏性，FTRL就是综合了RDA和FOBOS优点，既有RDA的精度，又有FOBOS的稀疏性。</p>
+<h3 id="3-FTRL的主要内容"><a href="#3-FTRL的主要内容" class="headerlink" title="3. FTRL的主要内容"></a>3. FTRL的主要内容</h3><h4 id="3-1-FTRL更新策略"><a href="#3-1-FTRL更新策略" class="headerlink" title="3.1 FTRL更新策略"></a>3.1 FTRL更新策略</h4><script type="math/tex; mode=display">
+w_{t+1}=argmin(g_{1:t}w+\frac12\sum_{s=1}^t\sigma_s||w-w_s||^2+\lambda_1||w||+\frac12 \lambda_2||w||^2)</script><p>其中 $ g_{1:t}=\sum_{s=1}^t g_t $ ,相当于新产生的权重验证所有样本的梯度并且和历史权重不偏离太远。最后通过L1正则进行稀疏性约束。这样既保证了权重更新的精度有保证了稀疏性。
+另外参数 $\sigma_s$ 是一个和学习率相关参数 $\sum_{s=1}^t \sigma_s=\frac{1}{\eta_t}$ 而 $\eta_t=\frac{1}{\sqrt{t}}$ 是一个非增序列</p>
+<h4 id="3-2-公式推导"><a href="#3-2-公式推导" class="headerlink" title="3.2 公式推导"></a>3.2 公式推导</h4><script type="math/tex; mode=display">
+\begin{equation*}
+\begin{aligned}
+F(w)
+&=g_{1:t}w+\frac12\sum_{s=1}^t\sigma_s||w-w_s||^2+\lambda_1||w||+\frac12 \lambda_2||w||^2 \\
+&=g_{1:t}w+\frac12\sum_{s=1}^t\sigma_s(w^Tw-2w^Tw_s+w_s^Tw_s)+\lambda_1||w||+\frac12 \lambda_2||w||^2 \\
+&=(g_{1:t}-\sum_{s=1}^t\sigma_s w_s) w+\frac12(\sum_{s=1}^t\sigma_s+\lambda_2)w^Tw+\lambda_1||w||+const \\
+&=z_t^T w+\frac12(\frac 1 \eta_t+\lambda_2)w^Tw+\lambda_1||w||+const
+\end{aligned}
+\end{equation*}</script><p>其中 $z_{t-1}=g_{1:t-1}-\sum_{s=1}^{t-1}\sigma_s w_s$，根据定义可以得到 $z_{t-1}=z_{t-1}+g_t-(\frac{1}{\eta_t}-\frac{1}{\eta_{t-1}})w_t$</p>
+<p>对上式进行求导可以得到</p>
+<script type="math/tex; mode=display">
+z_t+(\frac 1 \eta_t+\lambda_2)w+\lambda_1 \partial|W|=0</script><p>从上式中可以容易得到$w$和$z$必须是异号，否则等式不能成立。  </p>
+<blockquote>
+<p>note: 考虑凸函数 $f(x)=|x|$。在原点的次微分是区间[−1, 1]。$x<0$时，次导数是单元素集合 $\{-1\}$，而$x>0$，则是单元素集合 $\lbrace 1\rbrace$。</0$时，次导数是单元素集合></p>
+</blockquote>
+<script type="math/tex; mode=display">
+\partial |W| =
+\begin{cases}
+0,  & \text{if $-1< w < 1$ } \\
+1, & \text{if $ w > 1$ } \\
+-1 , & \text{if $ w < -1$}
+\end{cases}</script><p>因此根据L1正则的次导数和梯度公式，讨论如下（论文推导中没有带 $\lambda_2$正则系数，Algorithm1则带了）。</p>
+<blockquote>
+<ol>
+<li>当 $|z_{t,i}| &lt; \lambda_1$ 时 <br> 
+$w_i &gt; 0$，则有 $w = \frac{-z_i - \lambda_1}{\frac{1}{\eta_t} + \lambda_2} &lt; 0$ 不成立 <br>
+$w_i &lt; 0$，则有 $w = \frac{-z_i + \lambda_1}{\frac{1}{\eta_t} + \lambda_2} &gt; 0$ 不成立 <br>
+$w_i=0$</li>
+<li>当$z_t &gt; \lambda_1$时 <br>
+由于两者必须异号，此时有$w_i &lt; 0$ <br> 
+$w = \frac{-z_i + \lambda_1}{\frac{1}{\eta_t} + \lambda_2}$</li>
+<li>当$z_t &lt; − \lambda_1$时，同理 <br>
+$w = \frac{-z_i + \lambda_1}{\frac{1}{\eta_t} + \lambda_2}$</li>
+<li>因此有 <br><script type="math/tex; mode=display">
+w_i =
+\begin{cases}
+0,  & \text{if $|z_i| \le \lambda_1$ } \\
+\frac{-(z_i-sgn(z_i)\lambda_1)}{\frac 1 \eta_t+\lambda_2}, & \text{if $others$ } 
+\end{cases}</script></li>
+</ol>
+</blockquote>
+<h4 id="3-3-算法流程-论文中的Algorithm1"><a href="#3-3-算法流程-论文中的Algorithm1" class="headerlink" title="3.3 算法流程(论文中的Algorithm1)"></a>3.3 算法流程(论文中的Algorithm1)</h4><p><img src="/posts_res/2020-03-03-深入理解FTRL-Proximal/algorithm.png" width="60%" height="60%"></p>
+<p>其中 $n_i$表示梯度的累加和，在论文3.1节中也说了可以对 $n_i^{0.5}$ 中的 $power=0.5$ 进行不同的尝试。</p>
+<h3 id="4-工程上的tricks"><a href="#4-工程上的tricks" class="headerlink" title="4. 工程上的tricks"></a>4. 工程上的tricks</h3><p><strong>下列的这些方法都可以在实际的生产环境中进行实验，包括word2vec的采样等操作，都是实际工作中值得学习，尝试的方法。</strong></p>
+<h4 id="4-1-Per-Coordinate-Learning-Rates"><a href="#4-1-Per-Coordinate-Learning-Rates" class="headerlink" title="4.1 Per-Coordinate Learning Rates"></a>4.1 Per-Coordinate Learning Rates</h4><p>即各个维度采用不同的学习率:</p>
+<script type="math/tex; mode=display">
+\eta_{t_i}=\frac {\alpha}{\beta+\sqrt \sum_{s=1}^tg^2_{s_i}}</script><p>对于不同的维度的特征的出现次数是不一样的，因此更新的步长(学习率)也应该是不一样的。</p>
+<ul>
+<li>出现次数多的特征应该学习率变化的次数也要多一些，收缩的速度(次数)也要快一些，这个维度的学习率绝对值learning_rate也应该是相对较小的；</li>
+<li>出现次数少的特征应该学习率变化的次数相对少一些，收缩的速度(次数)也要相对慢一些，这个维度的学习率绝对值learninng_rate也应该是相对较大的，保证快速的更新。</li>
+</ul>
+<h4 id="4-2-Probabilistic-Feature-Inclusion"><a href="#4-2-Probabilistic-Feature-Inclusion" class="headerlink" title="4.2 Probabilistic Feature Inclusion"></a>4.2 Probabilistic Feature Inclusion</h4><p>背景：在训练数据中存在着大量的稀疏特征，如何将一些用不到的稀疏特征过滤掉是这一小节讨论的问题。</p>
+<p>方法：</p>
+<ol>
+<li>L1正则的方式，将稀疏特征的维度系数更新为零；会导致不可接受的精度损失；</li>
+<li>hash的方式，并没有什么收益；</li>
+<li>概率特征引入，可以通过之前的数据预先统计，然后应用在线上；<ul>
+<li>Poisson Inclusion: 假设特征是随机到达的，也就是说应该符合Poisson分布，在一个特征未被引入之前，以概率$p$进行添加，一旦添加后序和OGD的流程一致；</li>
+<li>Bloom Filter Inclusion: 使用Bloom Filter对特征出现次数统计，超过一定次数$n$加入到训练中，但布隆过滤器并非精确的，而是false positive的，因为产生冲突时，可能会加入还没有满$n$次的特征来进行训练，实际中我们并不要求完全精确的筛选。<strong>在实验中，Bloom Filter表现出更高的RAM节省及更少的AucLoss，更推荐。</strong></li>
+</ul>
+</li>
+</ol>
+<h4 id="4-3-Encoding-Values-with-Fewer-Bits"><a href="#4-3-Encoding-Values-with-Fewer-Bits" class="headerlink" title="4.3 Encoding Values with Fewer Bits"></a>4.3 Encoding Values with Fewer Bits</h4><p>论文中指出几乎所有的有效系数都落在 $(-2, +2)$这个范围里，因此使用<code>float32</code>或者<code>float64</code>是完全没有必要的。
+这里提出了新的编码方式<code>q2.13</code>。</p>
+<p><code>q2.13</code>中2位为整数部分，13位为小数部分，另外有1位符号位。</p>
+<h4 id="4-4-Training-Many-Similar-Models"><a href="#4-4-Training-Many-Similar-Models" class="headerlink" title="4.4 Training Many Similar Models"></a>4.4 Training Many Similar Models</h4><p>在做特征筛选或者设置优化时，基于已有的训练数据，控制变量，生成多个不同的变体来进行对比实验是一个不错的方法，但这样做比较耗费资源。
+之前有一个比较省资源的方法是基于一个先验模型，使用其他模型来预测残差(应该是类似boosting的思想)，但是这样不能进行特征移除和特征替换的效果。</p>
+<p>这里Google提出了一个方法，由于每个模型变体的相似度是很高的，一部分特征是变体之间共享的，一部分特征是变体独有的。
+如果采用一张hashtable来存储所有变体的模型参数，就可以摊销各个模型都进行独立存储key的内存消耗，同时也会降低看网络带宽、CPU、磁盘的消耗。</p>
+<p><strong>A Single Value Structure</strong></p>
+<p>这个是指不同模型变体之间共享一个特征参数，而不是每一个模型变体存储单独的一个，用一个位字段来标识这个特征被哪些变体使用。
+更新的方式如下：</p>
+<ol>
+<li>每一个模型变体去进行prediction并计算loss；</li>
+<li>对于每一个特征给出一个迭代后的参数值；</li>
+<li>对所有的更新后的参数值进行平均并进行更新存储；</li>
+<li>后序这个更新的参数值会供所有的变体共享；</li>
+</ol>
+<h4 id="4-5-Computing-Learning-Rates-with-Counts"><a href="#4-5-Computing-Learning-Rates-with-Counts" class="headerlink" title="4.5 Computing Learning Rates with Counts"></a>4.5 Computing Learning Rates with Counts</h4><p>学习率更新优化通过正负样本个数进行优化。</p>
+<p>假设有 $P$ 个正样本，$N$ 个负样本，那么预测正样本的概率应该是 $p = P / (P + N)$，
+假设使用 Logistic Regression模型的话，那么正样本的梯度就是 $p - 1$，负样本的梯度就是 $p$，因此梯度平方和就可以表示为：</p>
+<script type="math/tex; mode=display">
+\begin{equation*}
+\begin{aligned}
+\sum g^2_{t,i} 
+&= \sum_{positive\_events} (1 - p_t)^2 + \sum_{negative\_events} p_t^2 \\
+&\approx P(1 - \frac{P}{N+P})^2 + N (\frac{P}{N+P})^2 \\
+&= \frac{PN}{N+P}
+\end{aligned}
+\end{equation*}</script><h4 id="4-6-Subsampling-Training-Data"><a href="#4-6-Subsampling-Training-Data" class="headerlink" title="4.6 Subsampling Training Data"></a>4.6 Subsampling Training Data</h4><p>对于CTR模型，负样本数量特别多，因此正样本更有价值，考虑采用负样本采样，采样方式如下：</p>
+<ol>
+<li>正样本全部保留</li>
+<li>负样本赋值一个分数 $r \in (0, 1]$</li>
+</ol>
+<p>如果只按照上面的采样方式进行训练的话，会带来严重的偏差预测，因此需要对样本按照分数和label赋值一个重要性权重 $weight$；</p>
+<script type="math/tex; mode=display">
+w_t = 
+\begin{cases}
+& 1 \quad \quad \text{event } t \text{ is in a clicked query} \\
+& \frac{1}{r} \quad \quad \text{event } t \text{ is in a query with no clicks}
+\end{cases}</script><p>同时相当于梯度也会乘上该系数，不会改变最终的损失。</p>
+<p>定义 $s_t$ 表示event t被采样的概率($1$ or $r$)，同时 $s_t = 1 / w_t$，因此有</p>
+<script type="math/tex; mode=display">
+El(w_t) = s_tw_tl(w_t)+(1-s_t)0 = s_t \frac{1}{s_t} l_t (w_t) = l(w_t)</script><p>所以线性期望证明了 $weight$ 加权的目标函数等价于原始数据集的目标函数。</p>
+<h3 id="5-模型效果评估"><a href="#5-模型效果评估" class="headerlink" title="5. 模型效果评估"></a>5. 模型效果评估</h3><p>评测模型效果一般基于历史数据，综合很多指标来进行评估，比如AucLoss，LogLoss，SquaredError等。下面5.1 &amp; 5.2是Google进行模型评估时的尝试：</p>
+<h4 id="5-1-Progressive-Validation"><a href="#5-1-Progressive-Validation" class="headerlink" title="5.1 Progressive Validation"></a>5.1 Progressive Validation</h4><p>常规操作一般是从训练集里抽一部分出来做test，但Google认为都不如online test可以反馈在最近的query数据上的效果，可以使用100%的数据做测试和训练。
+由于不同的国家，不同的时间点，不同的query下，指标的benchmark是不同的，而相对指标变化是稳定的，应该关注指标的相对值。同时也说明观察模型效果要对数据进行切片观察。</p>
+<h4 id="5-2-Deep-Understanding-through-Visualization"><a href="#5-2-Deep-Understanding-through-Visualization" class="headerlink" title="5.2 Deep Understanding through Visualization"></a>5.2 Deep Understanding through Visualization</h4><p>我们看到的模型整体提升是一个聚合结果，可能只发生在某一个slice上的效果提升了，其他slice并没有或者发生下降。
+我们可以利用天生对图像的敏感进行不同维度切分下指标的可视化来表达模型的表现。
+于是，Google开发了一个web可视化工具GridViz，可以可视化不同变体在不同slice上的指标变化。
+通过不同的冷暖色，不同的透明程度来表达升高降低，以及对应的幅度信息。</p>
+<h4 id="5-3-置信度评估"><a href="#5-3-置信度评估" class="headerlink" title="5.3 置信度评估"></a>5.3 置信度评估</h4><p>前面说了CTR预测是怎么发生的，但在实际场景中只预测click发生的概率是不够的，还要对这个预测进行一个置信度评估，
+来达到explore/exploit E&amp;E问题的一个tradeoff。一方面做出精准的预测，把比较好的广告符合用户兴趣的广告展示出来，
+但是这类数据总归是少的；公司总是要赚钱的，而且应广告主的需求，也需要将一些展示次数比较少能获得较高收益的广告也展示出来。</p>
+<p>传统标准的置信度评估方法不适合这个场景，原因在于：</p>
+<ol>
+<li>标准方法需要完全收敛的、没有正则批处理模型，数据要IID的。不符合；</li>
+<li>标准方法需要NxN的矩阵，在Google场景下N的量级是billion，无奈放不下；不符合；</li>
+<li>实际场景中，计算置信度的时间应该与做ctr判定在一个数量级上；</li>
+</ol>
+<p>Google提出了一个<code>uncertainty score</code>来进行评估：</p>
+<p>核心思想在于对每一个特征的频次进行计数，该频次决定这学习率，学习率越小则该特征更可信，与我们的直觉是相符的。</p>
+<p>为了简单，考虑将 $\lambda_1 = \lambda_2 = 0$，所以FTRL-Proximal等价于在线梯度下降算法OGD，令 $n_{t,i} = \beta + \sum_{s=1}^t g_{s,i}^2$，则得到：</p>
+<script type="math/tex; mode=display">
+\begin{equation*}
+\begin{aligned}
+| x \cdot w_t - x \cdot w_{t+1} | 
+&= \sum_{i:|x_i| > 0} \eta_{t,i} | g_{t,i} | \\
+&\le \alpha \sum_{i:|x_i| > 0} \frac{x_{t,i}}{\sqrt{n_{t,i}}} \\
+&= \alpha \boldsymbol{\eta} \cdot x \\
+&\equiv u(x)
+\end{aligned}
+\end{equation*}</script><p>因此定义 <code>uncertainty score</code> 为 $u(x) = \alpha \boldsymbol{\eta} \cdot x$ 的上界值，这个值可以通过点积快速计算。</p>
+<h3 id="6-失败的尝试"><a href="#6-失败的尝试" class="headerlink" title="6. 失败的尝试"></a>6. 失败的尝试</h3><ol>
+<li>对特征使用哈希技巧<br>一些文献声称的feature hashing（用于节省内存）的方式在试验中无效。因此保存可解释（即non-hashed）的特征数值向量。</li>
+<li>Dropout<br>没有增强泛化性能反而损害了精度。我们认为这是在深度学习领域(比如图像识别)中特征是稠密的，所以Dropout可以大放异彩，我们的数据本来就很稀疏，再Dropout就没了。</li>
+<li>特征bagging<br>不知道为什么反正就是结果并不好。</li>
+<li>特征标准化normalize<br>可能是由于学习速度和正规化的相互作用，特征归一化之后效果并不好</li>
+</ol>
+<hr>
+<blockquote>
+<ol>
+<li><a href="https://arxiv.org/pdf/1609.04747.pdf" target="_blank" rel="noopener">Ad Click Prediction a View from the Trenches</a></li>
+<li><a href="https://blog.csdn.net/fangqingan_java/article/details/51020653" target="_blank" rel="noopener">【每周一文】Ad Click Prediction: a View from the Trenches(2013)</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/25315553" target="_blank" rel="noopener">CTR预测算法之FTRL-Proximal</a></li>
+</ol>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/优化算法/" rel="tag"># 优化算法</a>
+            
+              <a href="/tags/在线学习/" rel="tag"># 在线学习</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2020/03/01/Python整数-字符串-字节串相互转换/" rel="next" title="Python整数&字符串&字节串相互转换">
+                  <i class="fa fa-chevron-left"></i> Python整数&字符串&字节串相互转换
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2020/03/13/thrift基础/" rel="prev" title="Thrift基础">
+                  Thrift基础 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/avatar.jpg"
+      alt="WeiguoZHAO">
+  <p class="site-author-name" itemprop="name">WeiguoZHAO</p>
+  <div class="site-description motion-element" itemprop="description">Welcome to my blog~</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">47</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/weiguozhao" title="GitHub &rarr; https://github.com/weiguozhao" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:aszhaoweiguo@gmail.com" title="E-Mail &rarr; mailto:aszhaoweiguo@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      大牛们
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://colah.github.io/" title="http://colah.github.io/" rel="noopener" target="_blank">colah's blog</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/wzhe06/Reco-papers" title="https://github.com/wzhe06/Reco-papers" rel="noopener" target="_blank">王喆的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/ljpzzz/machinelearning" title="https://github.com/ljpzzz/machinelearning" rel="noopener" target="_blank">刘建平的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://tech.meituan.com/" title="https://tech.meituan.com/" rel="noopener" target="_blank">美团技术团队</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-前言"><span class="nav-text">1. 前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-FTRL的背景"><span class="nav-text">2. FTRL的背景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-FTRL的主要内容"><span class="nav-text">3. FTRL的主要内容</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-FTRL更新策略"><span class="nav-text">3.1 FTRL更新策略</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-公式推导"><span class="nav-text">3.2 公式推导</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-算法流程-论文中的Algorithm1"><span class="nav-text">3.3 算法流程(论文中的Algorithm1)</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-工程上的tricks"><span class="nav-text">4. 工程上的tricks</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-Per-Coordinate-Learning-Rates"><span class="nav-text">4.1 Per-Coordinate Learning Rates</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-Probabilistic-Feature-Inclusion"><span class="nav-text">4.2 Probabilistic Feature Inclusion</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-3-Encoding-Values-with-Fewer-Bits"><span class="nav-text">4.3 Encoding Values with Fewer Bits</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-4-Training-Many-Similar-Models"><span class="nav-text">4.4 Training Many Similar Models</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-5-Computing-Learning-Rates-with-Counts"><span class="nav-text">4.5 Computing Learning Rates with Counts</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-6-Subsampling-Training-Data"><span class="nav-text">4.6 Subsampling Training Data</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-模型效果评估"><span class="nav-text">5. 模型效果评估</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#5-1-Progressive-Validation"><span class="nav-text">5.1 Progressive Validation</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-2-Deep-Understanding-through-Visualization"><span class="nav-text">5.2 Deep Understanding through Visualization</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-3-置信度评估"><span class="nav-text">5.3 置信度评估</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-失败的尝试"><span class="nav-text">6. 失败的尝试</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">WeiguoZHAO</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+      <div class="reading-progress-bar"></div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+
+</body>
+</html>

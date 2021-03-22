@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/github-logo.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/github-logo.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":true,"show_result":true,"style":"default"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="对于机器学习中常用的损失函数  tf.nn.sigmoid_cross_entropy_with_logits (Binary Cross Entropy, BCE) 和  tf.nn.softmax_cross_entropy_with_logits_v2(Cross Entropy, CE)， 想必有过时间的同学都已经能都熟练描述出他们的运行原理。但是在什么场景，用哪个损失函数呢？在不同的场景">
+<meta name="keywords" content="损失函数,交叉熵">
+<meta property="og:type" content="article">
+<meta property="og:title" content="交叉熵损失函数区别及应用场景">
+<meta property="og:url" content="https://weiguozhao.github.io/2020/09/18/交叉熵损失函数区别及应用场景/index.html">
+<meta property="og:site_name" content="Weiguo&#39;s Station">
+<meta property="og:description" content="对于机器学习中常用的损失函数  tf.nn.sigmoid_cross_entropy_with_logits (Binary Cross Entropy, BCE) 和  tf.nn.softmax_cross_entropy_with_logits_v2(Cross Entropy, CE)， 想必有过时间的同学都已经能都熟练描述出他们的运行原理。但是在什么场景，用哪个损失函数呢？在不同的场景">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-03-22T10:53:44.482Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="交叉熵损失函数区别及应用场景">
+<meta name="twitter:description" content="对于机器学习中常用的损失函数  tf.nn.sigmoid_cross_entropy_with_logits (Binary Cross Entropy, BCE) 和  tf.nn.softmax_cross_entropy_with_logits_v2(Cross Entropy, CE)， 想必有过时间的同学都已经能都熟练描述出他们的运行原理。但是在什么场景，用哪个损失函数呢？在不同的场景">
+  <link rel="canonical" href="https://weiguozhao.github.io/2020/09/18/交叉熵损失函数区别及应用场景/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>交叉熵损失函数区别及应用场景 | Weiguo's Station</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?ff6106e096f9eb6ace966de311be4b1a";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Weiguo's Station</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>博客首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>文章归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类专栏</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>各种标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>站点搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+  <a href="https://github.com/weiguozhao" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weiguozhao.github.io/2020/09/18/交叉熵损失函数区别及应用场景/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="WeiguoZHAO">
+      <meta itemprop="description" content="Welcome to my blog~">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Weiguo's Station">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">交叉熵损失函数区别及应用场景
+
+          
+        </h1>
+
+        <div class="post-meta">
+        
+          
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2020-09-18 19:41:30" itemprop="dateCreated datePublished" datetime="2020-09-18T19:41:30+08:00">2020-09-18</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-22 18:53:44" itemprop="dateModified" datetime="2021-03-22T18:53:44+08:00">2021-03-22</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/损失函数/" itemprop="url" rel="index"><span itemprop="name">损失函数</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>对于机器学习中常用的损失函数 
+<code>tf.nn.sigmoid_cross_entropy_with_logits</code> (Binary Cross Entropy, BCE) 和 
+<code>tf.nn.softmax_cross_entropy_with_logits_v2</code>(Cross Entropy, CE)，
+想必有过时间的同学都已经能都熟练描述出他们的运行原理。但是在什么场景，用哪个损失函数呢？在不同的场景，这两个交叉熵损失又有哪些区别和联系呢？</p><a id="more"></a>
+<p>下面先附上 <code>tensorflow v1.15</code> 中的函数原型：</p>
+<p><a href="https://www.tensorflow.org/versions/r1.15/api_docs/python/tf/nn/sigmoid_cross_entropy_with_logits?hl=zh-cn" target="_blank" rel="noopener">tf.nn.sigmoid_cross_entropy_with_logits(_sentinel=None, labels=None, logits=None, name=None)</a></p>
+<p><a href="https://www.tensorflow.org/versions/r1.15/api_docs/python/tf/nn/softmax_cross_entropy_with_logits_v2?hl=zh-cn" target="_blank" rel="noopener">tf.nn.softmax_cross_entropy_with_logits_v2(labels, logits, axis=None, name=None, dim=None)</a></p>
+<p><br></p>
+<font face="黑体" color="#8F4586" size="5"><strong>
+**重点理解交叉熵计算方式，BE和BCE的计算上的区别，根据业务场景、框架api实现方式等综合考虑选择loss计算方式，不要拘泥于本文中矛盾的地方**
+</strong></font>
+
+<p><br></p>
+<h3 id="1-基本概念和公式"><a href="#1-基本概念和公式" class="headerlink" title="1. 基本概念和公式"></a>1. 基本概念和公式</h3><ul>
+<li><p>信息量</p>
+<ul>
+<li><script type="math/tex; mode=display">I(x) = - log f(x)</script></li>
+<li>其中 $f(x)$ 是预测为正例的概率</li>
+</ul>
+</li>
+<li><p>熵</p>
+<ul>
+<li><script type="math/tex; mode=display">H(x) = - \sum_{x \in X} f(x) log f(x)</script></li>
+<li>其中 $f(x)$ 是预测为正例的概率，熵其实是信息量的期望值，它是一个随机变量的确定性的度量。熵越大，变量的取值越不确定，反之就越确定。</li>
+</ul>
+</li>
+<li><p>相对熵（Relative Entropy，又称为KL散度Kullback-Leibler divergence）</p>
+<ul>
+<li>是两个随机分布间距离的度量。记为 $DKL(p||q)$。它度量当真实分布为p时，假设分布q的无效性。</li>
+</ul>
+</li>
+<li><p>交叉熵（Cross-Entropy）</p>
+<ul>
+<li><script type="math/tex; mode=display">CE(x) = - \sum_{i=1}^C [ y_i log f_i(x) + (1 - y_i) log (1 - f_i(x))]</script></li>
+<li>其中 $x$ 表示输入样本, $C$ 为待分类的类别总数, 以手写数字识别任务(MNIST)为例, 其输入出的类别数为10, 对应的C=10，$y_i$ 为第 $i$ 个类别对应的真实标签, $f_i(x)$ 为对应的模型输出值.</li>
+</ul>
+</li>
+<li><p>Binary-Cross-Entropy</p>
+<ul>
+<li><script type="math/tex; mode=display">BCE(x)_i = - [ y_i log f_i(x) + (1 - y_i) log(1 - f_i(x))  ]</script></li>
+<li>其中 $ i \in [1, C ]$，即每个类别输出节点都对应一个BCE的值</li>
+<li>所以其实 BCE 只是 CE 的一种当label是二分类的时候的一种特殊形式，个人认为是因为在实际的场景中由于二分类的任务比较多，为了方便和效率考虑，单独将 BCE 从 CE 中抽出来另外多实现了一个。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="2-应用场景分析"><a href="#2-应用场景分析" class="headerlink" title="2. 应用场景分析"></a>2. 应用场景分析</h3><p>着重讨论以下三种场景：二分类、单标签多分类、多标签多分类（multi-label）。</p>
+<h4 id="2-1-二分类"><a href="#2-1-二分类" class="headerlink" title="2.1 二分类"></a>2.1 二分类</h4><p>首先在二分类的场景下，我们只有一个输出节点，其输出值 $f(x) \in \lbrace 0, 1 \rbrace$ 。
+那么按照约定俗成的观点，应该使用<code>sigmoid + BCE</code>作为最后的输出层配置。</p>
+<script type="math/tex; mode=display">BCE(x)_i = - [ y_i log f_i(x) + (1 - y_i) log(1 - f_i(x))  ]</script><p>由于只有一个分类输出，上式中的 $i$ 可以忽略。</p>
+<p>那如果使用CE会怎样呢？由于输出类别数 $C = 1$，所以CE中的求和可以忽略：</p>
+<font color="#CE0000">$$ CE(x) = -y_i log f_i(x) $$</font>
+
+<p><em>可以看到，在这种情况下，两者都具有相同的部分，BCE仅在样本标签 $ y = 0 $ 时多了一个反向的损失函数因子。</em> <font color="#CE0000">这里存疑？</font></p>
+<p><strong>因此，只有对错分的正样本，CE损失函数的值才大于0，此时的网络权值才会得到调整，最终的结果是正样本预测精度会很高，但负样本基本上相当于随机猜测。而对应BCE而言，对错分的正负样本都会产生梯度，网络权值都会进行调整。所以，从直觉上来看，BCE的收敛会更快，学习出的weight也会更合理。</strong></p>
+<blockquote>
+<p>事实上，在keras的train模块中对categorical_crossentropy的使用进行了强制限制，如果输出标签维度为1，只能使用binary_crossentropy，否则程序会报错。为了验证上述推论，我们使用keras自带的<a href="https://github.com/keras-team/keras/blob/master/examples/imdb_cnn.py" target="_blank" rel="noopener">imdb二分类例子</a>进行试验，由于输出维度为1的情况下不能直接使用categorical_crossentropy，我们修改例子的代码，通过在自定义loss函数中直接调用backend.categorical_crossentropy函数的方法实验。</p>
+<p>运行200个step后，binary_crossentropy已经明显收敛：</p>
+<p>20000/25000 [==&gt;……] - ETA: 1:53 - loss: 0.5104 - acc: 0.7282</p>
+<p>而categorical_crossentropy却收敛缓慢：</p>
+<p>20000/25000 [==&gt;……] - ETA: 1:58 - loss: 5.9557e-08 - acc: 0.5005</p>
+<p>可以看到，CE损失函数工作得很差，这与我们的推论相符。所以<em>keras明确禁止了在这种情况下categorical_crossentropy的使用</em>，现在看来也是很合理的。</p>
+</blockquote>
+<h4 id="2-2-单标签多分类"><a href="#2-2-单标签多分类" class="headerlink" title="2.2 单标签多分类"></a>2.2 单标签多分类</h4><p>按约定俗成的观点，应该使用 <code>softmax+CE</code> 的方案，我们同样先把对应的两种损失函数写出来，</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+BCE(x) &= \frac{\sum_{i=1}^C BCE(x)_i}{C} \\
+&= \frac{- sum _{i=1}^C [ y_i log f_i(x) + (1 - y_i) log(1 - f_i(x)) ]}{C}
+\end{align*}</script><p>同样的，由于只有一个类别的真实标签 $ y_i = 1 $ ,对CE来说，可以将前边的求和符号去掉：</p>
+<font color="#CE0000">$$ CE(x) = -y_i log f_i (x) $$</font>
+
+<p>看到这里，大家可能会有个疑问，在CE中我们同样只计算了某个类别标签为1时的loss，而没有计算它为0时的loss，会不会也像二分类的场景那样，导致模型收敛缓慢？
+但在这里答案是否定的，<strong>原因就在于前边的softmax函数具有“排它”性质，某一个输出增大，必然导致其它类别的输出减小，因为其进行了归一化操作，使得每个类别的预测输出概率加和必须为1</strong>。但好奇的读者可能又要问了，那使用BCE应该也可以吧？没错！理论上确实是可以。<font color="#CE0000">当然可以，因为二者本身就是一家人</></font></p>
+<blockquote>
+<p>下面我们使用keras自带的<a href="https://github.com/keras-team/keras/blob/master/examples/mnist_cnn.py" target="_blank" rel="noopener">mnist多分类例子</a>进行实验：</p>
+<p>运行100个step后，binary_crossentropy的结果如下：</p>
+<p>100/600 [=&gt;…………………….] - ETA: 19:58 - loss: 0.0945 - categorical_accuracy: 0.8137</p>
+<p>categorical_crossentropy的结果如下：</p>
+<p>100/600 [=&gt;…………………….] - ETA: 18:36 - loss: 0.6024 - acc: 0.8107</p>
+<p>可以看到，两者并没有太大差距，binary_crossentropy效果反而略好于categorical_crossentropy。注意这里的acc为训练集上的精度，训练步数也仅有100个step，读者如有兴趣，可以深入分析。但这里至少说明了一点，在单标签多分类的情况下BCE同样是适用的。</p>
+</blockquote>
+<h4 id="2-3-多标签多分类"><a href="#2-3-多标签多分类" class="headerlink" title="2.3 多标签多分类"></a>2.3 多标签多分类</h4><p>多标签多分类（multi-label）由于假设每个标签的输出是相互独立的，因此常用配置是 <code>sigmoid + BCE</code>， 其中每个类别输出对应一个sigmoid。
+如果读者仔细看了前面两个小节，相信不用分析，也可以自行得出结果，即这种场景下使用CE将难以收敛，
+原因跟2.1中的分析类似—-我们只计算了某个类别标签为1时的loss及梯度，而忽略了为0时的loss，而每个输出又相互独立，不像softmax函数那样有归一化的限制。
+<strong>所以multi-label是一定不能使用CE作为loss函数的</strong>。</p>
+<h3 id="3-其他"><a href="#3-其他" class="headerlink" title="3. 其他"></a>3. 其他</h3><p>“CE用于多分类, BCE适用于二分类”其实大部分都是正确的，
+唯一有待商榷的部分在于多分类（单标签）其实也可以使用BCE，而对于multi-label的多分类，则不能使用CE。</p>
+<p>另外有同学提到，BCE是CE的一种特殊情况，</p>
+<ul>
+<li>对于正例，则 $loss = -y_postive log f(x)$， 其中 $f(x)$ 是预测为正例的概率；</li>
+<li>对于负例，则 $loss = -(1 - y_negative)log (1 - f(x))$， 其中 $f(x)$ 还是预测为正例的概率，$1 - f(x)$ 则是预测为负例的概率；</li>
+<li>所以，交叉熵(Cross Entropy)一直都是 $-y log f(x)$，其中 $f(x)$ 是预测为正例的概率；</li>
+</ul>
+<hr>
+<blockquote>
+<ol>
+<li><a href="https://zhuanlan.zhihu.com/p/48078990" target="_blank" rel="noopener">keras中两种交叉熵损失函数的探讨</a></li>
+<li><a href="https://blog.csdn.net/pipisorry/article/details/75102784" target="_blank" rel="noopener">TensorFlow：交叉熵损失函数</a></li>
+<li><a href="https://blog.csdn.net/lovebyz/article/details/81081784" target="_blank" rel="noopener">AI 多类分类(multi-class) and 多标签分类(mulit-label) and 多输出-多分类-多标签classification</a></li>
+<li><a href="https://www.tensorflow.org/versions/r1.15/api_docs/python/tf/nn/softmax_cross_entropy_with_logits_v2?hl=zh-cn" target="_blank" rel="noopener">Tensorflow</a></li>
+<li><a href="https://blog.csdn.net/rtygbwwwerr/article/details/50778098" target="_blank" rel="noopener">交叉熵（Cross-Entropy）</a></li>
+<li><a href="https://blog.csdn.net/heyc861221/article/details/80127148" target="_blank" rel="noopener">TensorFlow四种Cross Entropy算法实现和应用</a></li>
+</ol>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/损失函数/" rel="tag"># 损失函数</a>
+            
+              <a href="/tags/交叉熵/" rel="tag"># 交叉熵</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2020/05/21/肯德尔Rank相关系数/" rel="next" title="肯德尔Rank相关系数(Kendall rank correlation coefficient)">
+                  <i class="fa fa-chevron-left"></i> 肯德尔Rank相关系数(Kendall rank correlation coefficient)
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2020/09/18/LearnToRank的由来和分类/" rel="prev" title="LearnToRank的由来和分类">
+                  LearnToRank的由来和分类 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/avatar.jpg"
+      alt="WeiguoZHAO">
+  <p class="site-author-name" itemprop="name">WeiguoZHAO</p>
+  <div class="site-description motion-element" itemprop="description">Welcome to my blog~</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">47</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/weiguozhao" title="GitHub &rarr; https://github.com/weiguozhao" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:aszhaoweiguo@gmail.com" title="E-Mail &rarr; mailto:aszhaoweiguo@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      大牛们
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://colah.github.io/" title="http://colah.github.io/" rel="noopener" target="_blank">colah's blog</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/wzhe06/Reco-papers" title="https://github.com/wzhe06/Reco-papers" rel="noopener" target="_blank">王喆的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/ljpzzz/machinelearning" title="https://github.com/ljpzzz/machinelearning" rel="noopener" target="_blank">刘建平的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://tech.meituan.com/" title="https://tech.meituan.com/" rel="noopener" target="_blank">美团技术团队</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-基本概念和公式"><span class="nav-text">1. 基本概念和公式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-应用场景分析"><span class="nav-text">2. 应用场景分析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-二分类"><span class="nav-text">2.1 二分类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-单标签多分类"><span class="nav-text">2.2 单标签多分类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-多标签多分类"><span class="nav-text">2.3 多标签多分类</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-其他"><span class="nav-text">3. 其他</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">WeiguoZHAO</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+      <div class="reading-progress-bar"></div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+
+</body>
+</html>

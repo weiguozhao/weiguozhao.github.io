@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/github-logo.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/github-logo.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":true,"show_result":true,"style":"default"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="1. 保序回归的数学定义定义：给定一个有限的实数集合 $Y=y_1, y_2, \cdots, y_n$ 代表观察到的响应，以及 $X = x_1, x_2, \cdots, x_n$ 代表未知的响应值，训练一个模型最小化下列方程： f(x) = \sum_{i = 1}^n w_i (y_i - x_i)^2">
+<meta name="keywords" content="模型算法,回归">
+<meta property="og:type" content="article">
+<meta property="og:title" content="保序回归-IsotonicRegression">
+<meta property="og:url" content="https://weiguozhao.github.io/2020/03/19/保序回归/index.html">
+<meta property="og:site_name" content="Weiguo&#39;s Station">
+<meta property="og:description" content="1. 保序回归的数学定义定义：给定一个有限的实数集合 $Y=y_1, y_2, \cdots, y_n$ 代表观察到的响应，以及 $X = x_1, x_2, \cdots, x_n$ 代表未知的响应值，训练一个模型最小化下列方程： f(x) = \sum_{i = 1}^n w_i (y_i - x_i)^2">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-03-19-保序回归/isotonic.gif">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-03-19-保序回归/1.png">
+<meta property="og:updated_time" content="2021-03-22T10:53:44.479Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="保序回归-IsotonicRegression">
+<meta name="twitter:description" content="1. 保序回归的数学定义定义：给定一个有限的实数集合 $Y=y_1, y_2, \cdots, y_n$ 代表观察到的响应，以及 $X = x_1, x_2, \cdots, x_n$ 代表未知的响应值，训练一个模型最小化下列方程： f(x) = \sum_{i = 1}^n w_i (y_i - x_i)^2">
+<meta name="twitter:image" content="https://weiguozhao.github.io/posts_res/2020-03-19-保序回归/isotonic.gif">
+  <link rel="canonical" href="https://weiguozhao.github.io/2020/03/19/保序回归/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>保序回归-IsotonicRegression | Weiguo's Station</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?ff6106e096f9eb6ace966de311be4b1a";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Weiguo's Station</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>博客首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>文章归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类专栏</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>各种标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>站点搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+  <a href="https://github.com/weiguozhao" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weiguozhao.github.io/2020/03/19/保序回归/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="WeiguoZHAO">
+      <meta itemprop="description" content="Welcome to my blog~">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Weiguo's Station">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">保序回归-IsotonicRegression
+
+          
+        </h1>
+
+        <div class="post-meta">
+        
+          
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2020-03-19 10:47:04" itemprop="dateCreated datePublished" datetime="2020-03-19T10:47:04+08:00">2020-03-19</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-22 18:53:44" itemprop="dateModified" datetime="2021-03-22T18:53:44+08:00">2021-03-22</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="1-保序回归的数学定义"><a href="#1-保序回归的数学定义" class="headerlink" title="1. 保序回归的数学定义"></a>1. 保序回归的数学定义</h3><p>定义：给定一个有限的实数集合 $Y=y_1, y_2, \cdots, y_n$ 代表观察到的响应，以及 $X = x_1, x_2, \cdots, x_n$ 代表未知的响应值，训练一个模型最小化下列方程：</p><script type="math/tex; mode=display">
+f(x) = \sum_{i = 1}^n w_i (y_i - x_i)^2</script><a id="more"></a>
+<p>其中 $x_1 \le x_2 \cdots \le x_n$, $w_i$ 为权重是正值，其结果称之为保序回归，而且其解是唯一的。</p>
+<p>保序回归的结果是分段函数。</p>
+<p><img src="/posts_res/2020-03-19-保序回归/isotonic.gif" alt="isotonic"></p>
+<h3 id="2-举例说明"><a href="#2-举例说明" class="headerlink" title="2. 举例说明"></a>2. 举例说明</h3><p>一般从元素的首元素向后观察，如果出现乱序现象 (当前元素大于后续元素) 时停止观察，并从乱序元素开始逐个向前吸收元素组成一个序列，直达该序列所有元素的平均值小于或是等于下一个待吸收的元素。</p>
+<ol>
+<li><p>未发现乱序正常读取</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">原始序列：&lt;9, 10, 14&gt;</span><br><span class="line">结果序列：&lt;9, 10, 14&gt;</span><br></pre></td></tr></table></figure>
+<p>分析：从9往后观察，到最后的元素14都未发现乱序情况，不用处理。</p>
+</li>
+<li><p>发现乱序，平均值大于后面小于前面</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">原始序列：&lt;9, 14, 10&gt;</span><br><span class="line">结果序列：&lt;9, 12, 12&gt;</span><br></pre></td></tr></table></figure>
+<p>分析：从9往后观察，观察到14时发生乱序 (14 &gt; 10)，停止该轮观察，转入吸收元素处理，从吸收元素10向前一个元素的子序列为 <14, 10>，取该序列所有元素的平均值得12，故用序列 <12, 12> 替代 <14, 10>。吸收10后已经到了最后的元素，处理操作完成。</14,></12,></14,></p>
+</li>
+<li><p>发现乱序，平均值大于后面，大于前面</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">原始序列：&lt;14, 9, 10, 15&gt;</span><br><span class="line">结果序列：&lt;11, 11, 11, 15&gt;</span><br></pre></td></tr></table></figure>
+<p>分析：从14往后观察时发生乱序 (14 &gt; 9)，停止该轮观察转入吸收元素处理，吸收元素9后子序列为 <14, 9>。求该序列所有元素的平均值得11.5，由于11.5大于下个待吸收的元素10，所以再吸收10得序列 <14, 10 9,>。求该序列所有元素的平均值得11，由于11小于下个待吸收的元素15，所以停止吸收操作，用序列 <11, 11 11,> 替代 <14, 10 9,>。</14,></11,></14,></14,></p>
+</li>
+</ol>
+<h3 id="3-官方代码"><a href="#3-官方代码" class="headerlink" title="3. 官方代码"></a>3. 官方代码</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Author: Nelle Varoquaux &lt;nelle.varoquaux@gmail.com&gt;</span></span><br><span class="line"><span class="comment">#         Alexandre Gramfort &lt;alexandre.gramfort@inria.fr&gt;</span></span><br><span class="line"><span class="comment"># License: BSD</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> matplotlib.collections <span class="keyword">import</span> LineCollection</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> sklearn.linear_model <span class="keyword">import</span> LinearRegression</span><br><span class="line"><span class="keyword">from</span> sklearn.isotonic <span class="keyword">import</span> IsotonicRegression</span><br><span class="line"><span class="keyword">from</span> sklearn.utils <span class="keyword">import</span> check_random_state</span><br><span class="line"></span><br><span class="line">n = <span class="number">100</span></span><br><span class="line">x = np.arange(n)</span><br><span class="line">rs = check_random_state(<span class="number">0</span>)</span><br><span class="line">y = rs.randint(<span class="number">-50</span>, <span class="number">50</span>, size=(n,)) + <span class="number">50.</span> * np.log1p(np.arange(n))</span><br><span class="line"></span><br><span class="line"><span class="comment"># #############################################################################</span></span><br><span class="line"><span class="comment"># Fit IsotonicRegression and LinearRegression models</span></span><br><span class="line"></span><br><span class="line">ir = IsotonicRegression()</span><br><span class="line"></span><br><span class="line">y_ = ir.fit_transform(x, y)</span><br><span class="line"></span><br><span class="line">lr = LinearRegression()</span><br><span class="line">lr.fit(x[:, np.newaxis], y)  <span class="comment"># x needs to be 2d for LinearRegression</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># #############################################################################</span></span><br><span class="line"><span class="comment"># Print data</span></span><br><span class="line"></span><br><span class="line">print(<span class="string">"index\tbefore\tafter"</span>)</span><br><span class="line"><span class="keyword">for</span> _x, _y, _y_ <span class="keyword">in</span> zip(x, y, y_):</span><br><span class="line">	print(<span class="string">"&#123;&#125;\t&#123;&#125;\t&#123;&#125;"</span>.format(_x, _y, _y_))</span><br><span class="line"></span><br><span class="line"><span class="comment"># #############################################################################</span></span><br><span class="line"><span class="comment"># Plot result</span></span><br><span class="line"></span><br><span class="line">segments = [[[i, y[i]], [i, y_[i]]] <span class="keyword">for</span> i <span class="keyword">in</span> range(n)]</span><br><span class="line">lc = LineCollection(segments, zorder=<span class="number">0</span>)</span><br><span class="line">lc.set_array(np.ones(len(y)))</span><br><span class="line">lc.set_linewidths(np.full(n, <span class="number">0.5</span>))</span><br><span class="line"></span><br><span class="line">fig = plt.figure()</span><br><span class="line">plt.plot(x, y, <span class="string">'r.'</span>, markersize=<span class="number">12</span>)</span><br><span class="line">plt.plot(x, y_, <span class="string">'b.-'</span>, markersize=<span class="number">12</span>)</span><br><span class="line">plt.plot(x, lr.predict(x[:, np.newaxis]), <span class="string">'b-'</span>)</span><br><span class="line">plt.gca().add_collection(lc)</span><br><span class="line">plt.legend((<span class="string">'Data'</span>, <span class="string">'Isotonic Fit'</span>, <span class="string">'Linear Fit'</span>), loc=<span class="string">'lower right'</span>)</span><br><span class="line">plt.title(<span class="string">'Isotonic regression'</span>)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<p>输出结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br></pre></td><td class="code"><pre><span class="line">index	before			after</span><br><span class="line">0	-6.0			-6.0</span><br><span class="line">1	31.657359027997266	31.657359027997266</span><br><span class="line">2	68.93061443340548	68.93061443340548</span><br><span class="line">3	86.31471805599453	77.4581957130341</span><br><span class="line">4	97.47189562170502	77.4581957130341</span><br><span class="line">5	48.587973461402754	77.4581957130341</span><br><span class="line">6	130.29550745276566	100.37627113452281</span><br><span class="line">7	74.97207708399179	100.37627113452281</span><br><span class="line">8	95.86122886681098	100.37627113452281</span><br><span class="line">9	152.1292546497023	142.77028731284636</span><br><span class="line">10	139.89476363991855	142.77028731284636</span><br><span class="line">11	162.24533248940003	142.77028731284636</span><br><span class="line">12	166.24746787307683	142.77028731284636</span><br><span class="line">13	93.9528664807629	142.77028731284636</span><br><span class="line">14	143.4025100551105	142.77028731284636</span><br><span class="line">15	153.62943611198907	142.77028731284636</span><br><span class="line">16	130.6606672028108	142.77028731284636</span><br><span class="line">17	181.51858789480823	159.46232588434722</span><br><span class="line">18	143.221948958322	159.46232588434722</span><br><span class="line">19	187.78661367769953	159.46232588434722</span><br><span class="line">20	183.22612188617114	159.46232588434722</span><br><span class="line">21	141.5521226679158	159.46232588434722</span><br><span class="line">22	131.7747107964575	159.46232588434722</span><br><span class="line">23	185.9026915173973	159.46232588434722</span><br><span class="line">24	182.94379124341003	159.46232588434722</span><br><span class="line">25	121.9048269010741	159.46232588434722</span><br><span class="line">26	134.79184330021644	159.46232588434722</span><br><span class="line">27	196.61022550876018	180.64627212456048</span><br><span class="line">28	187.3647914993237	180.64627212456048</span><br><span class="line">29	199.05986908310777	180.64627212456048</span><br><span class="line">30	168.6993602242573	180.64627212456048</span><br><span class="line">31	187.28679513998634	180.64627212456048</span><br><span class="line">32	206.825378073324	180.64627212456048</span><br><span class="line">33	225.31802623080807	180.64627212456048</span><br><span class="line">34	215.76740307447068	180.64627212456048</span><br><span class="line">35	178.1759469228055	180.64627212456048</span><br><span class="line">36	159.54589563221123	180.64627212456048</span><br><span class="line">37	150.87930798631928	180.64627212456048</span><br><span class="line">38	152.1780823064823	180.64627212456048</span><br><span class="line">39	148.4439727056968	180.64627212456048</span><br><span class="line">40	174.6786033352154	180.64627212456048</span><br><span class="line">41	168.88348091416842	180.64627212456048</span><br><span class="line">42	203.0600057846781	180.64627212456048</span><br><span class="line">43	148.20948169591304	180.64627212456048</span><br><span class="line">44	197.33312448851598	181.42419146615785</span><br><span class="line">45	173.43206982445474	181.42419146615785</span><br><span class="line">46	173.50738008550292	181.42419146615785</span><br><span class="line">47	217.56005054539455	183.5004138990913</span><br><span class="line">48	167.59101490553132	183.5004138990913</span><br><span class="line">49	180.6011502714073	183.5004138990913</span><br><span class="line">50	221.59128163621628	183.5004138990913</span><br><span class="line">51	202.56218592907138	183.5004138990913</span><br><span class="line">52	176.5145956776061	183.5004138990913</span><br><span class="line">53	183.44920232821372	183.5004138990913</span><br><span class="line">54	150.36665926162357	183.5004138990913</span><br><span class="line">55	151.26758453675748	183.5004138990913</span><br><span class="line">56	188.1525633917275	183.662501486821</span><br><span class="line">57	206.02215052732095	183.662501486821</span><br><span class="line">58	158.87687219528598	183.662501486821</span><br><span class="line">59	192.71722811110502	183.662501486821</span><br><span class="line">60	172.54369320866556	183.662501486821</span><br><span class="line">61	235.35671925225458	194.14905688424437</span><br><span class="line">62	161.15673631957662	194.14905688424437</span><br><span class="line">63	199.94415416798358	194.14905688424437</span><br><span class="line">64	216.71936349478185	194.14905688424437</span><br><span class="line">65	190.48273710132125	194.14905688424437</span><br><span class="line">66	161.23463096954828	194.14905688424437</span><br><span class="line">67	225.97538525880535	204.21455447880095</span><br><span class="line">68	202.70532522986298	204.21455447880095</span><br><span class="line">69	219.42476210246798	204.21455447880095</span><br><span class="line">70	198.13399385206577	204.21455447880095</span><br><span class="line">71	174.83330595080275	204.21455447880095</span><br><span class="line">72	210.52297205741954	210.52297205741954</span><br><span class="line">73	247.2032546602085	212.9511496110062</span><br><span class="line">74	256.8744056768155	212.9511496110062</span><br><span class="line">75	166.53666701431655	212.9511496110062</span><br><span class="line">76	181.1902710926842	212.9511496110062</span><br><span class="line">77	266.8354413344796	220.28290585628667</span><br><span class="line">78	221.47239262335108	220.28290585628667</span><br><span class="line">79	181.10133173369405	220.28290585628667</span><br><span class="line">80	211.72245773362195	220.28290585628667</span><br><span class="line">81	254.33596236321267	222.26157242700558</span><br><span class="line">82	245.9420303898299	222.26157242700558</span><br><span class="line">83	239.54083994216566	222.26157242700558</span><br><span class="line">84	178.13256282451584	222.26157242700558</span><br><span class="line">85	240.71736481267536	222.26157242700558</span><br><span class="line">86	220.29540593272918	222.26157242700558</span><br><span class="line">87	176.86684072391034	222.26157242700558</span><br><span class="line">88	250.43181848660697	223.73693616781551</span><br><span class="line">89	226.99048351651325	223.73693616781551</span><br><span class="line">90	253.5429753258425	223.73693616781551</span><br><span class="line">91	191.08942885245202	223.73693616781551</span><br><span class="line">92	196.6299746576628	223.73693616781551</span><br><span class="line">93	276.1647391135002	232.61198322512337</span><br><span class="line">94	235.69384458002705	232.61198322512337</span><br><span class="line">95	201.21740957339182	232.61198322512337</span><br><span class="line">96	257.73554892516916	232.61198322512337</span><br><span class="line">97	192.24837393352863	232.61198322512337</span><br><span class="line">98	264.7559925067295	246.50725090306705</span><br><span class="line">99	228.25850929940458	246.50725090306705</span><br></pre></td></tr></table></figure>
+<p><img src="/posts_res/2020-03-19-保序回归/1.png" alt="pic"></p>
+<h3 id="4-保序回归应用实例"><a href="#4-保序回归应用实例" class="headerlink" title="4. 保序回归应用实例"></a>4. 保序回归应用实例</h3><p>以某种药物的使用量为例，假设药物使用量为数组 $X=0, 1, 2, 3, \cdots, 99$，病人对药物的反应量为$Y = y_1, y_2, y_3, \cdots, y_{99}$ ，而由于个体的原因，$Y$不是一个单调函数(即：存在波动)，如果我们按照药物反应排序，对应的$X$就会成为乱序，失去了研究的意义。而我们的研究的目的是为了观察随着药物使用量的递增，病人的平均反应状况。在这种情况下，使用保序回归，即不改变$X$的排列顺序，又求的$Y$的平均值状况。</p>
+<p>从上图中可以看出，最长的蓝线 $x$ 的取值约是$30$到$60$，在这个区间内，$Y$的平均值一样，那么从经济及病人抗药性等因素考虑，使用药量为30个单位是最理想的。</p>
+<p>当前IT行业虚拟化比较流行，使用这种方式，找到合适的判断参数，就可以使用此算法使资源得到最大程度的合理利用。</p>
+<hr>
+<blockquote>
+<ol>
+<li><a href="http://fa.bianp.net/blog/2013/isotonic-regression/" target="_blank" rel="noopener">Isotonic Regression-fa.bianp.net</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/88623159" target="_blank" rel="noopener">保序回归 Isotonic Regression-Python</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Isotonic_regression" target="_blank" rel="noopener">Isotonic regression - wikipedia</a></li>
+<li><a href="https://scikit-learn.org/stable/auto_examples/plot_isotonic_regression.html#sphx-glr-download-auto-examples-plot-isotonic-regression-py" target="_blank" rel="noopener">Isotonic Regression-sklearn</a></li>
+</ol>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/模型算法/" rel="tag"># 模型算法</a>
+            
+              <a href="/tags/回归/" rel="tag"># 回归</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2020/03/13/thrift基础/" rel="next" title="Thrift基础">
+                  <i class="fa fa-chevron-left"></i> Thrift基础
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2020/05/09/HashEmbedding-QREmbedding/" rel="prev" title="HashEmbedding&QREmbedding">
+                  HashEmbedding&QREmbedding <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/avatar.jpg"
+      alt="WeiguoZHAO">
+  <p class="site-author-name" itemprop="name">WeiguoZHAO</p>
+  <div class="site-description motion-element" itemprop="description">Welcome to my blog~</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">47</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/weiguozhao" title="GitHub &rarr; https://github.com/weiguozhao" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:aszhaoweiguo@gmail.com" title="E-Mail &rarr; mailto:aszhaoweiguo@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      大牛们
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://colah.github.io/" title="http://colah.github.io/" rel="noopener" target="_blank">colah's blog</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/wzhe06/Reco-papers" title="https://github.com/wzhe06/Reco-papers" rel="noopener" target="_blank">王喆的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/ljpzzz/machinelearning" title="https://github.com/ljpzzz/machinelearning" rel="noopener" target="_blank">刘建平的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://tech.meituan.com/" title="https://tech.meituan.com/" rel="noopener" target="_blank">美团技术团队</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-保序回归的数学定义"><span class="nav-text">1. 保序回归的数学定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-举例说明"><span class="nav-text">2. 举例说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-官方代码"><span class="nav-text">3. 官方代码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-保序回归应用实例"><span class="nav-text">4. 保序回归应用实例</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">WeiguoZHAO</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+      <div class="reading-progress-bar"></div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/github-logo.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/github-logo.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":true,"show_result":true,"style":"default"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="1. 混淆矩阵及其衍生1.1 Confusion Matrix                       实际负例         实际正例                   预测负例         TN  (将负例预测为负例个数)         FN  (将正例预测为负例个数)                   实际正例         FP  (将负例预测为正例个数)">
+<meta name="keywords" content="评估方法,ROC &amp; AUC &amp; GAUC,AP &amp; MAP,CG &amp; DCG &amp; NDCG">
+<meta property="og:type" content="article">
+<meta property="og:title" content="各种评价指标">
+<meta property="og:url" content="https://weiguozhao.github.io/2018/09/29/machinelearningevaluate/index.html">
+<meta property="og:site_name" content="Weiguo&#39;s Station">
+<meta property="og:description" content="1. 混淆矩阵及其衍生1.1 Confusion Matrix                       实际负例         实际正例                   预测负例         TN  (将负例预测为负例个数)         FN  (将正例预测为负例个数)                   实际正例         FP  (将负例预测为正例个数)">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-03-22T10:53:44.473Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="各种评价指标">
+<meta name="twitter:description" content="1. 混淆矩阵及其衍生1.1 Confusion Matrix                       实际负例         实际正例                   预测负例         TN  (将负例预测为负例个数)         FN  (将正例预测为负例个数)                   实际正例         FP  (将负例预测为正例个数)">
+  <link rel="canonical" href="https://weiguozhao.github.io/2018/09/29/machinelearningevaluate/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>各种评价指标 | Weiguo's Station</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?ff6106e096f9eb6ace966de311be4b1a";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Weiguo's Station</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>博客首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>文章归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类专栏</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>各种标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>站点搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+  <a href="https://github.com/weiguozhao" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weiguozhao.github.io/2018/09/29/machinelearningevaluate/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="WeiguoZHAO">
+      <meta itemprop="description" content="Welcome to my blog~">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Weiguo's Station">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">各种评价指标
+
+          
+        </h1>
+
+        <div class="post-meta">
+        
+          
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2018-09-29 12:10:00" itemprop="dateCreated datePublished" datetime="2018-09-29T12:10:00+08:00">2018-09-29</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-22 18:53:44" itemprop="dateModified" datetime="2021-03-22T18:53:44+08:00">2021-03-22</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/基础知识/" itemprop="url" rel="index"><span itemprop="name">基础知识</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="1-混淆矩阵及其衍生"><a href="#1-混淆矩阵及其衍生" class="headerlink" title="1. 混淆矩阵及其衍生"></a>1. 混淆矩阵及其衍生</h3><h4 id="1-1-Confusion-Matrix"><a href="#1-1-Confusion-Matrix" class="headerlink" title="1.1 Confusion Matrix"></a>1.1 Confusion Matrix</h4><table>
+    <tr>
+        <th></th>
+        <th>实际负例</th>
+        <th>实际正例</th>
+    </tr>
+    <tr>
+        <td>预测负例</td>
+        <td>TN  (将负例预测为负例个数)</td>
+        <td>FN  (将正例预测为负例个数)</td>
+    </tr>
+    <tr>
+        <td>实际正例</td>
+        <td>FP  (将负例预测为正例个数)</td>
+        <td>TP  (将正例预测为正例个数)</td>
+    </tr>
+</table><a id="more"></a>
+
+<h4 id="1-2-召回率-Recall"><a href="#1-2-召回率-Recall" class="headerlink" title="1.2 召回率 Recall"></a>1.2 召回率 Recall</h4><script type="math/tex; mode=display">Recall = \frac{TP}{TP + FN}</script><h4 id="1-3-精确率-Precision"><a href="#1-3-精确率-Precision" class="headerlink" title="1.3 精确率 Precision"></a>1.3 精确率 Precision</h4><script type="math/tex; mode=display">Precision = \frac{TP}{TP + FP}</script><h4 id="1-4-准确率-Accuracy"><a href="#1-4-准确率-Accuracy" class="headerlink" title="1.4 准确率 Accuracy"></a>1.4 准确率 Accuracy</h4><script type="math/tex; mode=display">Accuracy = \frac{TP + FN}{TP + TN + FP + FN}</script><h4 id="1-5-调和均值-F-score"><a href="#1-5-调和均值-F-score" class="headerlink" title="1.5 调和均值 F-score"></a>1.5 调和均值 F-score</h4><script type="math/tex; mode=display">F-score = \frac{2 \times Precision \times Recall}{Precision + Recall}</script><h4 id="1-6-True-Positive-Rate-TPR-：代表将正例分对的概率"><a href="#1-6-True-Positive-Rate-TPR-：代表将正例分对的概率" class="headerlink" title="1.6 True Positive Rate (TPR)：代表将正例分对的概率"></a>1.6 True Positive Rate (TPR)：代表将正例分对的概率</h4><script type="math/tex; mode=display">TPR = \frac{TP}{TP + FN}</script><h4 id="1-7-False-Positive-Rate-FPR-：代表将负例错分为正例的概率"><a href="#1-7-False-Positive-Rate-FPR-：代表将负例错分为正例的概率" class="headerlink" title="1.7 False Positive Rate (FPR)：代表将负例错分为正例的概率"></a>1.7 False Positive Rate (FPR)：代表将负例错分为正例的概率</h4><script type="math/tex; mode=display">FPR = \frac{FP}{FP + TN}</script><h3 id="2-ROC-amp-AUC-amp-GAUC"><a href="#2-ROC-amp-AUC-amp-GAUC" class="headerlink" title="2. ROC &amp; AUC &amp; GAUC"></a>2. ROC &amp; AUC &amp; GAUC</h3><h4 id="2-1-受试者曲线-ROC"><a href="#2-1-受试者曲线-ROC" class="headerlink" title="2.1 受试者曲线 ROC"></a>2.1 受试者曲线 ROC</h4><p>在ROC空间中，每个点的横坐标是 <strong>FPR(假正数-负样本被预测为正样本的个数/概率)</strong>，纵坐标是 <strong>TPR(真正数-正样本被预测为正样本的个数/概率)</strong>，
+这也就描绘了分类器在 TP(真正的正例) 和 FP(错误的正例) 间的 trade-off。
+ROC的主要分析工具是一个画在ROC空间的曲线(ROC curve)，对于二分类问题，实例的值往往是连续值，我们通过设定一个阈值，将实例分类到正例或负例（比如大于阈值划分为正类）。
+因此可以变化阈值，根据不同的阈值进行分类，根据分类结果计算得到ROC空间中相应的点，连接这些点就形成ROC curve。
+ROC curve经过(0,0)、(1,1)，实际上(0,0)和(1,1)连线形成的ROC curve实际上代表的是一个随机分类器；一般情况下，这个曲线都应该处于(0,0)和(1,1)连线的上方。</p>
+<h4 id="2-2-受试者曲线下面积-AUC"><a href="#2-2-受试者曲线下面积-AUC" class="headerlink" title="2.2 受试者曲线下面积 AUC"></a>2.2 受试者曲线下面积 AUC</h4><p>用ROC curve来表示分类器的performance很直观好用。可是，人们总是希望能有一个数值来标志分类器的好坏。于是 AUC (Area Under roc Curve)就出现了。AUC的值就是处于ROC curve下方的那部分面积的大小。</p>
+<p><strong>计算方法一</strong></p>
+<ul>
+<li><p>example1: </p>
+  <table>
+      <tr>
+          <th>index</th>
+          <th>label</th>
+          <th>predictScore</th>
+      </tr>
+      <tr>
+          <td>0</td>
+          <td>0</td>
+          <td>0.1</td>
+      </tr>
+      <tr>
+          <td>1</td>
+          <td>0</td>
+          <td>0.4</td>
+      </tr>
+      <tr>
+          <td>2</td>
+          <td>1</td>
+          <td>0.35</td>
+      </tr>
+      <tr>
+          <td>3</td>
+          <td>1</td>
+          <td>0.8</td>
+      </tr>
+  </table>
+
+<p>  负样本和正样本两两组合后的index集合是：(0, 2)、(0, 3)、(1, 2)、(1, 3)</p>
+<ul>
+<li>(0, 2): 中正样本概率大于负样本概率(0.35 &gt; 0.1), 计 1</li>
+<li>(0, 3): 中正样本概率大于负样本概率(0.8 &gt; 0.1), 计 1</li>
+<li>(1, 2): 中正样本概率小于负样本概率(0.35 &lt; 0.4), 计 0</li>
+<li><p>(1, 3): 中正样本概率大于负样本概率(0.8 &gt; 0.4), 计 1</p>
+<p>所以这个batch的AUC为：$AUC = \frac{3}{4} = 0.75$</p>
+</li>
+</ul>
+</li>
+<li><p>example2: 当存在正负样本得到的 <code>predictScore</code> 相同时，计 $0.5$</p>
+  <table>
+      <tr>
+          <th>index</th>
+          <th>label</th>
+          <th>predictScore</th>
+      </tr>
+      <tr>
+          <td>0</td>
+          <td>0</td>
+          <td>0.1</td>
+      </tr>
+      <tr>
+          <td>1</td>
+          <td>0</td>
+          <td>0.4</td>
+      </tr>
+      <tr>
+          <td>2</td>
+          <td>1</td>
+          <td>0.4</td>
+      </tr>
+      <tr>
+          <td>3</td>
+          <td>1</td>
+          <td>0.8</td>
+      </tr>
+  </table>
+
+<p>  负样本和正样本两两组合后的index集合是：(0, 2)、(0, 3)、(1, 2)、(1, 3)</p>
+<ul>
+<li>(0, 2): 中正样本概率大于负样本概率(0.4 &gt; 0.1), 计 1</li>
+<li>(0, 3): 中正样本概率大于负样本概率(0.8 &gt; 0.1), 计 1</li>
+<li>(1, 2): 中正样本概率小于负样本概率(0.4 = 0.4), 计 0.5</li>
+<li><p>(1, 3): 中正样本概率大于负样本概率(0.8 &gt; 0.4), 计 1</p>
+<p>所以这个batch的AUC为：$AUC = \frac{3.5}{4} = 0.875$</p>
+</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">calculate_auc</span><span class="params">(y_true, y_pred)</span>:</span></span><br><span class="line">    <span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line">    </span><br><span class="line">    pos_index = np.where(y_true == <span class="number">1</span>)</span><br><span class="line">    neg_index = np.where(y_true == <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">    pos_cnt = sum(y_true)</span><br><span class="line">    neg_cnt = len(y_true) - pos_cnt</span><br><span class="line"></span><br><span class="line">    count = <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> pindex <span class="keyword">in</span> pos_index[<span class="number">0</span>]:</span><br><span class="line">        <span class="keyword">for</span> nindex <span class="keyword">in</span> neg_index[<span class="number">0</span>]:</span><br><span class="line">            <span class="keyword">if</span> y_pred[pindex] &gt; y_pred[nindex]:</span><br><span class="line">                count += <span class="number">1</span></span><br><span class="line">            <span class="keyword">elif</span> y_pred[pindex] == y_pred[nindex]:</span><br><span class="line">                count += <span class="number">0.5</span></span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                count += <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">1.0</span> * count / (pos_cnt * neg_cnt)</span><br></pre></td></tr></table></figure>
+<p><strong>计算方法二</strong></p>
+<ul>
+<li><script type="math/tex; mode=display">AUC = \frac{\sum_{ins_i \in positiveclass} rank_{ins_i} - 0.5 \times M \times (M + 1)}{M \times N}</script></li>
+<li>其中 $rank_{ins_i}$ 代表第 $i$ 条样本的序号。(概率得分从小到大，排在第$rank$个位置); </li>
+<li>$M$表示正样本的个数; $N$表示负样本的个数; </li>
+<li><p>$\sum_{ins_i \in positiveclass}$ 把所有正样本的累加</p>
+</li>
+<li><p>使用example1中的样本计算，按照概率排序后得到：</p>
+  <table>
+      <tr>
+          <th>index</th>
+          <th>label</th>
+          <th>predictScore</th>
+          <th>rank</th>
+      </tr>
+      <tr>
+          <td>0</td>
+          <td>0</td>
+          <td>0.1</td>
+          <td>1</td>
+      </tr>
+      <tr>
+          <td>1</td>
+          <td>1</td>
+          <td>0.35</td>
+          <td>2</td>
+      </tr>
+      <tr>
+          <td>2</td>
+          <td>0</td>
+          <td>0.4</td>
+          <td>3</td>
+      </tr>
+      <tr>
+          <td>3</td>
+          <td>1</td>
+          <td>0.8</td>
+          <td>4</td>
+      </tr>
+  </table>
+
+<p>  按照上面的公式，将正样本的序号加起来，即index=1, index=3的rank值加起来，之后减去一个常数项 $0.5 \times M \times (M + 1)$;
+  得到的公式结果：$\frac{(2 + 4) - 0.5 \times 2 \times (2 + 1)}{2 \times 2} = \frac{6 - 3}{4} = 0.75$</p>
+</li>
+<li><p>当存在相同的 <code>predictScore</code>, 并且其中存在着正负样本</p>
+  <table>
+      <tr>
+          <th>index</th>
+          <th>label</th>
+          <th>predictScore</th>
+          <th>rank</th>
+      </tr>
+      <tr>
+          <td>0</td>
+          <td>0</td>
+          <td>0.3</td>
+          <td>1</td>
+      </tr>
+      <tr>
+          <td>1</td>
+          <td>1</td>
+          <td>0.5</td>
+          <td>2</td>
+      </tr>
+      <tr>
+          <td>2</td>
+          <td>1</td>
+          <td>0.5</td>
+          <td>3</td>
+      </tr>
+      <tr>
+          <td>3</td>
+          <td>0</td>
+          <td>0.5</td>
+          <td>4</td>
+      </tr>
+      <tr>
+          <td>4</td>
+          <td>0</td>
+          <td>0.5</td>
+          <td>5</td>
+      </tr>
+      <tr>
+          <td>5</td>
+          <td>1</td>
+          <td>0.7</td>
+          <td>6</td>
+      </tr>
+      <tr>
+          <td>6</td>
+          <td>1</td>
+          <td>0.8</td>
+          <td>7</td>
+      </tr>
+  </table>
+
+<p>  <strong>这里需要注意的是：相等概率得分的样本，无论正负，谁在前，谁在后无所谓。</strong></p>
+<p>  由于只考虑正样本的rank值：<br>  对于正样本index=1，其rank值为 (5+4+3+2)/4<br>  对于正样本index=2，其rank值为 (5+4+3+2)/4<br>  对于正样本index=5，其rank值为 6<br>  对于正样本index=6，其rank值为 7  </p>
+<p>  最终得到：$\frac{(5+4+3+2)/4 + (5+4+3+2)/4 + 6 + 7 - 0.5 \times 4 \times (4 + 1)}{4 \times 3} = \frac{10}{12}$</p>
+</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">calculate_auc</span><span class="params">(y_true, y_pred)</span>:</span></span><br><span class="line">    pos_cnt = sum(y_true)</span><br><span class="line">    neg_cnt = len(y_true) - pos_cnt</span><br><span class="line">    sum_rank = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    ranked_data = sorted(zip(y_true, y_pred), key=<span class="keyword">lambda</span> x: x[<span class="number">1</span>])</span><br><span class="line"></span><br><span class="line">    score2rank = &#123;&#125;</span><br><span class="line">    <span class="keyword">for</span> index, (label, score) <span class="keyword">in</span> enumerate(ranked_data):</span><br><span class="line">        <span class="keyword">if</span> score <span class="keyword">not</span> <span class="keyword">in</span> score2rank:</span><br><span class="line">            score2rank[score] = [index + <span class="number">1</span>]</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            score2rank[score].append(index + <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> label, score <span class="keyword">in</span> ranked_data:</span><br><span class="line">        <span class="keyword">if</span> label == <span class="number">1</span>:</span><br><span class="line">            sum_rank += sum(score2rank[score]) / <span class="number">1.0</span> * len(score2rank[score])</span><br><span class="line"></span><br><span class="line">    numerator = sum_rank - <span class="number">0.5</span> * pos_cnt * (pos_cnt + <span class="number">1</span>)</span><br><span class="line">    denominator = pos_cnt * neg_cnt</span><br><span class="line">    <span class="keyword">return</span> numerator / denominator</span><br></pre></td></tr></table></figure>
+<h4 id="2-3-推荐系统常用-GAUC-group-AUC"><a href="#2-3-推荐系统常用-GAUC-group-AUC" class="headerlink" title="2.3 推荐系统常用 GAUC (group AUC)"></a>2.3 推荐系统常用 GAUC (group AUC)</h4><p>即按照用户进行聚合后单独计算每个用户的AUC，然后将所有用户的AUC进行按照样本数量进行加权平均</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> defaultdict</span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> roc_auc_score</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">cal_group_auc</span><span class="params">(labels, preds, user_id_list)</span>:</span></span><br><span class="line">    <span class="string">"""Calculate group auc"""</span></span><br><span class="line">    <span class="keyword">if</span> len(user_id_list) != len(labels):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(</span><br><span class="line">            <span class="string">"impression id num should equal to the sample num,"</span> \</span><br><span class="line">            <span class="string">"impression id num is &#123;0&#125;"</span>.format(len(user_id_list)))</span><br><span class="line">    group_score = defaultdict(<span class="keyword">lambda</span>: [])</span><br><span class="line">    group_truth = defaultdict(<span class="keyword">lambda</span>: [])</span><br><span class="line">    <span class="keyword">for</span> idx, truth <span class="keyword">in</span> enumerate(labels):</span><br><span class="line">        user_id = user_id_list[idx]</span><br><span class="line">        score = preds[idx]</span><br><span class="line">        truth = labels[idx]</span><br><span class="line">        group_score[user_id].append(score)</span><br><span class="line">        group_truth[user_id].append(truth)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 标记一个用户是不是全是正样本或者全是负样本</span></span><br><span class="line">    group_flag = defaultdict(<span class="keyword">lambda</span>: <span class="literal">False</span>)</span><br><span class="line">    <span class="keyword">for</span> user_id <span class="keyword">in</span> set(user_id_list):</span><br><span class="line">        truths = group_truth[user_id]</span><br><span class="line">        flag = <span class="literal">False</span></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(len(truths) - <span class="number">1</span>):</span><br><span class="line">            <span class="keyword">if</span> truths[i] != truths[i + <span class="number">1</span>]:</span><br><span class="line">                flag = <span class="literal">True</span></span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">        group_flag[user_id] = flag</span><br><span class="line"></span><br><span class="line">    impression_total = <span class="number">0</span></span><br><span class="line">    total_auc = <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> user_id <span class="keyword">in</span> group_flag:</span><br><span class="line">        <span class="comment"># 全是正样本或负样本的用户不统计</span></span><br><span class="line">        <span class="keyword">if</span> group_flag[user_id]:</span><br><span class="line">            auc = roc_auc_score(np.asarray(group_truth[user_id]),</span><br><span class="line">                                np.asarray(group_score[user_id]))</span><br><span class="line">            <span class="comment"># 用户的auc按照样本数量进行加权</span></span><br><span class="line">            total_auc += auc * len(group_truth[user_id])</span><br><span class="line">            <span class="comment"># 总的统计auc的样本数量</span></span><br><span class="line">            impression_total += len(group_truth[user_id])</span><br><span class="line"></span><br><span class="line">    group_auc = float(total_auc) / impression_total</span><br><span class="line">    group_auc = round(group_auc, <span class="number">4</span>)</span><br><span class="line">    <span class="keyword">return</span> group_auc</span><br></pre></td></tr></table></figure>
+<h3 id="3-AP-amp-MAP"><a href="#3-AP-amp-MAP" class="headerlink" title="3. AP &amp; MAP"></a>3. AP &amp; MAP</h3><h4 id="3-1-AP-Average-Precision"><a href="#3-1-AP-Average-Precision" class="headerlink" title="3.1 AP(Average Precision)"></a>3.1 AP(Average Precision)</h4><p>假使当我们使用google搜索某个关键词，返回了10个结果。当然最好的情况是这10个结果都是我们想要的相关信息。
+但是假如只有部分是相关的，比如5个，那么这5个结果如果被显示的比较靠前也是一个相对不错的结果。
+但是如果这个5个相关信息从第6个返回结果才开始出现，那么这种情况便是比较差的。
+这便是AP所反映的指标，与recall的概念有些类似，不过是“顺序敏感的recall”。</p>
+<p>比如对于用户 $u$, 我们给他推荐一些物品，那么 $u$ 的平均准确率定义为：</p>
+<script type="math/tex; mode=display">
+AP_u = \frac{1}{\| I^{te}_u \|} \sum _{i \in I^{te}_u} \frac{\sum _{j \in I^{te}_u} \delta ( p _{uj} \lt p _{ui} ) + 1}{p _{ui}}</script><p>在这里 $p_{ui}$ 表示推荐列表中物品 $i$ 的排序位置。$p_{uj} \lt p_{ui}$ 表示在对用户 $u$ 的排序列表中物品 $j$ 的排序位置在物品 $i$ 的前面。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">AP</span><span class="params">(ranked_list, ground_truth)</span>:</span></span><br><span class="line">    <span class="string">"""</span></span><br><span class="line"><span class="string">    Compute the average precision (AP) of a list of ranked items</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    hits = <span class="number">0</span></span><br><span class="line">    sum_precs = <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> n <span class="keyword">in</span> range(len(ranked_list)):</span><br><span class="line">        <span class="keyword">if</span> ranked_list[n] <span class="keyword">in</span> ground_truth:</span><br><span class="line">            hits += <span class="number">1</span></span><br><span class="line">            sum_precs += hits / (n + <span class="number">1.0</span>)</span><br><span class="line">    <span class="keyword">if</span> hits &gt; <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">return</span> sum_precs / len(ground_truth)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span></span><br></pre></td></tr></table></figure>
+<h4 id="3-2-MAP-Mean-Average-Precision"><a href="#3-2-MAP-Mean-Average-Precision" class="headerlink" title="3.2 MAP(Mean Average Precision)"></a>3.2 MAP(Mean Average Precision)</h4><p>即为所有用户 $u$ 的<code>AP</code>再取均值(mean)而已。</p>
+<script type="math/tex; mode=display">
+MAP = \frac{\sum_{u \in U^{te}} AP_{u}}{ U^{te} }</script><h3 id="4-CG-amp-DCG-amp-NDCG"><a href="#4-CG-amp-DCG-amp-NDCG" class="headerlink" title="4. CG &amp; DCG &amp; NDCG"></a>4. CG &amp; DCG &amp; NDCG</h3><h4 id="4-1-CG-Cummulative-Gain"><a href="#4-1-CG-Cummulative-Gain" class="headerlink" title="4.1 CG(Cummulative Gain)"></a>4.1 CG(Cummulative Gain)</h4><p>直接翻译的话叫做“累计增益”。 在推荐系统中，CG即将每个推荐结果相关性(relevance)的分值累加后作为整个推荐列表(list)的得分。</p>
+<script type="math/tex; mode=display">
+CG_k = \sum_{i=1}^k rel_i</script><p>这里， $rel_i$ 表示处于位置 $i$ 的推荐结果的相关性，$k$ 表示所要考察的推荐列表的大小。</p>
+<h4 id="4-2-DCG-Discounted-Cummulative-Gain"><a href="#4-2-DCG-Discounted-Cummulative-Gain" class="headerlink" title="4.2 DCG(Discounted Cummulative Gain)"></a>4.2 DCG(Discounted Cummulative Gain)</h4><p>CG的一个缺点是没有考虑每个推荐结果处于不同位置对整个推荐效果的影响，例如我们总是希望相关性高的结果应排在前面。显然，如果相关性低的结果排在靠前的位置会严重影响用户体验，
+所以在CG的基础上引入位置影响因素，即DCG(Discounted Cummulative Gain), “Discounted”有打折，折扣的意思，这里指的是对于排名靠后推荐结果的推荐效果进行“打折处理”:</p>
+<script type="math/tex; mode=display">
+\begin{equation*}
+DCG_k = \sum_{i=1}^k \frac{2^{rel_i}-1}{\log_2 \left(i+1\right)}
+\end{equation*}</script><ul>
+<li>分子部分 $2^{rel_i}−1$, $rel_i$越大，即推荐结果 $i$ 的相关性越大，推荐效果越好， DCG越大。</li>
+<li>分母部分 $log_2 (i+1)$, $i$ 表示推荐结果的位置，$i$ 越大，则推荐结果在推荐列表中排名越靠后，推荐效果越差，DCG越小。</li>
+</ul>
+<h4 id="4-3-NDCG-Normalized-Discounted-Cummulative-Gain"><a href="#4-3-NDCG-Normalized-Discounted-Cummulative-Gain" class="headerlink" title="4.3 NDCG(Normalized Discounted Cummulative Gain)"></a>4.3 NDCG(Normalized Discounted Cummulative Gain)</h4><p>DCG仍然有其局限之处，即不同的推荐列表之间，很难进行横向的评估。而我们评估一个推荐系统，不可能仅使用一个用户的推荐列表及相应结果进行评估，
+而是对整个测试集中的用户及其推荐列表结果进行评估。 那么不同用户的推荐列表的评估分数就需要进行归一化，也即<code>NDCG(Normalized Discounted Cummulative Gain)</code>。</p>
+<p>在介绍<code>NDCG</code>之前，还需要了解一个概念：<code>IDCG</code>, 即<code>Ideal DCG</code>， 指推荐系统为某一用户返回的最好推荐结果列表，
+即假设返回结果按照相关性排序，最相关的结果放在最前面，此序列的<code>DCG</code>为<code>IDCG</code>。因此<code>DCG</code>的值介于 $(0, IDCG]$，故<code>NDCG</code>的值介于$(0,1]$。</p>
+<p>对于用户 $u$ 的 $NDCG@k$ 定义为：</p>
+<script type="math/tex; mode=display">
+\begin{equation*}
+NDCG_u@k = \frac{DCG_u@k}{IDCG_u}
+\end{equation*}</script><p>这里的 $k$ 表示推荐列表的大小。那么，则有：</p>
+<script type="math/tex; mode=display">
+\begin{equation*}
+NDCG@k = \frac{\sum_{u\in \mathcal{U}^{te}}NDCG_u@k}{|\mathcal{U}^{te}|}
+\end{equation*}</script><p>在具体操作中， 可以事先确定推荐目标和推荐结果的相关性分级。</p>
+<ul>
+<li>例如可以使用 $0，1$ 分别表示相关或不相关，比如此处我们用 $ref_i = \delta( i \in I_u^{te} )$, 在这里如果 $x$ 为<code>true</code>, 则 $\delta (x) = 1$，否则 $\delta(x)=0$。</li>
+<li>或是使用 $0 \sim 5$ 分别表示严重不相关到非常相关, 也即相当于确定了 $rel$ 值的范围。之后对于每一个推荐目标的返回结果给定 $rel$ 值，然后使用<code>DCG</code>的计算公式计计算出返回结果的<code>DCG</code>值。使用根据排序后的 <code>rel</code> 值序列计算<code>IDCG</code>值，即可计算<code>NDCG</code>.</li>
+</ul>
+<hr>
+<h3 id="Ref"><a href="#Ref" class="headerlink" title="Ref"></a>Ref</h3><blockquote>
+<ol>
+<li><a href="https://blog.csdn.net/simple_the_best/article/details/52296608" target="_blank" rel="noopener">推荐系统常见评测标准之MAP与NDCG</a></li>
+<li><a href="https://blog.csdn.net/qq_22238533/article/details/78666436" target="_blank" rel="noopener">AUC的计算方法</a></li>
+<li><a href="https://scikit-learn.org/stable/modules/generated/sklearn.metrics.roc_auc_score.html" target="_blank" rel="noopener">sklearn.metrics.roc_auc_score</a></li>
+<li><a href="https://blog.csdn.net/zhaohang_1/article/details/92794489" target="_blank" rel="noopener">图解AUC和GAUC</a></li>
+<li><a href="https://github.com/qiaoguan/deep-ctr-prediction/blob/master/DeepCross/metric.py#L12" target="_blank" rel="noopener">qiaoguan/deep-ctr-prediction/DeepCross/metric.py</a></li>
+</ol>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/评估方法/" rel="tag"># 评估方法</a>
+            
+              <a href="/tags/ROC-AUC-GAUC/" rel="tag"># ROC & AUC & GAUC</a>
+            
+              <a href="/tags/AP-MAP/" rel="tag"># AP & MAP</a>
+            
+              <a href="/tags/CG-DCG-NDCG/" rel="tag"># CG & DCG & NDCG</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2018/08/08/resume/" rel="next" title="My Resume (2018)">
+                  <i class="fa fa-chevron-left"></i> My Resume (2018)
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2018/10/09/kmeans/" rel="prev" title="K-Means聚类">
+                  K-Means聚类 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/avatar.jpg"
+      alt="WeiguoZHAO">
+  <p class="site-author-name" itemprop="name">WeiguoZHAO</p>
+  <div class="site-description motion-element" itemprop="description">Welcome to my blog~</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">47</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/weiguozhao" title="GitHub &rarr; https://github.com/weiguozhao" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:aszhaoweiguo@gmail.com" title="E-Mail &rarr; mailto:aszhaoweiguo@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      大牛们
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://colah.github.io/" title="http://colah.github.io/" rel="noopener" target="_blank">colah's blog</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/wzhe06/Reco-papers" title="https://github.com/wzhe06/Reco-papers" rel="noopener" target="_blank">王喆的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/ljpzzz/machinelearning" title="https://github.com/ljpzzz/machinelearning" rel="noopener" target="_blank">刘建平的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://tech.meituan.com/" title="https://tech.meituan.com/" rel="noopener" target="_blank">美团技术团队</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-混淆矩阵及其衍生"><span class="nav-text">1. 混淆矩阵及其衍生</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-Confusion-Matrix"><span class="nav-text">1.1 Confusion Matrix</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-召回率-Recall"><span class="nav-text">1.2 召回率 Recall</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-精确率-Precision"><span class="nav-text">1.3 精确率 Precision</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-4-准确率-Accuracy"><span class="nav-text">1.4 准确率 Accuracy</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-5-调和均值-F-score"><span class="nav-text">1.5 调和均值 F-score</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-6-True-Positive-Rate-TPR-：代表将正例分对的概率"><span class="nav-text">1.6 True Positive Rate (TPR)：代表将正例分对的概率</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-7-False-Positive-Rate-FPR-：代表将负例错分为正例的概率"><span class="nav-text">1.7 False Positive Rate (FPR)：代表将负例错分为正例的概率</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-ROC-amp-AUC-amp-GAUC"><span class="nav-text">2. ROC &amp; AUC &amp; GAUC</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-受试者曲线-ROC"><span class="nav-text">2.1 受试者曲线 ROC</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-受试者曲线下面积-AUC"><span class="nav-text">2.2 受试者曲线下面积 AUC</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-推荐系统常用-GAUC-group-AUC"><span class="nav-text">2.3 推荐系统常用 GAUC (group AUC)</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-AP-amp-MAP"><span class="nav-text">3. AP &amp; MAP</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-AP-Average-Precision"><span class="nav-text">3.1 AP(Average Precision)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-MAP-Mean-Average-Precision"><span class="nav-text">3.2 MAP(Mean Average Precision)</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-CG-amp-DCG-amp-NDCG"><span class="nav-text">4. CG &amp; DCG &amp; NDCG</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-CG-Cummulative-Gain"><span class="nav-text">4.1 CG(Cummulative Gain)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-DCG-Discounted-Cummulative-Gain"><span class="nav-text">4.2 DCG(Discounted Cummulative Gain)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-3-NDCG-Normalized-Discounted-Cummulative-Gain"><span class="nav-text">4.3 NDCG(Normalized Discounted Cummulative Gain)</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Ref"><span class="nav-text">Ref</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">WeiguoZHAO</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+      <div class="reading-progress-bar"></div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/github-logo.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/github-logo.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":true,"show_result":true,"style":"default"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="视频教程： Transformer-李宏毅老师 转自： 10分钟带你深入理解Transformer原理及实现 0. 模型架构今天的示例任务为中译英: 中文输入为 我爱你，通过 Transformer 翻译为 I Love You。Transformer 中对应的超参数包括：">
+<meta name="keywords" content="神经网络,Attention,自然语言处理">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Transformer学习">
+<meta property="og:url" content="https://weiguozhao.github.io/2020/09/18/Transformer学习/index.html">
+<meta property="og:site_name" content="Weiguo&#39;s Station">
+<meta property="og:description" content="视频教程： Transformer-李宏毅老师 转自： 10分钟带你深入理解Transformer原理及实现 0. 模型架构今天的示例任务为中译英: 中文输入为 我爱你，通过 Transformer 翻译为 I Love You。Transformer 中对应的超参数包括：">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-09-18-Transformer学习/1.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-09-18-Transformer学习/2.jpg">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-09-18-Transformer学习/3.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-09-18-Transformer学习/4.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-09-18-Transformer学习/5.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-09-18-Transformer学习/6.jpg">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-09-18-Transformer学习/7.jpg">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-09-18-Transformer学习/8.jpg">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-09-18-Transformer学习/9.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-09-18-Transformer学习/10.jpg">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-09-18-Transformer学习/11.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-09-18-Transformer学习/12.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-09-18-Transformer学习/13.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-09-18-Transformer学习/14.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-09-18-Transformer学习/15.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-09-18-Transformer学习/16.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-09-18-Transformer学习/17.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-09-18-Transformer学习/18.jpg">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-09-18-Transformer学习/19-20.png">
+<meta property="og:image" content="https://weiguozhao.github.io/posts_res/2020-09-18-Transformer学习/21.jpg">
+<meta property="og:updated_time" content="2021-03-22T10:53:44.482Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Transformer学习">
+<meta name="twitter:description" content="视频教程： Transformer-李宏毅老师 转自： 10分钟带你深入理解Transformer原理及实现 0. 模型架构今天的示例任务为中译英: 中文输入为 我爱你，通过 Transformer 翻译为 I Love You。Transformer 中对应的超参数包括：">
+<meta name="twitter:image" content="https://weiguozhao.github.io/posts_res/2020-09-18-Transformer学习/1.png">
+  <link rel="canonical" href="https://weiguozhao.github.io/2020/09/18/Transformer学习/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>Transformer学习 | Weiguo's Station</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?ff6106e096f9eb6ace966de311be4b1a";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Weiguo's Station</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>博客首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>文章归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类专栏</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>各种标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>站点搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+  <a href="https://github.com/weiguozhao" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weiguozhao.github.io/2020/09/18/Transformer学习/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="WeiguoZHAO">
+      <meta itemprop="description" content="Welcome to my blog~">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Weiguo's Station">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">Transformer学习
+
+          
+        </h1>
+
+        <div class="post-meta">
+        
+          
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2020-09-18 19:42:32" itemprop="dateCreated datePublished" datetime="2020-09-18T19:42:32+08:00">2020-09-18</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-22 18:53:44" itemprop="dateModified" datetime="2021-03-22T18:53:44+08:00">2021-03-22</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>视频教程： <a href="https://www.bilibili.com/video/BV1J441137V6?from=search&amp;seid=8405063910540254578" target="_blank" rel="noopener">Transformer-李宏毅老师</a></p><blockquote>
+<p>转自： <a href="https://zhuanlan.zhihu.com/p/80986272" target="_blank" rel="noopener">10分钟带你深入理解Transformer原理及实现</a></p>
+</blockquote><h3 id="0-模型架构"><a href="#0-模型架构" class="headerlink" title="0. 模型架构"></a>0. 模型架构</h3><p><img src="/posts_res/2020-09-18-Transformer学习/1.png" alt="model structure"></p><p>今天的示例任务为中译英: 中文输入为 <code>我爱你</code>，通过 Transformer 翻译为 <code>I Love You</code>。</p><p>Transformer 中对应的超参数包括：</p><a id="more"></a>
+
+
+
+
+<table>
+  <tr>
+    <th>$N$</th>
+    <th>$d_{model}$</th>
+    <th>$d_{ff}$</th>
+    <th>$h$</th>
+    <th>$d_k$</th>
+    <th>$d_v$</th>
+    <th>$P_{drop}$</th>
+    <th>$\epsilon_{ls}$</th>
+    <th>$trainSteps$</th>
+  </tr>
+  <tr>
+    <td>6</td>
+    <td>512</td>
+    <td>2048</td>
+    <td>8</td>
+    <td>64</td>
+    <td>64</td>
+    <td>0.1</td>
+    <td>0.1</td>
+    <td>100K</td>
+  </tr>
+</table>
+
+
+<p>这些也是函数 <code>make_model(src_vocal, tgt_vocab, N=6, d_model=512, d_ff = 2048, h=8, dropout=0.1)</code> 使用的超参数。</p>
+<p>整个架构猛一看是挺吓人的，首先还是需要将整个 Transformer 拆分进行描述：</p>
+<ul>
+<li>Embedding 部分</li>
+<li>Encoder 部分</li>
+<li>Decoder 部分</li>
+</ul>
+<h3 id="1-对-Input-和-Output-进行-representation"><a href="#1-对-Input-和-Output-进行-representation" class="headerlink" title="1. 对 Input 和 Output 进行 representation"></a>1. 对 Input 和 Output 进行 representation</h3><h4 id="1-1-对-Input-的-represent"><a href="#1-1-对-Input-的-represent" class="headerlink" title="1.1 对 Input 的 represent"></a>1.1 对 Input 的 represent</h4><p>首先用常用来表达 categorical 特征的方法即one-hot encoding 对句子进行表达。
+one-hot 指的是一个向量只有一个元素是1，其余的都为0。
+很直接的，vector 的长度就是由词汇表 vocabulary 的长度决定的。
+如果想要表达10000个word，那么就需要10000维的向量。</p>
+<h4 id="1-2-word-embedding"><a href="#1-2-word-embedding" class="headerlink" title="1.2 word embedding"></a>1.2 word embedding</h4><p>但我们不直接给 Transformer 输入简单的one-hot vector，原因包括这种表达方式的结果非常稀疏，非常大，且不能表达 word 与 word 之间的特征。
+所以这里对词进行 embedding，用较短的向量表达这个 word 的属性。
+一般在 Pytorch/tensorflow 中，我们都是用 <code>nn.Embedding</code> 来做，或者直接用 one-hot vector 与权重矩阵 $W$ 相乘得到。</p>
+<p><code>nn.Embedding</code> 包含一个权重矩阵 $W$，对应的 shape 为 <code>( num_embeddings，embedding_dim )</code>。
+<code>num_embeddings</code> 指的是词汇量，即想要翻译的 vocabulary 的长度。
+<code>embedding_dim</code> 指的是想用多长的 vector 来表达一个词，可以任意选择，比如64，128，256，512等。
+在 Transformer 论文中选择的是512(即 <code>d_model = 512</code>)。</p>
+<p>其实可以形象地将 <code>nn.Embedding</code> 理解成一个 lookup table，里面对每一个 word 都存了向量 vector 。
+给任意一个 word，都可以从表中查出对应的结果。</p>
+<p>处理 <code>nn.Embedding</code> 权重矩阵有两种选择：</p>
+<ul>
+<li>使用 pre-trained 的 embeddings 并固化，这种情况下实际就是一个 lookup table。</li>
+<li>对其进行随机初始化(当然也可以选择 pre-trained 的结果)，但设为 trainable。这样在 training 过程中不断地对 embeddings 进行改进。</li>
+</ul>
+<p>Transformer 选择的是后者。</p>
+<p>在 <a href="http://nlp.seas.harvard.edu/2018/04/03/attention.html#position-wise-feed-forward-networks" target="_blank" rel="noopener">Annotated Transformer</a> 中，class “Embeddings“ 用来生成 word 的embeddings，其中用到 <code>nn.Embedding</code>。具体实现见下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Embeddings</span><span class="params">(nn.Module)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, d_model, vocab)</span>:</span></span><br><span class="line">        super(Embeddings, self).__init__()</span><br><span class="line">        self.lut = nn.Embedding(vocab, d_model)</span><br><span class="line">        self.d_model = d_model</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span><span class="params">(self, x)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> self.lut(x) * math.sqrt(self.d_model)</span><br></pre></td></tr></table></figure>
+<h4 id="1-3-Positional-Embedding"><a href="#1-3-Positional-Embedding" class="headerlink" title="1.3 Positional Embedding"></a>1.3 Positional Embedding</h4><p>我们对每一个 word 进行 embedding 作为 input 表达。
+但是还有问题，embedding 本身不包含在句子中的相对位置信息。</p>
+<p>那 RNN 为什么在任何地方都可以对同一个 word 使用同样的向量呢？
+因为 RNN 是按顺序对句子进行处理的，一次一个 word。
+但是在 Transformer 中，输入句子的所有 word 是同时处理的，没有考虑词的排序和位置信息。</p>
+<p>对此，Transformer 的作者提出了加入 <code>positional encoding</code> 的方法来解决这个问题。
+<code>positional encoding</code> 使得 Transformer 可以衡量 word 位置有关的信息。</p>
+<p><strong>positional encoding</strong> 与 <strong>word embedding</strong> 相加就得到 embedding with position。</p>
+<p><img src="/posts_res/2020-09-18-Transformer学习/2.jpg" width="30%" height="30%"></p>
+<p>那么具体 <code>positional encoding</code> 怎么做？为什么能表达位置信息呢？
+作者探索了两种创建 positional encoding 的方法：</p>
+<ul>
+<li>通过训练学习 positional encoding 向量</li>
+<li>使用公式来计算 positional encoding向量</li>
+</ul>
+<p>试验后发现两种选择的结果是相似的，所以采用了第2种方法，优点是不需要训练参数，而且即使在训练集中没有出现过的句子长度上也能用。</p>
+<p>计算 positional encoding 的公式为：</p>
+<p><img src="/posts_res/2020-09-18-Transformer学习/3.png" width="60%" height="60%"></p>
+<p>在这个公式中:</p>
+<ul>
+<li>pos 指的是这个 word 在这个句子中的位置</li>
+<li>i指的是 embedding 维度。比如选择 d_model=512，那么i就从1数到512</li>
+</ul>
+<p>为什么选择 sin 和 cos ？positional encoding 的每一个维度都对应着一个正弦曲线，作者假设这样可以让模型相对轻松地通过对应位置来学习。</p>
+<p><img src="/posts_res/2020-09-18-Transformer学习/4.png" alt="reason"></p>
+<p>在 Annotated Transformer 中，使用 class <code>Positional Encoding</code> 来创建 positional encoding 并加入到 word embedding 中：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PositionalEncoding</span><span class="params">(nn.Module)</span>:</span></span><br><span class="line">    <span class="string">"Implement the PE function."</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, d_model, dropout, max_len=<span class="number">5000</span>)</span>:</span></span><br><span class="line">        super(PositionalEncoding, self).__init__()</span><br><span class="line">        self.dropout = nn.Dropout(p=dropout)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># Compute the positional encodings once in log space.</span></span><br><span class="line">        pe = torch.zeros(max_len, d_model)</span><br><span class="line">        position = torch.arange(<span class="number">0</span>, max_len).unsqueeze(<span class="number">1</span>)</span><br><span class="line">        div_term = torch.exp(torch.arange(<span class="number">0</span>, d_model, <span class="number">2</span>) *</span><br><span class="line">                             -(math.log(<span class="number">10000.0</span>) / d_model))</span><br><span class="line">        pe[:, <span class="number">0</span>::<span class="number">2</span>] = torch.sin(position * div_term)</span><br><span class="line">        pe[:, <span class="number">1</span>::<span class="number">2</span>] = torch.cos(position * div_term)</span><br><span class="line">        pe = pe.unsqueeze(<span class="number">0</span>)</span><br><span class="line">        self.register_buffer(<span class="string">'pe'</span>, pe)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span><span class="params">(self, x)</span>:</span></span><br><span class="line">        x = x + Variable(self.pe[:, :x.size(<span class="number">1</span>)],requires_grad=<span class="literal">False</span>)</span><br><span class="line">        <span class="keyword">return</span> self.dropout(x)</span><br></pre></td></tr></table></figure>
+<p>波的频率和偏移对于每个维度是不同的：</p>
+<p><img src="/posts_res/2020-09-18-Transformer学习/5.png" alt="position"></p>
+<h4 id="1-4-Input-小总结"><a href="#1-4-Input-小总结" class="headerlink" title="1.4 Input 小总结"></a>1.4 Input 小总结</h4><p>经过 <code>word embedding</code> 和 <code>positional embedding</code> 后可以得到一个句子的 representation，
+比如”我爱你“这个句子，就被转换成了三个向量，每个向量都包含 word 的特征和 word 在句子中的位置信息：</p>
+<p><img src="/posts_res/2020-09-18-Transformer学习/6.jpg" width="50%" height="50%"></p>
+<p>我们对输出的结果做同样的操作，这里即中英翻译的结果 <code>I Love You</code>。
+使用<code>word embedding</code> 和 <code>positional encoding</code> 对其进行表示。</p>
+<p>Input Tensor 的 size 为 [nbatches, L, 512]：</p>
+<ul>
+<li>nbatches 指的是定义的 batch_size</li>
+<li>L 指的是 sequence 的长度,(比如“我爱你”，L = 3)</li>
+<li>512 指的是 embedding 的 dimension</li>
+</ul>
+<p>目前完成了模型架构的底层的部分：</p>
+<p><img src="/posts_res/2020-09-18-Transformer学习/7.jpg" alt="summary_one"></p>
+<h3 id="2-Encoder"><a href="#2-Encoder" class="headerlink" title="2. Encoder"></a>2. Encoder</h3><p>Encoder 相对 Decoder 会稍微麻烦一些。 Encoder 由 6 个相乘的 Layer 堆叠而成（6并不是固定的，可以基于实际情况修改），看起来像这样：</p>
+<p><img src="/posts_res/2020-09-18-Transformer学习/8.jpg" width="20%" height="20%"></p>
+<p>每个 Layer 包含 2 个 sub-layer：</p>
+<p><img src="/posts_res/2020-09-18-Transformer学习/9.png" width="50%" height="50%"></p>
+<ul>
+<li>第一个是 <code>multi-head self-attention mechanism</code></li>
+<li>第二个是 <code>simple，position-wise fully connected feed-forward network</code></li>
+</ul>
+<p><img src="/posts_res/2020-09-18-Transformer学习/10.jpg" width="30%" height="30%"></p>
+<p>Annotated Transformer 中的 Encoder 实现代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Encoder</span><span class="params">(nn.Module)</span>:</span></span><br><span class="line">    <span class="string">"Core encoder is a stack of N layers"</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, layer, N)</span>:</span></span><br><span class="line">        super(Encoder, self).__init__()</span><br><span class="line">        self.layers = clones(layer, N)</span><br><span class="line">        self.norm = LayerNorm(layer.size)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span><span class="params">(self, x, mask)</span>:</span></span><br><span class="line">        <span class="string">"Pass the input (and mask) through each layer in turn."</span></span><br><span class="line">        <span class="keyword">for</span> layer <span class="keyword">in</span> self.layers:</span><br><span class="line">            x = layer(x, mask)</span><br><span class="line">        <span class="keyword">return</span> self.norm(x)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">EncoderLayer</span><span class="params">(nn.Module)</span>:</span></span><br><span class="line">    <span class="string">"Encoder is made up of self-attn and feed forward (defined below)"</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, size, self_attn, feed_forward, dropout)</span>:</span></span><br><span class="line">        super(EncoderLayer, self).__init__()</span><br><span class="line">        self.self_attn = self_attn</span><br><span class="line">        self.feed_forward = feed_forward</span><br><span class="line">        self.sublayer = clones(SublayerConnection(size, dropout), <span class="number">2</span>)</span><br><span class="line">        self.size = size</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span><span class="params">(self, x, mask)</span>:</span></span><br><span class="line">        <span class="string">"Follow Figure 1 (left) for connections."</span></span><br><span class="line">        x = self.sublayer[<span class="number">0</span>](x, <span class="keyword">lambda</span> x: self.self_attn(x, x, x, mask))</span><br><span class="line">        <span class="keyword">return</span> self.sublayer[<span class="number">1</span>](x, self.feed_forward)</span><br></pre></td></tr></table></figure>
+<ol>
+<li>class <code>Encoder</code> 将 $layer$ 堆叠 N 次。是 class <code>EncoderLayer</code> 的实例。</li>
+<li><code>EncoderLayer</code> 初始化需要指定 <code>size</code>, <code>self_attn</code>, <code>feed _forward</code>, <code>dropout</code><ol>
+<li><code>size</code> 对应 $d_model$，论文中为512</li>
+<li><code>self_attn</code> 是 class <code>MultiHeadedAttention</code> 的实例，对应sub-layer 1</li>
+<li><code>feed_forward</code> 是 class <code>PositionwiseFeedForward</code> 的实例，对应sub-layer 2</li>
+<li><code>dropout</code> 对应 dropout rate</li>
+</ol>
+</li>
+</ol>
+<h4 id="2-1-Encoder-Sub-layer-1-Multi-Head-Attention-Mechanism"><a href="#2-1-Encoder-Sub-layer-1-Multi-Head-Attention-Mechanism" class="headerlink" title="2.1 Encoder Sub-layer 1: Multi-Head Attention Mechanism"></a>2.1 Encoder Sub-layer 1: Multi-Head Attention Mechanism</h4><p>理解 Multi-Head Attention 机制对于理解 Transformer 特别重要，并且在 Encoder 和 Decoder 中都有用到。</p>
+<p><strong>概述：</strong></p>
+<p>我们把 attention 机制的输入定义为 $x$。$x$ 在 Encoder 的不同位置，含义有所不同。
+在 Encoder 的开始，$x$ 的含义是句子的 representation。
+在 EncoderLayer 的各层中间，$x$ 代表前一层 EncoderLayer 的输出。</p>
+<p>使用不同的 linear layers 基于 $x$ 来计算 keys，queries和values：</p>
+<ul>
+<li>key = linear_k(x)</li>
+<li>query = linear_q(x)</li>
+<li>value = linear_v(x)</li>
+</ul>
+<p><code>linear_k</code>, <code>linear_q</code>, <code>linear_v</code> 是相互独立、权重不同的。</p>
+<p>计算得到 <code>keys(K)</code>, <code>queries(Q)</code>和<code>values(V)</code> 值之后，按论文中如下公式计算 Attention：</p>
+<script type="math/tex; mode=display">
+Attention(Q, K, V) = softmax ( \frac{QK^T}{\sqrt(d_k)} ) V</script><p>矩阵乘法表示：</p>
+<p><img src="/posts_res/2020-09-18-Transformer学习/11.png" width="50%" height="50%"></p>
+<p>这里的比较奇怪的地方是为啥要除以 $\sqrt(d_k)$ 对吧？</p>
+<p>作者的解释是说防止 $d_k$ 增大时，$QK^T$ 点积值过大，所以用 $\sqrt(d_k)$ 对其进行缩放。引用一下原文:</p>
+<blockquote>
+<p>We suspect that for large values of dk, the dot products grow large in magnitude, pushing the softmax function into regions where it has extremely small gradients</p>
+</blockquote>
+<p> 对 $\frac{QK^T}{\sqrt(d_k)}$ 取 softmax 之后值都介于0到1之间，可以理解成得到了 attention weights。
+ 然后基于这个 attention weights 对 $V$ 求 weighted sum 值 $Attention(Q, K, V)$。</p>
+<p>详细解释： Annotated Transformer 中 Multi-Headed attention 的实现为</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MultiHeadedAttention</span><span class="params">(nn.Module)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, h, d_model, dropout=<span class="number">0.1</span>)</span>:</span></span><br><span class="line">        <span class="string">"Take in model size and number of heads."</span></span><br><span class="line">        super(MultiHeadedAttention, self).__init__()</span><br><span class="line">        <span class="keyword">assert</span> d_model % h == <span class="number">0</span></span><br><span class="line">        <span class="comment"># We assume d_v always equals d_k</span></span><br><span class="line">        self.d_k = d_model // h</span><br><span class="line">        self.h = h</span><br><span class="line">        self.linears = clones(nn.Linear(d_model, d_model), <span class="number">4</span>)</span><br><span class="line">        self.attn = <span class="literal">None</span></span><br><span class="line">        self.dropout = nn.Dropout(p=dropout)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span><span class="params">(self, query, key, value, mask=None)</span>:</span></span><br><span class="line">        <span class="string">"Implements Figure 2"</span></span><br><span class="line">        <span class="keyword">if</span> mask <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">            <span class="comment"># Same mask applied to all h heads.</span></span><br><span class="line">            mask = mask.unsqueeze(<span class="number">1</span>)</span><br><span class="line">        nbatches = query.size(<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 1) Do all the linear projections in batch from d_model =&gt; h x d_k </span></span><br><span class="line">        query, key, value = \</span><br><span class="line">            [l(x).view(nbatches, <span class="number">-1</span>, self.h, self.d_k).transpose(<span class="number">1</span>, <span class="number">2</span>)</span><br><span class="line">             <span class="keyword">for</span> l, x <span class="keyword">in</span> zip(self.linears, (query, key, value))]</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 2) Apply attention on all the projected vectors in batch. </span></span><br><span class="line">        x, self.attn = attention(query, key, value, mask=mask,</span><br><span class="line">                                 dropout=self.dropout)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 3) "Concat" using a view and apply a final linear. </span></span><br><span class="line">        x = x.transpose(<span class="number">1</span>, <span class="number">2</span>).contiguous() \</span><br><span class="line">            .view(nbatches, <span class="number">-1</span>, self.h * self.d_k)</span><br><span class="line">        <span class="keyword">return</span> self.linears[<span class="number">-1</span>](x)</span><br></pre></td></tr></table></figure>
+<p>这个 class 进行实例化时需要指定:</p>
+<ul>
+<li>h = 8，即 <code>heads</code> 的数目。在 Transformer 的 base model 中有 8 heads</li>
+<li>d_model = 512</li>
+<li>dropout = dropoutRate = 0.1</li>
+</ul>
+<p>keys 的维度 $d_k$ 是基于 $d_{model} / k$ 计算来的。在上面的例子中 $d_k = 512 / 8 = 64$。</p>
+<p>下面分3步详细介绍一下 MultiHeadedAttention 的 <code>forward()</code> 函数：</p>
+<p>从上面的代码看出，forward 的 input 包括：<code>query</code>，<code>key</code>，<code>values</code>和<code>mask</code>。
+这里先暂时忽略 mask。 query，key和value 是哪来的？ 
+实际上他们是 $x$ 重复了三次得来的，$x$ 或者是初始的句子embedding或者是前一个 EncoderLayer 的输出，
+见 EncoderLayer 的代码红色方框部分，self.self_atttn 是 MultiHeadedAttention 的一个实例化：</p>
+<p><img src="/posts_res/2020-09-18-Transformer学习/12.png" width="60%" height="60%"></p>
+<p><code>query</code> 的 shape 为 [nbatches, L, 512] ,其中:</p>
+<ul>
+<li>nbatches 对应 batch size</li>
+<li>L 对应 sequence length ，512 对应 d_mode</li>
+<li><code>key</code> 和 <code>value</code> 的 shape 也为 [nbatches， L， 512]</li>
+</ul>
+<h5 id="Step-1"><a href="#Step-1" class="headerlink" title="Step 1"></a>Step 1</h5><ol>
+<li>对 “query”，“key”和“value”进行 linear transform ，他们的 shape 依然是[nbatches， L， 512]。</li>
+<li>对其通过 view() 进行 reshape，shape 变成 [nbatches, L, 8, 64]。这里的h=8对应 heads 的数目，d_k=64 是 key 的维度。</li>
+<li>transpose 交换 dimension1和2，shape 变成 [nbatches， 8, L 64]。</li>
+</ol>
+<h5 id="Step-2"><a href="#Step-2" class="headerlink" title="Step 2"></a>Step 2</h5><p>前面提到我们计算 attention 的公式：</p>
+<script type="math/tex; mode=display">
+Attention(Q, K, V) = softmax ( \frac{QK^T}{\sqrt(d_k)} ) V</script><p>Annotated Transformer 中的 attention() 代码为：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">attention</span><span class="params">(query, key, value, mask=None, dropout=None)</span>:</span></span><br><span class="line">    <span class="string">"Compute 'Scaled Dot Product Attention'"</span></span><br><span class="line">    d_k = query.size(<span class="number">-1</span>)</span><br><span class="line">    scores = torch.matmul(query, key.transpose(<span class="number">-2</span>, <span class="number">-1</span>)) \</span><br><span class="line">             / math.sqrt(d_k)</span><br><span class="line">    <span class="keyword">if</span> mask <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">        scores = scores.masked_fill(mask == <span class="number">0</span>, <span class="number">-1e9</span>)</span><br><span class="line">    p_attn = F.softmax(scores, dim = <span class="number">-1</span>)</span><br><span class="line">    <span class="keyword">if</span> dropout <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">        p_attn = dropout(p_attn)</span><br><span class="line">    <span class="keyword">return</span> torch.matmul(p_attn, value), p_attn</span><br></pre></td></tr></table></figure>
+<p>query 和 key.transpose(-2, -1) 相乘，两者分别对应的 shape 为 [nbatches, 8, L 64] 和 [nbatches， 8， 64， L]。
+这样相乘得到的结果 scores 的 shape为[nbatches, 8, L, L]。</p>
+<p>对 scores 进行 softmax，所以 p_attn 的 shape 为 [nbatches, 8, L, L]。
+values的 shape 为 [nbatches, 8, L, 64]。
+所以最后 p_attn 与 values 相乘输出的 result 的 shape 为 [nbatches, 8, L, 64]。</p>
+<p>在我们的输入与输出中，有8个 heads 即 Tensor 中的 dimension 1，[ nbatches, 8, L, 64 ]。
+8个 heads 都进行了不同的矩阵乘法，这样就得到了不同的 <code>representation subspace</code>。
+这就是 multi-headed attention 的意义。</p>
+<h5 id="Step-3"><a href="#Step-3" class="headerlink" title="Step 3"></a>Step 3</h5><p>x的初始shape为 [ nbatches, 8, L, 64 ]，x.transpose(1,2) 得到 [ nbatches，L, 8,64 ]。
+然后使用 view 进行 reshape 得到 [ nbatches, L, 512 ]。可以理解为8个heads结果的 concatenate 。
+最后使用 last linear layer 进行转换。shape仍为 [ nbatches, L, 512 ]。与input时的shape是完全一致的。</p>
+<p>可视化见论文中的图例：</p>
+<p><img src="/posts_res/2020-09-18-Transformer学习/13.png" width="60%" height="60%"></p>
+<h4 id="2-2-Encoder-Sub-layer-2-Position-Wise-fully-connected-feed-forward-network"><a href="#2-2-Encoder-Sub-layer-2-Position-Wise-fully-connected-feed-forward-network" class="headerlink" title="2.2 Encoder Sub-layer 2: Position-Wise fully connected feed-forward network"></a>2.2 Encoder Sub-layer 2: Position-Wise fully connected feed-forward network</h4><p>SubLayer-2 只是一个 feed-forward network。比较简单。</p>
+<script type="math/tex; mode=display">
+FFN(x) = max (0, x W_1 + b_1) W_2 + b_2</script><p>在 Annotated Transformer 中对应的实现为：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PositionwiseFeedForward</span><span class="params">(nn.Module)</span>:</span></span><br><span class="line">    <span class="string">"Implements FFN equation."</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, d_model, d_ff, dropout=<span class="number">0.1</span>)</span>:</span></span><br><span class="line">        super(PositionwiseFeedForward, self).__init__()</span><br><span class="line">        self.w_1 = nn.Linear(d_model, d_ff)</span><br><span class="line">        self.w_2 = nn.Linear(d_ff, d_model)</span><br><span class="line">        self.dropout = nn.Dropout(dropout)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span><span class="params">(self, x)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> self.w_2(self.dropout(F.relu(self.w_1(x))))</span><br></pre></td></tr></table></figure>
+<h4 id="2-3-Encoder-short-summary"><a href="#2-3-Encoder-short-summary" class="headerlink" title="2.3 Encoder short summary"></a>2.3 Encoder short summary</h4><p>Encoder 总共包含6个 EncoderLayers 。每一个 EncoderLayer 包含2个 SubLayer：</p>
+<ul>
+<li>SubLayer-1 做 Multi-Headed Attention</li>
+<li>SubLayer-2 做 feedforward neural network</li>
+</ul>
+<h3 id="3-The-Decoder"><a href="#3-The-Decoder" class="headerlink" title="3. The Decoder"></a>3. The Decoder</h3><p><img src="/posts_res/2020-09-18-Transformer学习/14.png" width="40%" height="40%"></p>
+<p>Encoder 与 Decoder 的交互方式可以理解为：</p>
+<p><img src="/posts_res/2020-09-18-Transformer学习/15.png" width="50%" height="50%"></p>
+<p>Decoder 也是N层堆叠的结构。被分为3个 SubLayer，可以看出 Encoder 与 Decoder 三大主要的不同：</p>
+<ul>
+<li>Diff_1：Decoder SubLayer-1 使用的是 “masked” Multi-Headed Attention 机制，防止为了模型看到要预测的数据，防止泄露。</li>
+<li>Diff_2：SubLayer-2 是一个 encoder-decoder multi-head attention。</li>
+<li>Diff_3：LinearLayer 和 SoftmaxLayer 作用于 SubLayer-3 的输出后面，来预测对应的 word 的 probabilities 。</li>
+</ul>
+<h4 id="3-1-Diff-1-“masked”-Multi-Headed-Attention"><a href="#3-1-Diff-1-“masked”-Multi-Headed-Attention" class="headerlink" title="3.1 Diff_1 : “masked” Multi-Headed Attention"></a>3.1 Diff_1 : “masked” Multi-Headed Attention</h4><p>mask 的目标在于防止 decoder “seeing the future”，就像防止考生偷看考试答案一样。mask包含1和0：</p>
+<p><img src="/posts_res/2020-09-18-Transformer学习/16.png" width="30%" height="30%"></p>
+<p>Attention 中使用 mask 的代码中：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> mask <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">        scores = scores.masked_fill(mask == <span class="number">0</span>, <span class="number">-1e9</span>)</span><br></pre></td></tr></table></figure>
+<p>引用作者的话说</p>
+<blockquote>
+<p>We […] modify the self-attention sub-layer in the decoder stack to prevent positions from attending to subsequent positions. This masking, combined with fact that the output embeddings are offset by one position, ensures that the predictions for position i can depend only on the known outputs at positions less than i.</p>
+</blockquote>
+<h4 id="3-2-Diff-2-encoder-decoder-multi-head-attention"><a href="#3-2-Diff-2-encoder-decoder-multi-head-attention" class="headerlink" title="3.2 Diff_2 : encoder-decoder multi-head attention"></a>3.2 Diff_2 : encoder-decoder multi-head attention</h4><p>Annotated Transformer 中的 DecoderLayer 的实现为：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DecoderLayer</span><span class="params">(nn.Module)</span>:</span></span><br><span class="line">    <span class="string">"Decoder is made of self-attn, src-attn, and feed forward (defined below)"</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, size, self_attn, src_attn, feed_forward, dropout)</span>:</span></span><br><span class="line">        super(DecoderLayer, self).__init__()</span><br><span class="line">        self.size = size</span><br><span class="line">        self.self_attn = self_attn</span><br><span class="line">        self.src_attn = src_attn</span><br><span class="line">        self.feed_forward = feed_forward</span><br><span class="line">        self.sublayer = clones(SublayerConnection(size, dropout), <span class="number">3</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span><span class="params">(self, x, memory, src_mask, tgt_mask)</span>:</span></span><br><span class="line">        m = memory</span><br><span class="line">        x = self.sublayer[<span class="number">0</span>](x, <span class="keyword">lambda</span> x: self.self_attn(x, x, x, tgt_mask))</span><br><span class="line">        x = self.sublayer[<span class="number">1</span>](x, <span class="keyword">lambda</span> x: self.src_attn(x, m, m, src_mask))</span><br><span class="line">        <span class="keyword">return</span> self.sublayer[<span class="number">2</span>](x, self.feed_forward)</span><br></pre></td></tr></table></figure>
+<p>重点在于 x = self.sublayer1 self.src_attn 是 MultiHeadedAttention 的一个实例。
+query = x，key = m, value = m, mask = src_mask，这里x来自上一个 DecoderLayer，m来自 Encoder的输出。</p>
+<p>到这里 Transformer 中三种不同的 Attention 都已经集齐了：</p>
+<p><img src="/posts_res/2020-09-18-Transformer学习/17.png" width="60%" height="60%"></p>
+<h4 id="3-3-Diff-3-Linear-and-Softmax-to-Produce-Output-Probabilities"><a href="#3-3-Diff-3-Linear-and-Softmax-to-Produce-Output-Probabilities" class="headerlink" title="3.3 Diff_3 : Linear and Softmax to Produce Output Probabilities"></a>3.3 Diff_3 : Linear and Softmax to Produce Output Probabilities</h4><p>最后的 linear layer 将 decoder 的输出扩展到与 vocabulary size 一样的维度上。
+经过 softmax 后，选择概率最高的一个 word 作为预测结果。</p>
+<p>假设我们有一个已经训练好的网络，在做预测时，步骤如下：</p>
+<ol>
+<li>给 decoder 输入 encoder 对整个句子 embedding 的结果 和一个特殊的开始符号 <code>&lt;/s&gt;</code>。decoder 将产生预测，在我们的例子中应该是 <code>I</code>。</li>
+<li>给 decoder 输入 encoder 的 embedding 结果和 <code>&lt;/s&gt;I</code>，在这一步 decoder 应该产生预测 <code>Love</code>。</li>
+<li>给 decoder 输入 encoder 的 embedding 结果和 <code>&lt;/s&gt;I Love</code>，在这一步 decoder 应该产生预测 <code>China</code>。</li>
+<li>给 decoder 输入 encoder 的 embedding 结果和 <code>&lt;/s&gt;I Love China</code>, decoder应该生成句子结尾的标记，decoder 应该输出 <code>&lt;/eos&gt;</code>。</li>
+<li>然后 decoder 生成了 &lt;/eos&gt;，翻译完成。</li>
+</ol>
+<p>但是在训练过程中，decoder 没有那么好时，预测产生的词很可能不是我们想要的。
+这个时候如果再把错误的数据再输给 decoder，就会越跑越偏：</p>
+<p><img src="/posts_res/2020-09-18-Transformer学习/18.jpg" width="60%" height="60%"></p>
+<p>这里在训练过程中要使用到 <code>teacher forcing</code>。利用我们知道他实际应该预测的 word 是什么，在这个时候喂给他一个正确的结果作为输入。</p>
+<p>相对于选择最高的词 (<code>greedy search</code>)，还有其他选择是比如 <code>beam search</code>，可以保留多个预测的 word。
+<code>Beam Search</code> 方法不再是只得到一个输出放到下一步去训练了，我们可以设定一个值，拿多个值放到下一步去训练，
+这条路径的概率等于每一步输出的概率的乘积，具体可以参考李宏毅老师的课程。</p>
+<p><img src="/posts_res/2020-09-18-Transformer学习/19-20.png" width="90%" height="90%"></p>
+<p>或者 “Scheduled Sampling”：一开始我们只用真实的句子序列进行训练，而随着训练过程的进行，我们开始慢慢加入模型的输出作为训练的输入这一过程。</p>
+<p><img src="/posts_res/2020-09-18-Transformer学习/21.jpg" width="60%" height="60%"></p>
+<p>这部分对应 Annotated Transformer 中的实现为：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Generator</span><span class="params">(nn.Module)</span>:</span></span><br><span class="line">    <span class="string">"Define standard linear + softmax generation step."</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, d_model, vocab)</span>:</span></span><br><span class="line">        super(Generator, self).__init__()</span><br><span class="line">        self.proj = nn.Linear(d_model, vocab)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span><span class="params">(self, x)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> F.log_softmax(self.proj(x), dim=<span class="number">-1</span>)</span><br></pre></td></tr></table></figure>
+<hr>
+<blockquote>
+<ol>
+<li><a href="http://nlp.seas.harvard.edu/2018/04/03/attention.html#position-wise-feed-forward-networks" target="_blank" rel="noopener">The Annotated Transformer</a></li>
+<li><a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">Attention is All You Need</a></li>
+<li><a href="http://jalammar.github.io/illustrated-transformer/" target="_blank" rel="noopener">The Illustrated Transformer</a></li>
+</ol>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/神经网络/" rel="tag"># 神经网络</a>
+            
+              <a href="/tags/Attention/" rel="tag"># Attention</a>
+            
+              <a href="/tags/自然语言处理/" rel="tag"># 自然语言处理</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2020/09/18/LearnToRank的由来和分类/" rel="next" title="LearnToRank的由来和分类">
+                  <i class="fa fa-chevron-left"></i> LearnToRank的由来和分类
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2020/11/27/gauc-timeauc/" rel="prev" title="gauc&timeauc">
+                  gauc&timeauc <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/avatar.jpg"
+      alt="WeiguoZHAO">
+  <p class="site-author-name" itemprop="name">WeiguoZHAO</p>
+  <div class="site-description motion-element" itemprop="description">Welcome to my blog~</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">47</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/weiguozhao" title="GitHub &rarr; https://github.com/weiguozhao" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:aszhaoweiguo@gmail.com" title="E-Mail &rarr; mailto:aszhaoweiguo@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      大牛们
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://colah.github.io/" title="http://colah.github.io/" rel="noopener" target="_blank">colah's blog</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/wzhe06/Reco-papers" title="https://github.com/wzhe06/Reco-papers" rel="noopener" target="_blank">王喆的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/ljpzzz/machinelearning" title="https://github.com/ljpzzz/machinelearning" rel="noopener" target="_blank">刘建平的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://tech.meituan.com/" title="https://tech.meituan.com/" rel="noopener" target="_blank">美团技术团队</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#0-模型架构"><span class="nav-text">0. 模型架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-对-Input-和-Output-进行-representation"><span class="nav-text">1. 对 Input 和 Output 进行 representation</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-对-Input-的-represent"><span class="nav-text">1.1 对 Input 的 represent</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-word-embedding"><span class="nav-text">1.2 word embedding</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-Positional-Embedding"><span class="nav-text">1.3 Positional Embedding</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-4-Input-小总结"><span class="nav-text">1.4 Input 小总结</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Encoder"><span class="nav-text">2. Encoder</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-Encoder-Sub-layer-1-Multi-Head-Attention-Mechanism"><span class="nav-text">2.1 Encoder Sub-layer 1: Multi-Head Attention Mechanism</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Step-1"><span class="nav-text">Step 1</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Step-2"><span class="nav-text">Step 2</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Step-3"><span class="nav-text">Step 3</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-Encoder-Sub-layer-2-Position-Wise-fully-connected-feed-forward-network"><span class="nav-text">2.2 Encoder Sub-layer 2: Position-Wise fully connected feed-forward network</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-Encoder-short-summary"><span class="nav-text">2.3 Encoder short summary</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-The-Decoder"><span class="nav-text">3. The Decoder</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-Diff-1-“masked”-Multi-Headed-Attention"><span class="nav-text">3.1 Diff_1 : “masked” Multi-Headed Attention</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-Diff-2-encoder-decoder-multi-head-attention"><span class="nav-text">3.2 Diff_2 : encoder-decoder multi-head attention</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-Diff-3-Linear-and-Softmax-to-Produce-Output-Probabilities"><span class="nav-text">3.3 Diff_3 : Linear and Softmax to Produce Output Probabilities</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">WeiguoZHAO</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+      <div class="reading-progress-bar"></div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/github-logo.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/github-logo.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":true,"show_result":true,"style":"default"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="朴素贝叶斯 - Naive Bayes目录 基本思想 算法 后验概率最大化的意义 特点 代码实现 1. 基本思想朴素贝叶斯法通过训练数据集学习联合概率分布$ P(X,Y) $。具体地，学习以下先验概率分布及条件概率分布。先验概率分布：P(Y=c_k),\quad k=1,2,...,K">
+<meta name="keywords" content="模型算法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="朴素贝叶斯 Naive Bayes">
+<meta property="og:url" content="https://weiguozhao.github.io/2018/03/08/naive-bayes/index.html">
+<meta property="og:site_name" content="Weiguo&#39;s Station">
+<meta property="og:description" content="朴素贝叶斯 - Naive Bayes目录 基本思想 算法 后验概率最大化的意义 特点 代码实现 1. 基本思想朴素贝叶斯法通过训练数据集学习联合概率分布$ P(X,Y) $。具体地，学习以下先验概率分布及条件概率分布。先验概率分布：P(Y=c_k),\quad k=1,2,...,K">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-03-22T10:53:44.466Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="朴素贝叶斯 Naive Bayes">
+<meta name="twitter:description" content="朴素贝叶斯 - Naive Bayes目录 基本思想 算法 后验概率最大化的意义 特点 代码实现 1. 基本思想朴素贝叶斯法通过训练数据集学习联合概率分布$ P(X,Y) $。具体地，学习以下先验概率分布及条件概率分布。先验概率分布：P(Y=c_k),\quad k=1,2,...,K">
+  <link rel="canonical" href="https://weiguozhao.github.io/2018/03/08/naive-bayes/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>朴素贝叶斯 Naive Bayes | Weiguo's Station</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?ff6106e096f9eb6ace966de311be4b1a";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Weiguo's Station</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>博客首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>文章归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类专栏</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>各种标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>站点搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+  <a href="https://github.com/weiguozhao" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weiguozhao.github.io/2018/03/08/naive-bayes/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="WeiguoZHAO">
+      <meta itemprop="description" content="Welcome to my blog~">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Weiguo's Station">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">朴素贝叶斯 Naive Bayes
+
+          
+        </h1>
+
+        <div class="post-meta">
+        
+          
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2018-03-08 10:10:00" itemprop="dateCreated datePublished" datetime="2018-03-08T10:10:00+08:00">2018-03-08</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-22 18:53:44" itemprop="dateModified" datetime="2021-03-22T18:53:44+08:00">2021-03-22</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="朴素贝叶斯-Naive-Bayes"><a href="#朴素贝叶斯-Naive-Bayes" class="headerlink" title="朴素贝叶斯 - Naive Bayes"></a><center>朴素贝叶斯 - Naive Bayes</center></h2><h4 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h4><ul>
+<li>基本思想</li>
+<li>算法</li>
+<li>后验概率最大化的意义</li>
+<li>特点</li>
+<li>代码实现</li>
+</ul><hr><h3 id="1-基本思想"><a href="#1-基本思想" class="headerlink" title="1. 基本思想"></a>1. 基本思想</h3><p>朴素贝叶斯法通过训练数据集学习联合概率分布$ P(X,Y) $。具体地，学习以下先验概率分布及条件概率分布。</p><p>先验概率分布：</p><script type="math/tex; mode=display">P(Y=c_k),\quad k=1,2,...,K</script><a id="more"></a>
+
+
+
+<p>条件概率分布: </p>
+<script type="math/tex; mode=display">P(X=x | Y=c\_k)=P(X^{(1)}=x^{(1)},...,X^{(n)}=x^{(n)} | Y=c\_k),\quad k=1,2,...,K</script><p>于是通过贝叶斯公式$P(X,Y) = P(X | Y)\cdot P(Y)$，
+可以学习到联合概率分布$P(X,Y)$。</p>
+<p><strong>但是，条件概率分布$P(X=x | Y=c_k)$有指数级数量的参数，其估计实际是不可行的。事实上，假设$x^{(j)}$ 可取值有$S_j$个，$j=1,2,…,n$，$Y$可取值有$K$个，那么参数个数为$K\prod_{j=1}^nS_j$。</strong></p>
+<p>朴素贝叶斯法对条件概率分布作了条件独立性的假设，即假设特征之间相互独立，公式表达如下：</p>
+<script type="math/tex; mode=display">P(X=x | Y=c\_k) \quad = \quad P(X^{(1)}=x^{(1)},...,X^{(n)}=x^{(n)} | Y=c\_k) \quad = \quad \prod\_{j=1}^{n}P(X^{(j)}=x^{(j)} | Y=c\_k)</script><hr>
+<h3 id="2-算法"><a href="#2-算法" class="headerlink" title="2. 算法"></a>2. 算法</h3><p>输入：</p>
+<p>训练数据$ T={((x_1, y_1)),…,(x_N,y_N)} $，
+其中$ x_i=(x_i^{(1)},x_i^{(2)},…,x_i^{(n)})^T $,
+$x_i^{(j)}$是第$i$个样本的第$j$个特征，
+$x_i^{(j)} \in {a_{j1},a_{j2},…,a_{jS_j}}$,
+$a_{jl}$是第$j$个特征可能取的第$l$个值，
+$j=1,2,…,n$, $l=1,2,…,S_j$, $y_i \in {c_1, c_2, …, c_k}$;</p>
+<p>输出：</p>
+<p>实例$x$的分类</p>
+<p>（1）计算先验概率及条件概率</p>
+<script type="math/tex; mode=display">P(Y=c_k) = \frac{\sum_{i=1}^N I(y_i=c_k)}{N}, \quad k=1,2,...,K</script><script type="math/tex; mode=display">P(X^{(j)}=a_{jl} \| Y=c_k)=\frac{\sum_{i=1}^N I(x_i^{(j)}, y_i=c_k)}{\sum_{i=1}^N I(y_i=c_k)}</script><script type="math/tex; mode=display">j=1,2,...,n; \quad l=1,2,...,S_j; \quad k=1,2,...,K</script><p>（2）对于给定的实例$ x=(x^{(1)}, x^{(2)},.., x^{(n)})^T $，计算</p>
+<script type="math/tex; mode=display">P(Y=c_k) \prod_{j=1}^n P(X^{(j)}=x^{(j)} \| Y=c_k), \quad k=1,2,...,K</script><p>（3）确定实例$ x $的类</p>
+<script type="math/tex; mode=display">y = \mathop{\arg\max}_{c_k} P(Y=c_k) \prod_{j=1}^n P(X^{(j)} \| Y=c_k)</script><hr>
+<h3 id="3-后验概率最大化的意义"><a href="#3-后验概率最大化的意义" class="headerlink" title="3. 后验概率最大化的意义"></a>3. 后验概率最大化的意义</h3><p>朴素贝叶斯法将实例分到后验概率最大的类中，这等价于期望风险最小化，假设选择0-1损失函数：</p>
+<script type="math/tex; mode=display">L(Y,f(X)) = \begin{cases}
+1, & Y \neq f(X) \\
+0, & Y = f(X)
+\end{cases}</script><p>式中$ f(X) $是决策函数，这时期望风险函数为</p>
+<script type="math/tex; mode=display">R_{exp}(f)=E[L(Y,f(X)]</script><p>期望是对联合分布 $ P(X,Y) $取的，由此取条件期望</p>
+<script type="math/tex; mode=display">
+\begin{equation}
+\begin{aligned}
+R_{exp}(f)
+& = \iint_{D_{xy}}L(y,f(x)) \cdot P(x,y) dxdy \\
+& = \int_{D_x} \int_{D_y} L(y, f(x)) \cdot P(y\|x) \cdot P(x) dxdy \\
+& = \int_{D_x} [\int_{D_y} L(x,f(x)) \cdot P(y\|x) dy] P(x) dx \\
+& = E_X \sum_{k=1}^K [L(c_k, f(X)]P(c_k|X)
+\end{aligned}
+\end{equation}</script><p>为了使期望风险最小化，只需要对 $ X=x $逐个极小化，由此得到：</p>
+<script type="math/tex; mode=display">
+\begin{equation}
+\begin{aligned}
+f(x) 
+& = \mathop{\arg\min}_{y\in \mathbb{y}} \sum_{k=1}^K L(c_k,y)P(c_k|X=x) \\
+& = \mathop{\arg\min}_{y\in \mathbb{y}} \sum_{k=1}^K P(y \neq c_k| X=x) \\
+& = \mathop{\arg\min}_{y\in \mathbb{y}} (1-P(y=c_k|X=x) \\
+& = \mathop{\arg\max}_{y\in \mathbb{y}} P(y=c_k|X=x)
+\end{aligned}
+\end{equation}</script><p>这样，根据期望奉献最小化准则就得到了后验概率最大化准则：</p>
+<script type="math/tex; mode=display">
+f(x)=\mathop{\arg\max}_{y=c_k} P(c_k|X=x)</script><p>即朴素贝叶斯法采用的原理。</p>
+<hr>
+<h3 id="4-特点"><a href="#4-特点" class="headerlink" title="4. 特点"></a>4. 特点</h3><ul>
+<li>优点：源于古典数学理论，有稳定的分类效率；小数据好，可增量训练；对缺失数据不敏感，算法简单。</li>
+<li>缺点：独立性假设强，实际中根据属性间的关系强弱，效果不同；须知先验概率，但先验有时取决于假设；对数据的输入形式敏感。</li>
+</ul>
+<hr>
+<h3 id="5-代码实现"><a href="#5-代码实现" class="headerlink" title="5. 代码实现"></a>5. 代码实现</h3><p><a href="/posts_res/2018-03-08-native-bayes/native_bayes.py">Naive Bayes 代码</a></p>
+<pre><code># coding:utf-8
+
+import numpy as np
+import time
+from datetime import timedelta
+from sklearn.datasets import load_breast_cancer
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
+
+
+def time_consume(s_t):
+    diff = time.time()-s_t
+    return timedelta(seconds=int(diff))
+
+
+class NaiveBayes(object):
+    def __init__(self, class_num=-1, features_dim=-1):
+        self.class_num = class_num
+        self.features_dim = features_dim
+
+    def fit(self, X, y):
+        self.nlen = X.shape[0]
+        # shape meaning: class_num
+        prior_prob = np.zeros(shape=self.class_num)
+        # shape meaning: class_num, feature_dim, feature_value
+        conditional_prob = np.zeros(shape=(self.class_num, self.features_dim, 2))
+
+        for i in range(self.nlen):
+            prior_prob[y[i]] += 1.0
+            for j in range(self.features_dim):
+                conditional_prob[y[i]][j][X[i][j]] += 1.0
+
+        for i in range(self.class_num):
+            for j in range(self.features_dim):
+                p_0 = conditional_prob[i][j][0]
+                p_1 = conditional_prob[i][j][1]
+                prob_0 = p_0 / (p_0 + p_1)
+                prob_1 = p_1 / (p_0 + p_1)
+                conditional_prob[i][j][0] = prob_0
+                conditional_prob[i][j][1] = prob_1
+
+        self.prior_prob = prior_prob # 没有除self.nlen，对结果无影响
+        self.conditional_prob = conditional_prob
+
+    def __calculate_prob__(self, sample, label):
+        prob = int(self.prior_prob[label])
+        for i in range(self.features_dim):
+            prob *= self.conditional_prob[label][i][sample[i]]
+        return prob
+
+    def predict(self, X):
+        if self.class_num == -1:
+            raise ValueError(&quot;Please fit first.&quot;)
+        y_pred = np.zeros(shape=X.shape[0])
+        for i in range(X.shape[0]):
+            label = 0
+            prob = self.__calculate_prob__(X[i], 0)
+            for j in range(1, self.class_num):
+                this_prob = self.__calculate_prob__(X[i], j)
+                if prob &lt; this_prob:
+                    prob = this_prob
+                    label = j
+            y_pred[i] = label
+        return y_pred
+
+    def accuracy(self, y_true, y_pred):
+        return accuracy_score(y_true, y_pred)
+
+
+def load_data():
+    &quot;&quot;&quot;normalize value of data to {0, 1}&quot;&quot;&quot;
+    data, target = load_breast_cancer(return_X_y=True)
+    nlen = data.shape[0]
+    ndim = data.shape[1]
+    X = np.zeros(shape=data.shape, dtype=np.int32)
+    for i in range(ndim):
+        mean = np.mean(data[:, i])
+        for j in range(nlen):
+            if data[j][i] &gt; mean:
+                X[j][i] = 1
+    return X, target
+
+
+if __name__ == &#39;__main__&#39;:
+    start_time = time.time()
+
+    data, target = load_data()
+    train_x, test_x, train_y, test_y = train_test_split(data, target, test_size=0.3, random_state=2048, shuffle=True)
+
+    ml = NaiveBayes(class_num=2, features_dim=30)
+    ml.fit(train_x, train_y)
+    y_pred = ml.predict(test_x)
+    accuracy = ml.accuracy(test_y, y_pred)
+    print(&quot;Accuracy is &quot;, accuracy)
+    print(&quot;Timeusage: %s&quot; % (time_consume(start_time)))
+</code></pre><p>结果如下：</p>
+<pre><code>Accuracy is  0.947368421053
+Timeusage: 0:00:00
+</code></pre><hr>
+<h3 id="6-参考"><a href="#6-参考" class="headerlink" title="6. 参考"></a>6. 参考</h3><blockquote>
+<ol>
+<li>李航 - 《统计学习方法》</li>
+<li><a href="http://www.cnblogs.com/pinard/p/6069267.html" target="_blank" rel="noopener">刘建平Pinard’s Blog</a></li>
+<li><a href="http://scikit-learn.org/" target="_blank" rel="noopener">scikit-learn</a></li>
+<li><a href="https://github.com/WenDesi/lihang_book_algorithm" target="_blank" rel="noopener">WenDesi’s Github</a></li>
+</ol>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/模型算法/" rel="tag"># 模型算法</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2018/03/01/2017aca/" rel="next" title="2017开放学术精准画像大赛">
+                  <i class="fa fa-chevron-left"></i> 2017开放学术精准画像大赛
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2018/03/11/logistic-regression/" rel="prev" title="逻辑斯谛回归 Logistic Regression">
+                  逻辑斯谛回归 Logistic Regression <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    
+  <div class="comments" id="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC80MTI1Mi8xNzgwMA"></div>
+  </div>
+  
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/avatar.jpg"
+      alt="WeiguoZHAO">
+  <p class="site-author-name" itemprop="name">WeiguoZHAO</p>
+  <div class="site-description motion-element" itemprop="description">Welcome to my blog~</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">47</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/weiguozhao" title="GitHub &rarr; https://github.com/weiguozhao" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:aszhaoweiguo@gmail.com" title="E-Mail &rarr; mailto:aszhaoweiguo@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      大牛们
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://colah.github.io/" title="http://colah.github.io/" rel="noopener" target="_blank">colah's blog</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/wzhe06/Reco-papers" title="https://github.com/wzhe06/Reco-papers" rel="noopener" target="_blank">王喆的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/ljpzzz/machinelearning" title="https://github.com/ljpzzz/machinelearning" rel="noopener" target="_blank">刘建平的Github</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://tech.meituan.com/" title="https://tech.meituan.com/" rel="noopener" target="_blank">美团技术团队</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#朴素贝叶斯-Naive-Bayes"><span class="nav-text">朴素贝叶斯 - Naive Bayes</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#目录"><span class="nav-text">目录</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-基本思想"><span class="nav-text">1. 基本思想</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-算法"><span class="nav-text">2. 算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-后验概率最大化的意义"><span class="nav-text">3. 后验概率最大化的意义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-特点"><span class="nav-text">4. 特点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-代码实现"><span class="nav-text">5. 代码实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-参考"><span class="nav-text">6. 参考</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">WeiguoZHAO</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+      <div class="reading-progress-bar"></div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+<script>
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
+
+</body>
+</html>
