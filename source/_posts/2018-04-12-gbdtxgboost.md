@@ -123,6 +123,10 @@ GBDT 的缺点:
 
 ### 3. XGBoost
 
+> 1. [数据分析利器：XGBoost算法最佳解析 - 腾讯技术工程](https://zhuanlan.zhihu.com/p/335181661)
+2. [xgboost特征重要性指标: weight, gain, cover](https://www.jianshu.com/p/2920c97e9e16)
+
+
 xgboost中使用的正则化函数为：
 \\[
 \Omega(f\_k) = \frac{\gamma}{2} J + \frac{\lambda}{2} \sum\_{j=1}^J b^2\_j
