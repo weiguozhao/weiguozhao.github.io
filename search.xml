@@ -9,6 +9,19 @@
       </categories>
   </entry>
   <entry>
+    <title><![CDATA[MacOS支持写NTFS格式硬盘]]></title>
+    <url>%2F2021%2F03%2F23%2FMacOS%E6%94%AF%E6%8C%81%E5%86%99NTFS%E6%A0%BC%E5%BC%8F%E7%A1%AC%E7%9B%98%2F</url>
+    <content type="text"><![CDATA[MacOS 从雪豹开始已经支持写 NTFS 格式硬盘，但是系统默认挂载是只读的，可通过手动 mount 打开写入支持：接入移动硬盘，待自动挂载完成后，在 terminal 中输入命令 mount，可看到类似如下结果：1234567mount/dev/disk1s1 on / (apfs, local, journaled)devfs on /dev (devfs, local, nobrowse)/dev/disk1s4 on /private/var/vm (apfs, local, noexec, journaled, noatime, nobrowse)map -hosts on /net (autofs, nosuid, automounted, nobrowse)map auto_home on /home (autofs, automounted, nobrowse)/dev/disk2s1 on /Volumes/Elements (ntfs, local, nodev, nosuid, read-only, noowners) 注意其中这行： 1/dev/disk2s1 on /Volumes/Elements (ntfs, local, nodev, nosuid, read-only, noowners) 其中 /dev/disk2s1 就是移动硬盘（后面需要用到这个路径），可看到其后有 ntfs 字样，如果不确定，可以将移动硬盘弹出，然后再输入 mount，对比输出结果即可确定哪个设备是移动硬盘。 卸载自动挂载的移动硬盘： 1sudo umount /dev/disk2s1 建立挂载点，这里我选择挂载到桌面上： 1mkdir -p ~/Desktop/Elements 以读写方式重新挂载： 1sudo mount -t ntfs -o rw,auto,nobrowse /dev/disk2s1 ~/Desktop/Elements 现在，移动硬盘就以可读写的形式出现在桌面上了。如果要弹出硬盘可以右键它选择 弹出 即可。]]></content>
+      <categories>
+        <category>小工具</category>
+      </categories>
+      <tags>
+        <tag>Shell</tag>
+        <tag>MacOs</tag>
+        <tag>NTFS</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[关于推荐中重排序的思考]]></title>
     <url>%2F2020%2F12%2F18%2F%E5%85%B3%E4%BA%8E%E6%8E%A8%E8%8D%90%E4%B8%AD%E9%87%8D%E6%8E%92%E5%BA%8F%E7%9A%84%E6%80%9D%E8%80%83%2F</url>
     <content type="text"><![CDATA[整理自个人工作经历和相关博客、论文。1. 重排的问题定义工业推荐系统中重排的主要任务和其中存在的四个主要挑战，分别为上下文感知、排列特异性、复杂度和业务要求，分析这四个特性和达到序列收益最优的关系。 通过融入更多的信息，来修正并且得到每个商品更加准确的预估分数，并且采用基于贪婪的策略来进行排序，以期用户能够尽早地与他更感兴趣的商品进行交互。 然而，现有的基于贪婪的策略的重排方法忽略了最终推荐列表之间的上下文关系，因此不能保证其达到序列最优。 上下文感知 重排的任务设定是从上游给定的输入商品列表选择固定个数并排好序的最终推荐列表。我们把这个任务视为由多次决策顺序组成，其中每次决策是从输入商品列表中挑选一个商品放到当前位置。为了真正地形成一个上下文感知的最终推荐列表，在每次决策时，我们应当考虑到两方面的影响： 上文:当前决策应该考虑到上文对此次决策影响来做出最合理的决策。如上文推荐了一个大概率会交互的商品，是否应该出异类目的商品来缓解他对前序类目及推荐结果的疲劳度，还是让他接着浏览他感兴趣的同类目商品。 下文:当前决策应当考虑到对下文产生的深远影响。如当前决策推荐了一个他不感兴趣的商品，应该考虑到他可能因为此次决策而降低用户体验甚至停止继续浏览带来的收益损失。 排列特异性 基于上下文感知的考虑，即使是两条由同样商品集合组成的最终推荐列表，由于其排列方式导致的序列整体收益的差异我们称为排列特异性。找到最优的排列需要考虑到这种特性，然而，基于贪婪的策略陷入了无限循环的问题：上下文感知的模型为输入商品列表列表中的每个商品预估交互概率，然后基于这个分数贪婪排序得到一个新的排列，又由于排列特异性导致新的排列中每个商品的预期交互概率改变而又需要重新进行预估。无法证明这样一个循环能达到最优排列，因而破除排列特异性成为了转化上下文感知模型为生产力的关键。 复杂度 长久以来，重排的复杂度被以一个单点预估的角度来看待。考虑到排列特异性，潜在的推荐列表往往在Anm(≈mn)的量级（m、n 分别是输入商品列表和最终推荐列表的长度，如 1000、10），我们最后要挑选出的只是其中的一条序列。显然，将所有可能的候选序列都用上下文感知的模型评估是不可能的事情。如何设计快速且有效的算法和系统并兼顾上下文感知和排列特异性的特点是一个极大的挑战。 业务要求 典型业务要求的考虑，我们主要分为两部分： 打散策略-最常见的如对类目、店家等维度的打散策略，来保证最终推荐列表有较好的用户体验。因此我们需要在重排时考虑这些策略，否则即使是效率最优的最终推荐列表也不能被透出； 性能要求-云端部署的推荐系统对性能往往有很高要求，串行一个超过 10 毫秒的新链路会导致超时率上升。同时我们应该考虑，复杂的算法是否还有合适的优化方式或者链路。 2. 常见的模型类型 Point-wise 模型：和经典的 CTR 模型基本结构类似，如 DNN [8]， WDL [9] 和 DeepFM [10]。和排序相比优势主要在于实时更新的模型、特征和调控权重。LTR 对于调控权重的能力还是基于单点的，没有考虑到商品之间互相的影响，因此并不能保证整个序列收益最优。随着工程能力的升级，ODL [11] 和实时特征逐渐合并到排序阶段并且取得了较大提升。 Pair-wise 模型：通过 pair-wise 损失函数来比较商品对之间的相对关系。具体来说，RankSVM [12], GBRank [13] 和 RankNet [2] 分别使用了 SVM、GBT 和 DNN。但是，pair-wise 模型忽略了列表的全局信息，而且极大地增加了模型训练和预估的复杂度。 List-wise 模型：建模商品序列的整体信息和对比信息，并通过 list-wise 损失函数来比较序列商品之间的关系。LambdaMart [14]、MIDNN [3]、DLCM[6]、PRM [5] 和 SetRank [4] 分别通过 GBT、DNN、RNN、Self-attention 和 Induced self-attention 来提取这些信息。但是由于最终还是通过贪婪策略进行排序，还是不能真正做到考虑到排列特异性的上下文感知。随着工程能力的升级，输入序列的信息和对比关系也可以在排序阶段中提取出来。 Generative 模型：主要分为两种，一种如考虑了前序信息的，如 MIRNN [3] 和 Seq2Slate [15] 都通过 RNN 来提取前序信息，再通过 DNN 或者 Pointer-network 来从输入商品列表中一步步地生成最终推荐列表。最近的组合优化工作 Exact-K [16] 注重于直接对序列整体收益进行建模，设计了两段式结构，一个用来预测整体收益以指导另一个生成最终推荐列表。通过我们的讨论，仅考虑了前序信息是不完整的，应当全面地考虑到上下文的影响。 Diversity 模型：最近有很多工作考虑最终推荐列表里的相关性和多样性达到平衡，如 [17~20]。我们的工作区别在于，我们并不会去优化多样性指标，最终推荐列表是否表现出多样性全由效率指标决定。 3. 一些工作的总结记录feed_documents.zip detailed_documents.zip 压缩 1tar -czvf - file | openssl des3 -salt -k password -out file.tar.gz 解压 1openssl des3 -d -k password -salt -in file.tar.gz | tar xzf - 序列检索系统在淘宝首页信息流重排中的实践]]></content>
